@@ -1,0 +1,15 @@
+numpy
+scipy
+pandas
+h5py
+numpy-quaternion
+matplotlib
+torch
+torchvision
+tensorboardX
+numba
+plyfile
+tqdm
+scikit-learn
+//added
+tensorboard
