@@ -1,5 +1,6 @@
 import sys
 import os.path as osp
+import math
 
 import torch
 from torch.autograd import Variable
@@ -150,11 +151,15 @@ class TCNTransformerNetwork(nn.Module):
         num_transformer_layers=4,
         dim_feedforward=512,
         dropout=0.1,
-        max_len=256,
     ):
         super().__init__()
 
         assert tcn_channels[-1] == d_model
+        assert d_model % nhead == 0
+
+        self.d_model = d_model
+        self.kernel_size = kernel_size
+        self.num_layers = len(tcn_channels)
 
         # -----------------------------
         # TCN Backbone
@@ -164,13 +169,6 @@ class TCNTransformerNetwork(nn.Module):
             list(tcn_channels),
             kernel_size,
             dropout
-        )
-
-        # -----------------------------
-        # Positional Embedding
-        # -----------------------------
-        self.pos_embedding = nn.Parameter(
-            torch.randn(1, max_len, d_model)
         )
 
         # -----------------------------
@@ -204,6 +202,24 @@ class TCNTransformerNetwork(nn.Module):
 
             nn.Linear(128, output_channel)
         )
+        self.init_weights()
+
+    def init_weights(self):
+        final_layer = self.head[-1]
+        final_layer.weight.data.normal_(0, 0.01)
+        final_layer.bias.data.normal_(0, 0.001)
+
+    def _positional_encoding(self, seq_len, device, dtype):
+        """Sinusoidal positional encoding, computed for the actual sequence length (no fixed length cap)."""
+        position = torch.arange(seq_len, device=device, dtype=torch.float32).unsqueeze(1)
+        div_term = torch.exp(
+            torch.arange(0, self.d_model, 2, device=device, dtype=torch.float32)
+            * (-math.log(10000.0) / self.d_model)
+        )
+        pe = torch.zeros(seq_len, self.d_model, device=device, dtype=torch.float32)
+        pe[:, 0::2] = torch.sin(position * div_term)
+        pe[:, 1::2] = torch.cos(position * div_term)
+        return pe.unsqueeze(0).to(dtype)
 
     def forward(self, x):
         """
@@ -215,11 +231,11 @@ class TCNTransformerNetwork(nn.Module):
         # TCN expects [B, C, T]
         tcn_features = self.tcn(x.transpose(1, 2))
 
-        # [B, T, 128]
+        # [B, T, d_model]
         tcn_features = tcn_features.transpose(1, 2)
 
-        # positional embedding
-        x = tcn_features + self.pos_embedding[:, :T]
+        # positional encoding
+        x = tcn_features + self._positional_encoding(T, x.device, tcn_features.dtype)
 
         # transformer
         transformer_features = self.transformer(x)
@@ -234,3 +250,4 @@ class TCNTransformerNetwork(nn.Module):
 
     def get_receptive_field(self):
         return 1 + 2 * (self.kernel_size - 1) * (2 ** self.num_layers - 1)
+
