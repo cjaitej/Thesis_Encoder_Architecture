@@ -15,7 +15,8 @@ from torch.optim.lr_scheduler import ReduceLROnPlateau
 from torch.utils.data import DataLoader
 
 
-from model_temporal import LSTMSeqNetwork, BilinearLSTMSeqNetwork, TCNSeqNetwork, TCNTransformerNetwork
+from model_temporal import LSTMSeqNetwork, BilinearLSTMSeqNetwork, TCNSeqNetwork, TCNTransformerNetwork, \
+    MBConvTransformerNetwork
 from utils import load_config, MSEAverageMeter
 from data_glob_speed import GlobSpeedSequence, SequenceToSequenceDataset
 from transformations import ComposeTransform, RandomHoriRotateSeq
@@ -127,6 +128,20 @@ def get_model(args, **kwargs):
             nhead=8,
             num_transformer_layers=4,
             dim_feedforward=512,
+            dropout=0.1
+        )
+    elif args.type == 'mbconv_transformer':
+        network = MBConvTransformerNetwork(
+            input_channel=_input_channel,
+            output_channel=_output_channel,
+            mbconv_channels=(32, 64, 96, 128),
+            kernel_size=args.kernel_size,
+            expand_ratio=4,
+            se_reduction=4,
+            d_model=128,
+            nhead=4,
+            num_transformer_layers=2,
+            dim_feedforward=256,
             dropout=0.1
         )
     elif args.type == 'lstm_bi':
@@ -538,7 +553,9 @@ if __name__ == '__main__':
     parser.add_argument('--config', type=str, help='Configuration file [Default: {}]'.format(default_config_file),
                         default=default_config_file)
     # common
-    parser.add_argument('--type', type=str, choices=['tcn', 'tcn_transformer', 'lstm', 'lstm_bi'], help='Model type')
+    parser.add_argument('--type', type=str,
+                        choices=['tcn', 'tcn_transformer', 'mbconv_transformer', 'lstm', 'lstm_bi'],
+                        help='Model type')
     parser.add_argument('--data_dir', type=str, help='Directory for data files if different from list path.')
     parser.add_argument('--cache_path', type=str, default=None)
     parser.add_argument('--feature_sigma', type=float, help='Gaussian for smoothing features')
