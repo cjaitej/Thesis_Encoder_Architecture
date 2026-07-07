@@ -174,5 +174,4 @@ fabric.properties
 
 output/
 data/
-bot.pyoutput/
 bot.py
