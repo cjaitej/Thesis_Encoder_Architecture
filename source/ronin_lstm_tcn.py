@@ -6,6 +6,14 @@ from os import path as osp
 from pathlib import Path
 from shutil import copyfile
 
+# Prevent each DataLoader worker from spawning its own full-core BLAS thread
+# pool (numpy/numpy-quaternion default to nproc threads per process), which
+# causes severe contention once num_workers > 1.
+os.environ.setdefault('OMP_NUM_THREADS', '1')
+os.environ.setdefault('MKL_NUM_THREADS', '1')
+os.environ.setdefault('OPENBLAS_NUM_THREADS', '1')
+os.environ.setdefault('NUMEXPR_NUM_THREADS', '1')
+
 import warnings
 warnings.filterwarnings("ignore")
 
@@ -194,12 +202,17 @@ def format_string(*argv, sep=' '):
     return result[:-1]
 
 
+def _worker_init_fn(worker_id):
+    torch.set_num_threads(1)
+
+
 def train(args, **kwargs):
     # Loading data
     start_t = time.time()
     train_dataset = get_dataset_from_list(args.data_dir, args.train_list, args, mode='train', **kwargs)
     train_loader = DataLoader(train_dataset, batch_size=args.batch_size, num_workers=args.num_workers, shuffle=True,
-                              drop_last=True, pin_memory=True, persistent_workers=args.num_workers > 0)
+                              drop_last=True, pin_memory=True, persistent_workers=args.num_workers > 0,
+                              worker_init_fn=_worker_init_fn if args.num_workers > 0 else None)
     end_t = time.time()
 
     print('Training set loaded. Time usage: {:.3f}s'.format(end_t - start_t))
@@ -208,7 +221,8 @@ def train(args, **kwargs):
         val_dataset = get_dataset_from_list(args.data_dir, args.val_list, args, mode='val', **kwargs)
         val_loader = DataLoader(val_dataset, batch_size=args.batch_size, shuffle=True, drop_last=True,
                                 num_workers=min(4, args.num_workers), pin_memory=True,
-                                persistent_workers=args.num_workers > 0)
+                                persistent_workers=args.num_workers > 0,
+                                worker_init_fn=_worker_init_fn if args.num_workers > 0 else None)
         print('Validation set loaded')
 
     global device
