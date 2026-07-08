@@ -16,7 +16,7 @@ from torch.utils.data import DataLoader
 
 
 from model_temporal import LSTMSeqNetwork, BilinearLSTMSeqNetwork, TCNSeqNetwork, TCNTransformerNetwork, \
-    MBConvTransformerNetwork
+    MBConvTransformerNetwork, PMRNet
 from utils import load_config, MSEAverageMeter
 from data_glob_speed import GlobSpeedSequence, SequenceToSequenceDataset
 from transformations import ComposeTransform, RandomHoriRotateSeq
@@ -144,6 +144,19 @@ def get_model(args, **kwargs):
             dim_feedforward=256,
             dropout=0.1
         )
+    elif args.type == 'pmr':
+        network = PMRNet(
+            input_channel=_input_channel,
+            output_channel=_output_channel,
+            stream_channels=(24, 48, 72, 96),
+            num_stages=3,
+            kernel_size=5,
+            expand_ratio=2,
+            se_reduction=4,
+            nhead=4,
+            dropout=0.1
+        )
+        print("PMR-Net (Parallel Multi-Resolution) Network")
     elif args.type == 'lstm_bi':
         print("Bilinear LSTM Network")
         network = BilinearLSTMSeqNetwork(_input_channel, _output_channel, args.batch_size, device,
@@ -554,7 +567,7 @@ if __name__ == '__main__':
                         default=default_config_file)
     # common
     parser.add_argument('--type', type=str,
-                        choices=['tcn', 'tcn_transformer', 'mbconv_transformer', 'lstm', 'lstm_bi'],
+                        choices=['tcn', 'tcn_transformer', 'mbconv_transformer', 'pmr', 'lstm', 'lstm_bi'],
                         help='Model type')
     parser.add_argument('--data_dir', type=str, help='Directory for data files if different from list path.')
     parser.add_argument('--cache_path', type=str, default=None)

@@ -5,6 +5,7 @@ import math
 import torch
 from torch.autograd import Variable
 import torch.nn as nn
+import torch.nn.functional as F
 
 
 from tcn import TemporalConvNet
@@ -461,3 +462,194 @@ class MBConvTransformerNetwork(nn.Module):
         # Each MBConv block contributes one dilated depthwise conv (vs. two dilated convs
         # per TemporalBlock in TemporalConvNet), so the growth factor is not doubled here.
         return 1 + (self.kernel_size - 1) * (2 ** self.num_layers - 1)
+
+
+def _sinusoidal_pe(seq_len, d_model, device, dtype):
+    """Sinusoidal positional encoding [1, seq_len, d_model] for the actual sequence length."""
+    position = torch.arange(seq_len, device=device, dtype=torch.float32).unsqueeze(1)
+    div_term = torch.exp(
+        torch.arange(0, d_model, 2, device=device, dtype=torch.float32)
+        * (-math.log(10000.0) / d_model)
+    )
+    pe = torch.zeros(seq_len, d_model, device=device, dtype=torch.float32)
+    pe[:, 0::2] = torch.sin(position * div_term)
+    pe[:, 1::2] = torch.cos(position * div_term)
+    return pe.unsqueeze(0).to(dtype)
+
+
+class MultiResFusion1D(nn.Module):
+    """
+    HRNet-style exchange unit for 1D streams: every stream receives the sum of all
+    other streams, resampled to its own temporal resolution.
+    Downsampling: average pool (ratio) + 1x1 conv + BN. Upsampling: linear
+    interpolation to the exact target length + 1x1 conv + BN, so streams of any
+    length (odd windows included) stay aligned.
+    """
+
+    def __init__(self, channels):
+        super().__init__()
+        self.num_streams = len(channels)
+        self.projections = nn.ModuleList()
+        for i in range(self.num_streams):          # target stream
+            row = nn.ModuleList()
+            for j in range(self.num_streams):      # source stream
+                if i == j:
+                    row.append(nn.Identity())
+                else:
+                    row.append(nn.Sequential(
+                        nn.Conv1d(channels[j], channels[i], 1, bias=False),
+                        nn.BatchNorm1d(channels[i]),
+                    ))
+            self.projections.append(row)
+        self.act = nn.SiLU()
+
+    def forward(self, streams):
+        out = []
+        for i in range(self.num_streams):
+            target_len = streams[i].shape[-1]
+            fused = streams[i]
+            for j in range(self.num_streams):
+                if i == j:
+                    continue
+                x = streams[j]
+                if x.shape[-1] > target_len:                       # downsample
+                    ratio = max(1, x.shape[-1] // target_len)
+                    x = F.avg_pool1d(x, kernel_size=ratio, stride=ratio)
+                if x.shape[-1] != target_len:                      # exact-length align / upsample
+                    x = F.interpolate(x, size=target_len, mode='linear', align_corners=False)
+                fused = fused + self.projections[i][j](x)
+            out.append(self.act(fused))
+        return out
+
+
+class PMRNet(nn.Module):
+    """
+    PMR-Net: Parallel Multi-Resolution network with coarse-scale attention for
+    seq2seq inertial odometry.
+
+    Four parallel streams run at temporal resolutions T, T/2, T/4, T/8 and exchange
+    information after every stage (HRNet-style repeated bidirectional fusion, here
+    applied to 1D IMU sequences). Stream blocks are dilation-free MBConv+SE units
+    (InvertedResidualBlock1D). Global self-attention is applied only on the coarsest
+    (T/8) stream, where it is ~64x cheaper than at full rate, then propagated to the
+    finer streams by the following fusion. The full-rate stream is preserved
+    end-to-end, matching the per-frame velocity output of the seq2seq task.
+
+    Input:  [B, T, input_channel]
+    Output: [B, T, output_channel]
+    """
+
+    def __init__(
+        self,
+        input_channel=6,
+        output_channel=2,
+        stream_channels=(24, 48, 72, 96),
+        num_stages=3,
+        kernel_size=5,
+        expand_ratio=2,
+        se_reduction=4,
+        nhead=4,
+        dropout=0.1,
+    ):
+        super().__init__()
+
+        self.stream_channels = list(stream_channels)
+        self.num_streams = len(stream_channels)
+        self.coarse_dim = stream_channels[-1]
+        assert self.coarse_dim % nhead == 0
+
+        # Full-rate stem
+        self.stem = nn.Sequential(
+            nn.Conv1d(input_channel, stream_channels[0], kernel_size,
+                      padding=kernel_size // 2, bias=False),
+            nn.BatchNorm1d(stream_channels[0]),
+            nn.SiLU(),
+        )
+
+        # Stream initializers: full-rate stem features -> pooled + projected per stream
+        self.stream_init = nn.ModuleList()
+        for i in range(1, self.num_streams):
+            self.stream_init.append(nn.Sequential(
+                nn.Conv1d(stream_channels[0], stream_channels[i], 1, bias=False),
+                nn.BatchNorm1d(stream_channels[i]),
+                nn.SiLU(),
+            ))
+
+        # Stages: per-stream MBConv+SE block, then all-to-all fusion
+        self.stage_blocks = nn.ModuleList()
+        self.stage_fusions = nn.ModuleList()
+        for _ in range(num_stages):
+            self.stage_blocks.append(nn.ModuleList([
+                InvertedResidualBlock1D(c, c, kernel_size, dilation=1,
+                                        expand_ratio=expand_ratio,
+                                        se_reduction=se_reduction, dropout=dropout)
+                for c in stream_channels
+            ]))
+            self.stage_fusions.append(MultiResFusion1D(stream_channels))
+
+        # Coarse-scale attention: one encoder layer after each stage except the first
+        coarse_layer = lambda: nn.TransformerEncoderLayer(
+            d_model=self.coarse_dim,
+            nhead=nhead,
+            dim_feedforward=self.coarse_dim * 2,
+            dropout=dropout,
+            activation="gelu",
+            batch_first=True,
+            norm_first=True,
+        )
+        self.coarse_attention = nn.ModuleList([coarse_layer() for _ in range(max(1, num_stages - 1))])
+
+        # Per-frame prediction head over concatenated full-rate features
+        fuse_dim = sum(stream_channels)
+        self.head = nn.Sequential(
+            nn.Linear(fuse_dim, 128),
+            nn.GELU(),
+            nn.Dropout(dropout),
+
+            nn.Linear(128, 64),
+            nn.GELU(),
+
+            nn.Linear(64, output_channel)
+        )
+        self.init_weights()
+
+    def init_weights(self):
+        final_layer = self.head[-1]
+        final_layer.weight.data.normal_(0, 0.01)
+        final_layer.bias.data.normal_(0, 0.001)
+
+    def forward(self, x):
+        """
+        x: [B, T, input_channel]
+        """
+        B, T, _ = x.shape
+
+        full = self.stem(x.transpose(1, 2))                    # [B, C0, T]
+
+        streams = [full]
+        for i in range(1, self.num_streams):
+            ratio = 2 ** i
+            pooled = F.avg_pool1d(full, kernel_size=ratio, stride=ratio, ceil_mode=True)
+            streams.append(self.stream_init[i - 1](pooled))
+
+        attn_idx = 0
+        for stage, (blocks, fusion) in enumerate(zip(self.stage_blocks, self.stage_fusions)):
+            streams = [block(s) for block, s in zip(blocks, streams)]
+
+            if stage > 0 and attn_idx < len(self.coarse_attention):
+                coarse = streams[-1].transpose(1, 2)           # [B, T/8, C]
+                coarse = coarse + _sinusoidal_pe(coarse.shape[1], self.coarse_dim,
+                                                 coarse.device, coarse.dtype)
+                coarse = self.coarse_attention[attn_idx](coarse)
+                streams[-1] = coarse.transpose(1, 2)
+                attn_idx += 1
+
+            streams = fusion(streams)
+
+        # Upsample every stream to full rate and concatenate
+        features = [streams[0]]
+        for s in streams[1:]:
+            features.append(F.interpolate(s, size=T, mode='linear', align_corners=False))
+        features = torch.cat(features, dim=1).transpose(1, 2)  # [B, T, sum(C)]
+
+        return self.head(features)
