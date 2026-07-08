@@ -148,8 +148,8 @@ def get_model(args, **kwargs):
         network = PMRNet(
             input_channel=_input_channel,
             output_channel=_output_channel,
-            stream_channels=(24, 48, 72, 96),
-            num_stages=3,
+            stream_channels=(24, 48, 76, 104),
+            num_stages=4,
             kernel_size=5,
             expand_ratio=2,
             se_reduction=4,
