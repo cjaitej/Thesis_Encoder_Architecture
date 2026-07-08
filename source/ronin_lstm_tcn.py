@@ -13,6 +13,7 @@ import numpy as np
 import torch
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 from torch.utils.data import DataLoader
+from tqdm import tqdm
 
 
 from model_temporal import LSTMSeqNetwork, BilinearLSTMSeqNetwork, TCNSeqNetwork, TCNTransformerNetwork, \
@@ -279,7 +280,8 @@ def train(args, **kwargs):
             train_loss = 0
             start_t = time.time()
 
-            for bid, batch in enumerate(train_loader):
+            train_bar = tqdm(train_loader, desc='Epoch {}'.format(epoch), leave=False, disable=quiet_mode)
+            for bid, batch in enumerate(train_bar):
                 feat, targ, _, _ = batch
                 feat, targ = feat.to(device, non_blocking=True), targ.to(device, non_blocking=True)
                 optimizer.zero_grad()
@@ -290,6 +292,7 @@ def train(args, **kwargs):
                 loss.backward()
                 optimizer.step()
                 step += 1
+                train_bar.set_postfix(loss='{:.4f}'.format(loss.item()))
 
             train_errs[epoch] = train_loss / train_mini_batches
             end_t = time.time()
@@ -305,13 +308,16 @@ def train(args, **kwargs):
                 network.eval()
                 val_vel = MSEAverageMeter(3, [2], _output_channel)
                 val_loss = 0
-                for bid, batch in enumerate(val_loader):
+                val_bar = tqdm(val_loader, desc='Validation', leave=False, disable=quiet_mode)
+                for bid, batch in enumerate(val_bar):
                     feat, targ, _, _ = batch
                     feat, targ = feat.to(device, non_blocking=True), targ.to(device, non_blocking=True)
                     optimizer.zero_grad()
                     pred = network(feat)
                     val_vel.add(pred.cpu().detach().numpy(), targ.cpu().detach().numpy())
-                    val_loss += criterion(pred, targ).cpu().detach().numpy()
+                    loss = criterion(pred, targ)
+                    val_loss += loss.cpu().detach().numpy()
+                    val_bar.set_postfix(loss='{:.4f}'.format(loss.item()))
                 val_loss = val_loss / val_mini_batches
                 log_line = format_string(log_line, val_loss, *val_vel.get_channel_avg())
                 if not quiet_mode:
