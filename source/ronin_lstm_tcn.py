@@ -198,14 +198,16 @@ def train(args, **kwargs):
     start_t = time.time()
     train_dataset = get_dataset_from_list(args.data_dir, args.train_list, args, mode='train', **kwargs)
     train_loader = DataLoader(train_dataset, batch_size=args.batch_size, num_workers=args.num_workers, shuffle=True,
-                              drop_last=True)
+                              drop_last=True, pin_memory=True, persistent_workers=args.num_workers > 0)
     end_t = time.time()
 
     print('Training set loaded. Time usage: {:.3f}s'.format(end_t - start_t))
     val_dataset, val_loader = None, None
     if args.val_list is not None:
         val_dataset = get_dataset_from_list(args.data_dir, args.val_list, args, mode='val', **kwargs)
-        val_loader = DataLoader(val_dataset, batch_size=args.batch_size, shuffle=True, drop_last=True)
+        val_loader = DataLoader(val_dataset, batch_size=args.batch_size, shuffle=True, drop_last=True,
+                                num_workers=min(4, args.num_workers), pin_memory=True,
+                                persistent_workers=args.num_workers > 0)
         print('Validation set loaded')
 
     global device
@@ -279,7 +281,7 @@ def train(args, **kwargs):
 
             for bid, batch in enumerate(train_loader):
                 feat, targ, _, _ = batch
-                feat, targ = feat.to(device), targ.to(device)
+                feat, targ = feat.to(device, non_blocking=True), targ.to(device, non_blocking=True)
                 optimizer.zero_grad()
                 predicted = network(feat)
                 train_vel.add(predicted.cpu().detach().numpy(), targ.cpu().detach().numpy())
@@ -305,7 +307,7 @@ def train(args, **kwargs):
                 val_loss = 0
                 for bid, batch in enumerate(val_loader):
                     feat, targ, _, _ = batch
-                    feat, targ = feat.to(device), targ.to(device)
+                    feat, targ = feat.to(device, non_blocking=True), targ.to(device, non_blocking=True)
                     optimizer.zero_grad()
                     pred = network(feat)
                     val_vel.add(pred.cpu().detach().numpy(), targ.cpu().detach().numpy())
