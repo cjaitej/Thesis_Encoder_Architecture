@@ -73,6 +73,66 @@ class LiquidRNN(nn.Module):
         return out
 
 
+class ChannelGraphAttention(nn.Module):
+    """
+    Multi-head self-attention over the (small, fixed) channel-node axis,
+    implemented with plain matmuls instead of nn.MultiheadAttention /
+    scaled_dot_product_attention. See ChannelGraphEncoder for why: those
+    route through fused CUDA kernels whose launch grid is sized off the
+    batch dimension, and here "batch" is B*T (every timestep attends over
+    its own 6-node graph independently), which routinely exceeds the 65535
+    grid-dimension limit those kernels enforce. Plain batched matmul has no
+    such limit.
+    """
+
+    def __init__(self, dim, nhead, dropout=0.1):
+        super().__init__()
+        assert dim % nhead == 0
+        self.nhead = nhead
+        self.head_dim = dim // nhead
+        self.scale = self.head_dim ** -0.5
+        self.qkv = nn.Linear(dim, dim * 3)
+        self.out_proj = nn.Linear(dim, dim)
+        self.dropout = nn.Dropout(dropout)
+
+    def forward(self, x):
+        """x: [N, num_nodes, dim]"""
+        N, num_nodes, dim = x.shape
+        qkv = self.qkv(x).reshape(N, num_nodes, 3, self.nhead, self.head_dim)
+        q, k, v = qkv.permute(2, 0, 3, 1, 4)                  # each [N, nhead, num_nodes, head_dim]
+        attn = torch.matmul(q, k.transpose(-2, -1)) * self.scale
+        attn = attn.softmax(dim=-1)
+        attn = self.dropout(attn)
+        out = torch.matmul(attn, v)                           # [N, nhead, num_nodes, head_dim]
+        out = out.transpose(1, 2).reshape(N, num_nodes, dim)
+        return self.out_proj(out)
+
+
+class ChannelGraphEncoderLayer(nn.Module):
+    """Pre-norm attention + FFN block built on ChannelGraphAttention (the
+    channel-graph analogue of nn.TransformerEncoderLayer)."""
+
+    def __init__(self, dim, nhead, dim_feedforward, dropout=0.1):
+        super().__init__()
+        self.norm1 = nn.LayerNorm(dim)
+        self.attn = ChannelGraphAttention(dim, nhead, dropout=dropout)
+        self.dropout1 = nn.Dropout(dropout)
+
+        self.norm2 = nn.LayerNorm(dim)
+        self.ff = nn.Sequential(
+            nn.Linear(dim, dim_feedforward),
+            nn.GELU(),
+            nn.Dropout(dropout),
+            nn.Linear(dim_feedforward, dim),
+        )
+        self.dropout2 = nn.Dropout(dropout)
+
+    def forward(self, x):
+        x = x + self.dropout1(self.attn(self.norm1(x)))
+        x = x + self.dropout2(self.ff(self.norm2(x)))
+        return x
+
+
 class ChannelGraphEncoder(nn.Module):
     """
     Treats the 6 IMU channels (ax, ay, az, gx, gy, gz) as nodes of a small
@@ -106,16 +166,17 @@ class ChannelGraphEncoder(nn.Module):
         self.stem_bn = nn.BatchNorm1d(input_channel * node_dim)
         self.stem_act = nn.SiLU()
 
-        graph_layer = nn.TransformerEncoderLayer(
-            d_model=node_dim,
-            nhead=nhead,
-            dim_feedforward=node_dim * 2,
-            dropout=dropout,
-            activation="gelu",
-            batch_first=True,
-            norm_first=True,
-        )
-        self.graph_layers = nn.TransformerEncoder(graph_layer, num_layers=num_graph_layers)
+        # Not nn.TransformerEncoderLayer: this graph attention is applied
+        # with "batch" = B*T (every timestep gets its own independent 6-node
+        # attention), which for a normal training batch (e.g. 512 x 200) is
+        # 102,400 -- past the 65535 CUDA grid-dimension limit that
+        # scaled_dot_product_attention's fused kernels size off the batch
+        # axis, causing "CUDA error: invalid configuration argument". Plain
+        # batched matmul (ChannelGraphAttention below) has no such limit.
+        self.graph_layers = nn.ModuleList([
+            ChannelGraphEncoderLayer(node_dim, nhead, node_dim * 2, dropout=dropout)
+            for _ in range(num_graph_layers)
+        ])
 
     def forward(self, x):
         """x: [B, T, input_channel] -> [B, T, input_channel * node_dim]"""
@@ -123,7 +184,8 @@ class ChannelGraphEncoder(nn.Module):
         feat = self.stem_act(self.stem_bn(self.stem(x.transpose(1, 2))))   # [B, C*node_dim, T]
         feat = feat.view(B, C, self.node_dim, T).permute(0, 3, 1, 2)       # [B, T, C, node_dim]
         feat = feat.reshape(B * T, C, self.node_dim)                       # graph of C nodes per (B, T)
-        feat = self.graph_layers(feat)                                     # channel self-attention
+        for layer in self.graph_layers:
+            feat = layer(feat)                                            # channel self-attention
         feat = feat.reshape(B, T, C * self.node_dim)
         return feat
 
