@@ -26,6 +26,7 @@ from tqdm import tqdm
 
 from model_temporal import LSTMSeqNetwork, BilinearLSTMSeqNetwork, TCNSeqNetwork, TCNTransformerNetwork, \
     MBConvTransformerNetwork, PMRNet
+from model_graphliquid import GraphLiquidNet, GraphLiquidConvNet
 from utils import load_config, MSEAverageMeter
 from data_glob_speed import GlobSpeedSequence, SequenceToSequenceDataset
 from transformations import ComposeTransform, RandomHoriRotateSeq
@@ -166,6 +167,34 @@ def get_model(args, **kwargs):
             dropout=0.1
         )
         print("PMR-Net (Parallel Multi-Resolution) Network")
+    elif args.type == 'graph_liquid':
+        network = GraphLiquidNet(
+            input_channel=_input_channel,
+            output_channel=_output_channel,
+            node_dim=64,
+            num_graph_layers=2,
+            graph_nhead=4,
+            d_model=200,
+            liquid_hidden=150,
+            num_liquid_layers=2,
+            kernel_size=args.kernel_size,
+            dropout=0.1
+        )
+        print("GraphLiquidNet (Channel-Graph Attention + Liquid CfC) Network")
+    elif args.type == 'graph_liquid_conv':
+        network = GraphLiquidConvNet(
+            input_channel=_input_channel,
+            output_channel=_output_channel,
+            node_dim=96,
+            num_graph_layers=2,
+            graph_nhead=4,
+            d_model=272,
+            num_conv_layers=8,
+            kernel_size=args.kernel_size,
+            dropout=0.1
+        )
+        print("GraphLiquidConvNet (Channel-Graph Attention + Parallel Liquid Conv) Network. "
+              "Receptive field: {}".format(network.get_receptive_field()))
     elif args.type == 'lstm_bi':
         print("Bilinear LSTM Network")
         network = BilinearLSTMSeqNetwork(_input_channel, _output_channel, args.batch_size, device,
@@ -589,7 +618,8 @@ if __name__ == '__main__':
                         default=default_config_file)
     # common
     parser.add_argument('--type', type=str,
-                        choices=['tcn', 'tcn_transformer', 'mbconv_transformer', 'pmr', 'lstm', 'lstm_bi'],
+                        choices=['tcn', 'tcn_transformer', 'mbconv_transformer', 'pmr', 'graph_liquid',
+                                 'graph_liquid_conv', 'lstm', 'lstm_bi'],
                         help='Model type')
     parser.add_argument('--data_dir', type=str, help='Directory for data files if different from list path.')
     parser.add_argument('--cache_path', type=str, default=None)
