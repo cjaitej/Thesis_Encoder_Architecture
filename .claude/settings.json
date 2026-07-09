@@ -1,0 +1,21 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python -c ' *)",
+      "Bash(py -3.11 -c \"import torch; print\\(torch.__version__\\)\")",
+      "Bash(nvidia-smi)",
+      "Bash(xargs grep -ilE \"yolo|lighttcn|tinycnn|shufflenet|mobilenet\")",
+      "Bash(where python *)",
+      "Bash(pip show *)",
+      "Bash(conda env *)",
+      "Bash(pip --version)",
+      "Bash(python -m pip show torch)",
+      "Bash(python -c \"import sys; print\\(sys.executable\\)\")",
+      "Bash(/c/Users/Jaitej/anaconda3/envs/torch311/python.exe -c ' *)",
+      "WebSearch",
+      "WebFetch(domain:arxiv.org)",
+      "Bash(wmic cpu *)",
+      "Bash(\"/c/Users/Jaitej/anaconda3/envs/torch311/python.exe\" -c \"import torch; print\\(torch.__version__, torch.cuda.is_available\\(\\)\\)\")"
+    ]
+  }
+}
