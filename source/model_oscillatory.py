@@ -5,25 +5,39 @@ Motivation
 ----------
 Bipedal walking is a stable, quasi-periodic limit cycle: the IMU stream is a
 forced/damped oscillation riding on the gait cycle. This model makes the
-temporal core an explicit bank of learnable *forced harmonic oscillators* --
-a Linear Oscillatory State-Space model (LinOSS; Rusch & Rus, "Oscillatory
-State-Space Models", ICLR 2025, arXiv:2410.03943) -- rather than a generic
-sequence mixer.
+temporal core an explicit bank of learnable *damped harmonic oscillators* -- an
+oscillatory state-space model in the spirit of LinOSS (Rusch & Rus,
+"Oscillatory State-Space Models", ICLR 2025, arXiv:2410.03943) -- rather than a
+generic sequence mixer.
+
+Diagonal (complex) parameterization
+-----------------------------------
+A harmonic oscillator's 2x2 real transition has a complex-conjugate eigenpair,
+so each oscillator is equivalently a single *complex pole* lambda = r * e^{i*theta}
+with r = |lambda| <= 1 (stable) and theta the per-step phase advance (frequency).
+Working in this diagonal basis, the state update is a scalar complex recurrence
+
+    s_t = lambda * s_{t-1} + f_t
+
+i.e. an elementwise complex multiply-add, solved by a parallel associative
+(prefix) scan. This is mathematically the same oscillatory model as the 2x2
+real form but far more GPU-efficient: the real form spends the whole scan doing
+millions of independent 2x2 matmuls (terrible arithmetic intensity, launch
+bound -> GPU idles); the diagonal form is a few large elementwise complex ops.
 
 Why this is distinct from the crowded neighbours in inertial odometry:
   * FTIN / FDIO / MambaIO model the *static spectrum* (FFT features / Laplacian
-    frequency bands). LinOSS models the *dynamics / phase* of the oscillation in
-    the time domain via a stable discretised ODE.
-  * Mamba is a *selective* state-space scan; LinOSS is an *oscillatory* one
-    (2nd-order harmonic-oscillator dynamics, not 1st-order decay).
+    frequency bands). This models the *dynamics / phase* of the oscillation via
+    a stable discretised ODE with an explicit oscillatory pole per channel.
+  * Mamba is a *selective* (input-gated) 1st-order state-space scan; this is an
+    *oscillatory* one -- complex poles on a ring, 2nd-order dynamics.
   * The repo's own GraphLiquidNet uses CfC/liquid cells (continuous-time but
-    non-oscillatory) and, critically, an unfused per-timestep Python loop.
-    LinOSS is solved with a parallel associative (prefix) scan -- fully
-    parallel over time, so it does not have GraphLiquidNet's throughput problem.
+    non-oscillatory) with an unfused per-timestep Python loop. This is solved
+    with a log-depth parallel scan -- no time loop.
 
 Architecture:  ChannelGraphEncoder stem (reused from model_graphliquid, models
-cross-axis IMU coupling) -> stack of bidirectional LinOSS layers -> per-frame
-velocity head.
+cross-axis IMU coupling) -> stack of bidirectional oscillatory layers ->
+per-frame velocity head.
 
 Input:  [B, T, input_channel]
 Output: [B, T, output_channel]
@@ -38,88 +52,79 @@ import torch.nn.functional as F
 from model_graphliquid import ChannelGraphEncoder
 
 
-def parallel_affine_scan(M, F_in):
+def diagonal_complex_scan(lam, f):
     """
-    Inclusive parallel prefix scan of the linear recurrence
+    Inclusive parallel prefix scan of the diagonal complex recurrence
 
-        s_t = M @ s_{t-1} + F_t ,   s_{-1} = 0
+        s_t = lam * s_{t-1} + f_t ,   s_{-1} = 0
 
-    where the transition M is time-invariant (one 2x2 block per oscillator).
-    Uses a Hillis-Steele inclusive scan: ceil(log2(T)) doubling steps, each a
-    batched matmul -- no Python loop over time.
+    with a time-invariant per-oscillator pole lam. Hillis-Steele inclusive scan:
+    ceil(log2(T)) doubling steps, each an *elementwise* complex multiply-add
+    (no matmul, no Python loop over time).
 
-    Composition rule for affine maps f_k(x) = M x + F_k (apply earlier `left`
-    then later `right`):
-        (right o left).A = right.A @ left.A
-        (right o left).b = right.A @ left.b + right.b
+    Composition of affine maps g_k(x) = lam_k x + f_k (apply earlier `left`
+    then later `right`):  (right o left).lam = right.lam * left.lam ;
+    (right o left).f = right.lam * left.f + right.f.
 
     Args:
-        M:    [P, 2, 2]        per-oscillator transition (shared over batch/time)
-        F_in: [B, T, P, 2]     per-step forcing
+        lam: [P]        complex pole per oscillator (|lam| <= 1)
+        f:   [B, T, P]  complex per-step forcing
 
     Returns:
-        s:    [B, T, P, 2]     the running oscillator state at every step
+        s:   [B, T, P]  complex oscillator state at every step
     """
-    B, T, P, _ = F_in.shape
-    device, dtype = F_in.device, F_in.dtype
+    B, T, P = f.shape
+    A = lam.unsqueeze(0).expand(T, P).contiguous()   # [T, P] accumulated pole
+    b = f.clone()                                    # [B, T, P] accumulated forcing
 
-    # A[t] carries the accumulated transition for the segment ending at t
-    # (no batch dependence); b[t] carries the accumulated forcing (batched).
-    A = M.unsqueeze(0).expand(T, P, 2, 2).contiguous()   # [T, P, 2, 2]
-    b = F_in.clone()                                     # [B, T, P, 2]
-
-    eye = torch.eye(2, device=device, dtype=dtype).view(1, 1, 2, 2).expand(-1, P, -1, -1)
+    one = torch.ones(1, P, dtype=lam.dtype, device=lam.device)
 
     d = 1
     while d < T:
-        # left neighbour = element at t-d (identity / zero for the first d)
-        A_left = torch.cat([eye.expand(d, P, 2, 2), A[:T - d]], dim=0)          # [T, P, 2, 2]
-        b_left = torch.cat([b.new_zeros(B, d, P, 2), b[:, :T - d]], dim=1)      # [B, T, P, 2]
+        A_left = torch.cat([one.expand(d, P), A[:T - d]], dim=0)          # [T, P]
+        b_left = torch.cat([b.new_zeros(B, d, P), b[:, :T - d]], dim=1)   # [B, T, P]
 
-        # b must be updated with the *current* A (before A is overwritten)
-        b = torch.einsum('tpij,btpj->btpi', A, b_left) + b
-        A = torch.einsum('tpij,tpjk->tpik', A, A_left)
+        # update b with the *current* A (before A is overwritten)
+        b = A * b_left + b
+        A = A * A_left
         d *= 2
 
     return b
 
 
-class LinOSSLayer(nn.Module):
+class OscillatoryLayer(nn.Module):
     """
-    One bidirectional Linear Oscillatory State-Space block.
+    One bidirectional diagonal-oscillatory (complex-pole) state-space block.
 
-    Per feature channel we run a bank of `state_dim` forced harmonic oscillators
-
-        x'' = -A x + (B u),    A >= 0  (diagonal, learned squared-frequencies)
-
-    discretised with the LinOSS implicit (IM) scheme, which is provably stable
-    for any A >= 0 and any timestep dt > 0 (eigenvalues of the update have
-    magnitude <= 1). Writing the state s = [z, x] (z = x'), one IM step is a
-    fixed linear recurrence s_t = M s_{t-1} + F_t, so the whole sequence is
-    produced by `parallel_affine_scan` in log-depth instead of a time loop.
-
-    The layer is a pre-norm SSM sublayer (readout of the oscillator positions x
-    + input skip) followed by a position-wise FFN sublayer, transformer-style.
+    Per feature channel we run `state_dim` damped harmonic oscillators with
+    learned poles lam = r * e^{i*theta}, r in (0,1) guaranteeing stability. The
+    forcing is a learned real projection of the (pre-norm) input, injected as
+    the real part; the readout uses both real and imaginary parts of the final
+    oscillator state (real = displacement, imaginary ~ velocity/phase quadrature).
+    An SSM sublayer (readout + input skip) is followed by a position-wise FFN
+    sublayer, transformer-style.
     """
 
-    def __init__(self, d_model, state_dim, d_ff, dropout=0.1,
-                 bidirectional=True, dt_min=1e-3, dt_max=1e-1):
+    def __init__(self, d_model, state_dim, d_ff, dropout=0.1, bidirectional=True):
         super().__init__()
         self.state_dim = state_dim
         self.bidirectional = bidirectional
 
         self.norm1 = nn.LayerNorm(d_model)
-        self.B_mat = nn.Linear(d_model, state_dim, bias=False)      # input -> forcing per oscillator
+        self.B_mat = nn.Linear(d_model, state_dim, bias=False)     # input -> forcing per oscillator
 
-        # A >= 0 via softplus(A_raw); init so frequencies span a modest range.
-        self.A_raw = nn.Parameter(torch.rand(state_dim) * 2.0 - 1.0)
-        # per-oscillator timestep dt = exp(log_dt), log-uniform in [dt_min, dt_max]
-        log_dt = torch.rand(state_dim) * (math.log(dt_max) - math.log(dt_min)) + math.log(dt_min)
-        self.log_dt = nn.Parameter(log_dt)
+        # Stable pole lam = r * exp(i*theta), r = exp(-exp(nu_log)) in (0,1).
+        # Init r in [0.9, 0.999] (long memory) and phase theta across (0, pi)
+        # so the bank covers a spread of oscillation frequencies.
+        r_low, r_high = 0.9, 0.999
+        nu_low = math.log(-math.log(r_high))
+        nu_high = math.log(-math.log(r_low))
+        self.nu_log = nn.Parameter(torch.rand(state_dim) * (nu_high - nu_low) + nu_low)
+        self.theta = nn.Parameter(torch.rand(state_dim) * math.pi)
 
-        c_in = state_dim * 2 if bidirectional else state_dim
-        self.C_mat = nn.Linear(c_in, d_model, bias=False)           # oscillator positions -> output
-        self.D = nn.Parameter(torch.ones(d_model))                  # elementwise input skip
+        readout_dim = state_dim * (4 if bidirectional else 2)      # [Re, Im] per direction
+        self.C_mat = nn.Linear(readout_dim, d_model, bias=False)
+        self.D = nn.Parameter(torch.ones(d_model))                 # elementwise input skip
         self.act = nn.GELU()
         self.dropout = nn.Dropout(dropout)
 
@@ -131,59 +136,44 @@ class LinOSSLayer(nn.Module):
             nn.Linear(d_ff, d_model),
         )
 
-    def _transition(self):
-        """Build the per-oscillator IM transition M [P,2,2] and forcing
-        coefficients coef_z, coef_x [P] from A and dt."""
-        A = F.softplus(self.A_raw)                 # [P], >= 0
-        dt = torch.exp(self.log_dt)                # [P], > 0
-        dt2 = dt * dt
-        S = 1.0 / (1.0 + dt2 * A)                  # in (0, 1]
-
-        M00 = 1.0 - dt2 * A * S
-        M01 = -dt * A * S
-        M10 = S * dt
-        M11 = S
-        M = torch.stack([
-            torch.stack([M00, M01], dim=-1),
-            torch.stack([M10, M11], dim=-1),
-        ], dim=-2)                                 # [P, 2, 2]
-
-        coef_z = dt - dt * dt2 * A * S             # forcing into z (velocity) component
-        coef_x = S * dt2                           # forcing into x (position) component
-        return M, coef_z, coef_x
-
-    def _scan_positions(self, f, M, coef_z, coef_x, reverse):
-        """Run the oscillator scan on forcing f [B,T,P], return positions [B,T,P]."""
-        if reverse:
-            f = f.flip(1)
-        F_in = torch.stack([coef_z * f, coef_x * f], dim=-1)   # [B, T, P, 2]
-        s = parallel_affine_scan(M, F_in)                      # [B, T, P, 2]
-        x = s[..., 1]                                          # oscillator position
-        if reverse:
-            x = x.flip(1)
-        return x
+    def _pole(self):
+        r = torch.exp(-torch.exp(self.nu_log))     # [P] in (0,1)
+        lam = torch.polar(r, self.theta)           # [P] complex
+        return lam, r
 
     def forward(self, u):
         """u: [B, T, d_model]"""
+        B, T, _ = u.shape
         z = self.norm1(u)
-        f = self.B_mat(z)                                      # [B, T, P]
-        M, coef_z, coef_x = self._transition()
+        f_real = self.B_mat(z)                                     # [B, T, P]
 
-        x = self._scan_positions(f, M, coef_z, coef_x, reverse=False)
+        lam, r = self._pole()
+        # LRU-style input normalization: keeps hidden-state variance ~constant
+        # regardless of how close the pole sits to the unit circle.
+        f_real = f_real * torch.sqrt(1.0 - r * r)
+        f = torch.complex(f_real, torch.zeros_like(f_real))       # [B, T, P]
+
         if self.bidirectional:
-            x_bwd = self._scan_positions(f, M, coef_z, coef_x, reverse=True)
-            x = torch.cat([x, x_bwd], dim=-1)                 # [B, T, 2P]
+            # run both directions in one scan by stacking on the batch axis
+            f_all = torch.cat([f, f.flip(1)], dim=0)              # [2B, T, P]
+            s_all = diagonal_complex_scan(lam, f_all)
+            s_fwd = s_all[:B]
+            s_bwd = s_all[B:].flip(1)
+            feats = torch.cat([s_fwd.real, s_fwd.imag, s_bwd.real, s_bwd.imag], dim=-1)
+        else:
+            s = diagonal_complex_scan(lam, f)
+            feats = torch.cat([s.real, s.imag], dim=-1)
 
-        y = self.act(self.C_mat(x) + self.D * z)              # SSM readout + input skip
-        u = u + self.dropout(y)                               # SSM residual
-        u = u + self.dropout(self.ff(self.norm2(u)))          # FFN residual
+        y = self.act(self.C_mat(feats) + self.D * z)             # SSM readout + input skip
+        u = u + self.dropout(y)                                  # SSM residual
+        u = u + self.dropout(self.ff(self.norm2(u)))             # FFN residual
         return u
 
 
 class OscillatoryNet(nn.Module):
     """
-    Channel-graph stem + bidirectional oscillatory (LinOSS) temporal core for
-    seq2seq inertial odometry.
+    Channel-graph stem + bidirectional oscillatory (complex-pole SSM) temporal
+    core for seq2seq inertial odometry.
 
     Input:  [B, T, input_channel]
     Output: [B, T, output_channel]
@@ -197,7 +187,7 @@ class OscillatoryNet(nn.Module):
         num_graph_layers=2,
         graph_nhead=4,
         d_model=160,
-        state_dim=160,
+        state_dim=128,
         num_osc_layers=4,
         d_ff=320,
         kernel_size=5,
@@ -214,7 +204,7 @@ class OscillatoryNet(nn.Module):
         self.graph_proj = nn.Linear(input_channel * node_dim, d_model)
 
         self.layers = nn.ModuleList([
-            LinOSSLayer(d_model, state_dim, d_ff, dropout=dropout, bidirectional=bidirectional)
+            OscillatoryLayer(d_model, state_dim, d_ff, dropout=dropout, bidirectional=bidirectional)
             for _ in range(num_osc_layers)
         ])
 
@@ -248,13 +238,13 @@ class OscillatoryNet(nn.Module):
         return self.head(h)
 
 
-def _sequential_affine_scan(M, F_in):
-    """Reference O(T) sequential scan, used only to validate parallel_affine_scan."""
-    B, T, P, _ = F_in.shape
-    s = F_in.new_zeros(B, P, 2)
+def _sequential_complex_scan(lam, f):
+    """Reference O(T) sequential scan, used only to validate diagonal_complex_scan."""
+    B, T, P = f.shape
+    s = f.new_zeros(B, P)
     out = []
     for t in range(T):
-        s = torch.einsum('pij,bpj->bpi', M, s) + F_in[:, t]
+        s = lam * s + f[:, t]
         out.append(s)
     return torch.stack(out, dim=1)
 
@@ -262,17 +252,16 @@ def _sequential_affine_scan(M, F_in):
 if __name__ == "__main__":
     torch.manual_seed(0)
 
-    # 1) parallel scan must match the sequential reference.
-    #    Use the *actual* LinOSS transition (provably contractive, |eig| <= 1) so
-    #    the recurrence is well-conditioned -- a random non-contractive M would
-    #    blow up like ||M||^T and make float rounding, not logic, dominate.
-    B, T, P = 3, 200, 16
-    ref_layer = LinOSSLayer(d_model=8, state_dim=P, d_ff=16)
-    M, coef_z, coef_x = ref_layer._transition()
-    M = M.detach()
-    F_in = torch.randn(B, T, P, 2)
-    par = parallel_affine_scan(M, F_in)
-    seq = _sequential_affine_scan(M, F_in)
+    # 1) parallel scan must match the sequential reference on a *stable* pole
+    #    (|lam| < 1). A pole outside the unit circle would blow up like |lam|^T
+    #    and let float rounding, not logic, dominate.
+    B, T, P = 3, 200, 32
+    r = torch.rand(P) * 0.099 + 0.9                 # |lam| in [0.9, 0.999]
+    theta = torch.rand(P) * math.pi
+    lam = torch.polar(r, theta)
+    f = torch.complex(torch.randn(B, T, P), torch.randn(B, T, P))
+    par = diagonal_complex_scan(lam, f)
+    seq = _sequential_complex_scan(lam, f)
     max_err = (par - seq).abs().max().item()
     print(f"[scan check] max|parallel - sequential| = {max_err:.3e}")
     assert max_err < 1e-4, "parallel scan disagrees with sequential reference!"
@@ -286,7 +275,16 @@ if __name__ == "__main__":
     print(f"[model] output shape = {tuple(y.shape)} (expected (2, 200, 2))")
     assert y.shape == (2, 200, 2)
 
-    # 3) gradient flows
+    # 3) gradient flows to every parameter
     y.sum().backward()
     grads_ok = all(p.grad is not None for p in model.parameters() if p.requires_grad)
     print(f"[model] all params received grad = {grads_ok}")
+
+    # 4) quick CPU timing at a training-like batch
+    import time
+    xb = torch.randn(128, 200, 6)
+    model(xb).sum().backward()      # warmup
+    t0 = time.time()
+    for _ in range(3):
+        model.zero_grad(); model(xb).sum().backward()
+    print(f"[timing] B=128 T=200 fwd+bwd: {(time.time() - t0) / 3:.3f}s/iter (CPU)")

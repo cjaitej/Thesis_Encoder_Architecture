@@ -204,7 +204,7 @@ def get_model(args, **kwargs):
             num_graph_layers=2,
             graph_nhead=4,
             d_model=160,
-            state_dim=160,
+            state_dim=128,
             num_osc_layers=4,
             d_ff=320,
             kernel_size=args.kernel_size,
