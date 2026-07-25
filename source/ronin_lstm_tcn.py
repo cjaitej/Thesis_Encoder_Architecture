@@ -27,6 +27,7 @@ from tqdm import tqdm
 from model_temporal import LSTMSeqNetwork, BilinearLSTMSeqNetwork, TCNSeqNetwork, TCNTransformerNetwork, \
     MBConvTransformerNetwork, PMRNet
 from model_graphliquid import GraphLiquidNet, GraphLiquidConvNet
+from model_oscillatory import OscillatoryNet
 from utils import load_config, MSEAverageMeter
 from data_glob_speed import GlobSpeedSequence, SequenceToSequenceDataset
 from transformations import ComposeTransform, RandomHoriRotateSeq
@@ -195,6 +196,23 @@ def get_model(args, **kwargs):
         )
         print("GraphLiquidConvNet (Channel-Graph Attention + Parallel Liquid Conv) Network. "
               "Receptive field: {}".format(network.get_receptive_field()))
+    elif args.type == 'osc':
+        network = OscillatoryNet(
+            input_channel=_input_channel,
+            output_channel=_output_channel,
+            node_dim=48,
+            num_graph_layers=2,
+            graph_nhead=4,
+            d_model=160,
+            state_dim=160,
+            num_osc_layers=4,
+            d_ff=320,
+            kernel_size=args.kernel_size,
+            dropout=0.1,
+            bidirectional=True,
+        )
+        print("OscillatoryNet (Channel-Graph Attention + Oscillatory State-Space / LinOSS) Network. "
+              "Params: {:,}".format(network.get_num_params()))
     elif args.type == 'lstm_bi':
         print("Bilinear LSTM Network")
         network = BilinearLSTMSeqNetwork(_input_channel, _output_channel, args.batch_size, device,
@@ -619,7 +637,7 @@ if __name__ == '__main__':
     # common
     parser.add_argument('--type', type=str,
                         choices=['tcn', 'tcn_transformer', 'mbconv_transformer', 'pmr', 'graph_liquid',
-                                 'graph_liquid_conv', 'lstm', 'lstm_bi'],
+                                 'graph_liquid_conv', 'osc', 'lstm', 'lstm_bi'],
                         help='Model type')
     parser.add_argument('--data_dir', type=str, help='Directory for data files if different from list path.')
     parser.add_argument('--cache_path', type=str, default=None)

@@ -175,3 +175,6 @@ fabric.properties
 output/
 data/
 bot.py
+
+.claude/
+scratch_old_checkpoint.pt
