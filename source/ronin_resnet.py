@@ -5,6 +5,7 @@ from os import path as osp
 import numpy as np
 import torch
 import json
+from tqdm import tqdm
 
 import matplotlib.pyplot as plt
 from scipy.interpolate import interp1d
@@ -183,7 +184,8 @@ def train(args, **kwargs):
             start_t = time.time()
             network.train()
             train_outs, train_targets = [], []
-            for batch_id, (feat, targ, _, _) in enumerate(train_loader):
+            train_bar = tqdm(train_loader, desc='Epoch {}'.format(epoch), leave=False)
+            for batch_id, (feat, targ, _, _) in enumerate(train_bar):
                 feat, targ = feat.to(device), targ.to(device)
                 optimizer.zero_grad()
                 pred = network(feat)
@@ -194,6 +196,7 @@ def train(args, **kwargs):
                 loss.backward()
                 optimizer.step()
                 step += 1
+                train_bar.set_postfix(loss='{:.4f}'.format(loss.item()))
             train_outs = np.concatenate(train_outs, axis=0)
             train_targets = np.concatenate(train_targets, axis=0)
             train_losses = np.average((train_outs - train_targets) ** 2, axis=0)
