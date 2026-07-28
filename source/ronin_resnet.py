@@ -141,7 +141,12 @@ def train(args, **kwargs):
 
     criterion = torch.nn.MSELoss()
     optimizer = torch.optim.Adam(network.parameters(), args.lr)
-    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, factor=0.1, patience=10, verbose=True, eps=1e-12)
+    # threshold=1e-2: only a >1% relative val-loss improvement counts as progress,
+    # so noise-level wiggles on a flat val curve don't keep resetting `patience`
+    # (the default 1e-4 threshold left the LR stuck at its initial value on a
+    # noisy plateau). This makes the plateau-triggered decay actually fire.
+    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
+        optimizer, factor=0.1, patience=10, threshold=1e-2, verbose=True, eps=1e-12)
 
     start_epoch = 0
     if args.continue_from is not None and osp.exists(args.continue_from):
@@ -149,6 +154,10 @@ def train(args, **kwargs):
         start_epoch = checkpoints.get('epoch', 0)
         network.load_state_dict(checkpoints.get('model_state_dict'))
         optimizer.load_state_dict(checkpoints.get('optimizer_state_dict'))
+        if getattr(args, 'force_lr', False):
+            for pg in optimizer.param_groups:
+                pg['lr'] = args.lr
+            print('Forced LR to {} on resume'.format(args.lr))
 
     if args.out_dir is not None and osp.exists(osp.join(args.out_dir, 'logs')):
         summary_writer = SummaryWriter(osp.join(args.out_dir, 'logs'))
@@ -418,6 +427,8 @@ if __name__ == '__main__':
     parser.add_argument('--show_plot', action='store_true')
 
     parser.add_argument('--continue_from', type=str, default=None)
+    parser.add_argument('--force_lr', action='store_true',
+                        help='On --continue_from, override the restored optimizer LR with --lr')
     parser.add_argument('--out_dir', type=str, default=None)
     parser.add_argument('--model_path', type=str, default=None)
     parser.add_argument('--feature_sigma', type=float, default=0.00001)
