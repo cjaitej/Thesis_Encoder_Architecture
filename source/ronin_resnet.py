@@ -21,6 +21,35 @@ _input_channel, _output_channel = 6, 2
 _fc_config = {'fc_dim': 512, 'in_dim': 7, 'dropout': 0.5, 'trans_planes': 128}
 
 
+class HeadingAwareLoss(torch.nn.Module):
+    """
+    Velocity MSE + a speed-weighted directional (heading) penalty.
+
+    Heading drift is the dominant ATE error, but plain MSE on (vx, vy) does not
+    single out *directional* error -- a prediction can have the right speed yet a
+    biased direction and still get a modest MSE. This adds (1 - cos(angle)) between
+    the predicted and target velocity vectors, weighted by the ground-truth speed
+    so near-stationary windows (whose heading is undefined) do not dominate.
+
+    heading_weight = 0 recovers plain MSELoss exactly (the ablation baseline).
+    """
+
+    def __init__(self, heading_weight=0.0, eps=1e-6):
+        super().__init__()
+        self.mse = torch.nn.MSELoss()
+        self.heading_weight = heading_weight
+        self.eps = eps
+
+    def forward(self, pred, targ):
+        loss = self.mse(pred, targ)
+        if self.heading_weight > 0:
+            speed = targ.norm(dim=-1)                                  # [B]
+            cos = (pred * targ).sum(-1) / (pred.norm(dim=-1) * speed + self.eps)
+            heading = (speed * (1.0 - cos)).sum() / (speed.sum() + self.eps)
+            loss = loss + self.heading_weight * heading
+        return loss
+
+
 def get_model(arch):
     if arch == 'resnet18':
         network = ResNet1D(_input_channel, _output_channel, BasicBlock1D, [2, 2, 2, 2],
@@ -139,7 +168,9 @@ def train(args, **kwargs):
     total_params = network.get_num_params()
     print('Total number of parameters: ', total_params)
 
-    criterion = torch.nn.MSELoss()
+    criterion = HeadingAwareLoss(heading_weight=getattr(args, 'heading_weight', 0.0))
+    if getattr(args, 'heading_weight', 0.0) > 0:
+        print('Using heading-aware loss, heading_weight={}'.format(args.heading_weight))
     optimizer = torch.optim.Adam(network.parameters(), args.lr)
     # threshold=1e-2: only a >1% relative val-loss improvement counts as progress,
     # so noise-level wiggles on a flat val curve don't keep resetting `patience`
@@ -418,6 +449,8 @@ if __name__ == '__main__':
     parser.add_argument('--window_size', type=int, default=200)
     parser.add_argument('--mode', type=str, default='train', choices=['train', 'test'])
     parser.add_argument('--lr', type=float, default=1e-04)
+    parser.add_argument('--heading_weight', type=float, default=0.0,
+                        help='Weight of the speed-weighted heading (direction) loss term; 0 = plain MSE')
     parser.add_argument('--batch_size', type=int, default=128)
     parser.add_argument('--epochs', type=int, default=10000)
     parser.add_argument('--arch', type=str, default='resnet18')
