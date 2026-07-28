@@ -33,6 +33,12 @@ def get_model(arch):
         _fc_config['fc_dim'] = 1024
         network = ResNet1D(_input_channel, _output_channel, BasicBlock1D, [3, 4, 23, 3],
                            base_plane=64, output_block=FCOutputModule, **_fc_config)
+    elif arch == 'yolo26':
+        from model_yolo26_1d import get_model as yolo_get_model
+        network = yolo_get_model(in_channels=_input_channel, num_outputs=_output_channel)
+    elif arch == 'yolo26_eff':
+        from model_yolo26_1d import get_efficient_model
+        network = get_efficient_model(in_channels=_input_channel, num_outputs=_output_channel)
     else:
         raise ValueError('Invalid architecture: ', args.arch)
     return network
