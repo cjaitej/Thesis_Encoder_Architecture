@@ -105,7 +105,8 @@ class OscillatoryLayer(nn.Module):
     sublayer, transformer-style.
     """
 
-    def __init__(self, d_model, state_dim, d_ff, dropout=0.1, bidirectional=True):
+    def __init__(self, d_model, state_dim, d_ff, dropout=0.1, bidirectional=True,
+                 theta_min=0.008, theta_max=0.5):
         super().__init__()
         self.state_dim = state_dim
         self.bidirectional = bidirectional
@@ -114,13 +115,23 @@ class OscillatoryLayer(nn.Module):
         self.B_mat = nn.Linear(d_model, state_dim, bias=False)     # input -> forcing per oscillator
 
         # Stable pole lam = r * exp(i*theta), r = exp(-exp(nu_log)) in (0,1).
-        # Init r in [0.9, 0.999] (long memory) and phase theta across (0, pi)
-        # so the bank covers a spread of oscillation frequencies.
+        # r in [0.9, 0.999] -> memory horizon ~10..1000 steps (long memory, good
+        # for the slow heading/velocity trends that drive ATE).
         r_low, r_high = 0.9, 0.999
         nu_low = math.log(-math.log(r_high))
         nu_high = math.log(-math.log(r_low))
         self.nu_log = nn.Parameter(torch.rand(state_dim) * (nu_high - nu_low) + nu_low)
-        self.theta = nn.Parameter(torch.rand(state_dim) * math.pi)
+
+        # theta = per-step phase advance. CRITICAL init detail: pedestrian gait is
+        # LOW frequency -- a 2 Hz stride at 200 Hz is theta ~ 2*pi*2/200 ~ 0.063
+        # rad/step. Initialising theta uniformly on (0, pi) (up to Nyquist) starts
+        # nearly every oscillator ~50x too fast; they must then migrate a long way
+        # and training stalls (this is what crippled the first osc run). Instead
+        # init theta LOG-uniform over ~[0.25 Hz, 16 Hz] (theta in [0.008, 0.5]),
+        # so the bank starts on the gait fundamental, its harmonics, and slow
+        # velocity trends.
+        log_theta = torch.rand(state_dim) * (math.log(theta_max) - math.log(theta_min)) + math.log(theta_min)
+        self.theta = nn.Parameter(torch.exp(log_theta))
 
         readout_dim = state_dim * (4 if bidirectional else 2)      # [Re, Im] per direction
         self.C_mat = nn.Linear(readout_dim, d_model, bias=False)
@@ -269,6 +280,13 @@ if __name__ == "__main__":
     # 2) model forward + param count
     model = OscillatoryNet()
     n = model.get_num_params()
+
+    # pole frequencies should start LOW (gait band), not spread to Nyquist
+    with torch.no_grad():
+        th = model.layers[0].theta
+        hz = th * 200.0 / (2 * math.pi)   # per-step phase -> Hz at 200 Hz sampling
+        print(f"[init] layer0 theta: {th.min():.3f}..{th.max():.3f} rad "
+              f"(~{hz.min():.2f}..{hz.max():.2f} Hz), median ~{hz.median():.2f} Hz")
     x = torch.randn(2, 200, 6)
     y = model(x)
     print(f"[model] params = {n:,}  under 1M = {n < 1_000_000}")
