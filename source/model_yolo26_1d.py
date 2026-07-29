@@ -283,12 +283,16 @@ class YOLO26_1D_Efficient(nn.Module):
         ffn_ratio=0.5,
         neck_fuse_dim=96,
         neck_out=192,
+        stem_pool_stride=2,
     ):
         super().__init__()
         ch1, ch2, ch3 = widths
+        # stem_pool_stride=1 removes one downsampling, so the whole pyramid keeps
+        # ~2x more temporal tokens (the attention block sees ~13 instead of ~7),
+        # at ~0 extra params -- conv/linear weights are independent of seq length.
         self.stem = nn.Sequential(
             CBS(in_channels, base_ch, k=7, s=2),
-            nn.MaxPool1d(kernel_size=3, stride=2, padding=1),
+            nn.MaxPool1d(kernel_size=3, stride=stem_pool_stride, padding=1),
         )
         self.stage1 = C3k2_1D(base_ch, ch1, n=n_blocks[0], stride=2)
         self.stage2 = C3k2_1D(ch1, ch2, n=n_blocks[1], stride=2)
@@ -413,6 +417,23 @@ def get_efficient_model(in_channels=6, num_outputs=2, dropout=0.5, use_attention
     )
 
 
+def get_efficient_v2_model(in_channels=6, num_outputs=2, dropout=0.5, use_attention=True, attn_heads=4):
+    """V2: same lean design as the efficient model but with one fewer downsample
+    (stem_pool_stride=1), so the attention operates on ~13 temporal tokens instead
+    of ~7 -- more resolution for heading dynamics, at essentially no extra params."""
+    return YOLO26_1D_Efficient(
+        in_channels=in_channels,
+        num_outputs=num_outputs,
+        base_ch=32,
+        widths=(64, 128, 256),
+        n_blocks=(1, 2, 2),
+        dropout=dropout,
+        use_attention=use_attention,
+        attn_heads=attn_heads,
+        stem_pool_stride=1,
+    )
+
+
 def reset_bn_stats(model, new_momentum=0.1):
     """Reset all BatchNorm1d running statistics (for RIDI->RoNIN fine-tuning)."""
     reset_count = 0
@@ -439,7 +460,18 @@ if __name__ == "__main__":
         print(f"  forward OK: (2,6,200) -> {tuple(y.shape)}")
         return total
 
+    def attn_tokens(model):
+        # length of the feature map fed to the attention block (self.psa input)
+        with torch.no_grad():
+            x = model.stem(torch.randn(1, 6, 200))
+            x = model.stage3(model.stage2(model.stage1(x)))
+        return x.shape[-1]
+
     orig = breakdown(YOLO26_1D_Regressor(), "ORIGINAL YOLO26_1D")
-    eff = breakdown(YOLO26_1D_Efficient(), "EFFICIENT YOLO26_1D")
-    print(f"\nreduction: {orig:,} -> {eff:,}  "
-          f"({100 * (orig - eff) / orig:.1f}% fewer params, {orig / eff:.2f}x smaller)")
+    eff = breakdown(YOLO26_1D_Efficient(), "EFFICIENT YOLO26_1D (v1)")
+    eff2 = breakdown(get_efficient_v2_model(), "EFFICIENT YOLO26_1D_V2")
+    print(f"\nreduction vs original: {orig:,} -> {eff:,}  "
+          f"({100 * (orig - eff) / orig:.1f}% fewer, {orig / eff:.2f}x smaller)")
+    print(f"v1 vs v2 params: {eff:,} vs {eff2:,}  (delta {eff2 - eff:+,})")
+    print(f"attention tokens: v1={attn_tokens(YOLO26_1D_Efficient())}  "
+          f"v2={attn_tokens(get_efficient_v2_model())}")

@@ -69,6 +69,9 @@ def get_model(arch):
     elif arch == 'yolo26_eff':
         from model_yolo26_1d import get_efficient_model
         network = get_efficient_model(in_channels=_input_channel, num_outputs=_output_channel)
+    elif arch == 'yolo26_eff_v2':
+        from model_yolo26_1d import get_efficient_v2_model
+        network = get_efficient_v2_model(in_channels=_input_channel, num_outputs=_output_channel)
     else:
         raise ValueError('Invalid architecture: ', args.arch)
     return network
@@ -101,10 +104,13 @@ def get_dataset(root_dir, data_list, args, **kwargs):
     mode = kwargs.get('mode', 'train')
 
     random_shift, shuffle, transforms, grv_only = 0, False, None, False
+    feat_noise_std, feat_bias_std = 0.0, 0.0
     if mode == 'train':
         random_shift = args.step_size // 2
         shuffle = True
         transforms = RandomHoriRotate(math.pi * 2)
+        feat_noise_std = getattr(args, 'feat_noise_std', 0.0)
+        feat_bias_std = getattr(args, 'feat_bias_std', 0.0)
     elif mode == 'val':
         shuffle = True
     elif mode == 'test':
@@ -119,7 +125,8 @@ def get_dataset(root_dir, data_list, args, **kwargs):
     dataset = StridedSequenceDataset(
         seq_type, root_dir, data_list, args.cache_path, args.step_size, args.window_size,
         random_shift=random_shift, transform=transforms,
-        shuffle=shuffle, grv_only=grv_only, max_ori_error=args.max_ori_error)
+        shuffle=shuffle, grv_only=grv_only, max_ori_error=args.max_ori_error,
+        feat_noise_std=feat_noise_std, feat_bias_std=feat_bias_std)
 
     global _input_channel, _output_channel
     _input_channel, _output_channel = dataset.feature_dim, dataset.target_dim
@@ -451,6 +458,10 @@ if __name__ == '__main__':
     parser.add_argument('--lr', type=float, default=1e-04)
     parser.add_argument('--heading_weight', type=float, default=0.0,
                         help='Weight of the speed-weighted heading (direction) loss term; 0 = plain MSE')
+    parser.add_argument('--feat_noise_std', type=float, default=0.0,
+                        help='Train-time additive IMU noise, as a fraction of each channel std (e.g. 0.02)')
+    parser.add_argument('--feat_bias_std', type=float, default=0.0,
+                        help='Train-time per-window IMU bias, as a fraction of each channel std (e.g. 0.05)')
     parser.add_argument('--batch_size', type=int, default=128)
     parser.add_argument('--epochs', type=int, default=10000)
     parser.add_argument('--arch', type=str, default='resnet18')

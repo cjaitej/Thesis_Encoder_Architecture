@@ -152,6 +152,9 @@ class StridedSequenceDataset(Dataset):
         self.random_shift = random_shift
         self.transform = transform
         self.interval = kwargs.get('interval', window_size)
+        # sensor augmentation (applied per-sample in __getitem__, train only)
+        self.feat_noise_std = kwargs.get('feat_noise_std', 0.0)   # additive white noise (sensor noise)
+        self.feat_bias_std = kwargs.get('feat_bias_std', 0.0)     # per-window constant offset (sensor bias)
 
         self.data_path = [osp.join(root_dir, data) for data in data_list]
         self.index_map = []
@@ -178,6 +181,18 @@ class StridedSequenceDataset(Dataset):
 
         if self.transform is not None:
             feat, targ = self.transform(feat, targ)
+
+        # Sensor augmentation. std/bias are scaled by each channel's own window std,
+        # so a setting like 0.02 means "2% of signal magnitude" regardless of the
+        # absolute feature scale. White noise ~ sensor noise; a per-window per-channel
+        # constant offset ~ sensor bias -- the biggest source of cross-subject/device
+        # variation, which is exactly what the unseen set stresses.
+        if self.feat_noise_std > 0 or self.feat_bias_std > 0:
+            ch_std = feat.std(axis=0, keepdims=True) + 1e-6
+            if self.feat_noise_std > 0:
+                feat = feat + np.random.randn(*feat.shape) * (self.feat_noise_std * ch_std)
+            if self.feat_bias_std > 0:
+                feat = feat + np.random.randn(1, feat.shape[1]) * (self.feat_bias_std * ch_std)
 
         return feat.astype(np.float32).T, targ.astype(np.float32), seq_id, frame_id
 
