@@ -82,12 +82,28 @@ def _refine_loss(corrected, targets, drift_weight):
     return mse
 
 
+def eval_loss(refine, seqs, device, drift_weight):
+    """Average refinement loss over a set of (frozen-backbone) trajectories, no grad."""
+    refine.eval()
+    total = 0.0
+    with torch.no_grad():
+        for _, _, preds, targets in seqs:
+            p = torch.from_numpy(preds).unsqueeze(0).to(device)
+            t = torch.from_numpy(targets).unsqueeze(0).to(device)
+            total += _refine_loss(refine(p), t, drift_weight).item()
+    return total / len(seqs)
+
+
 def train(args):
     device = _device(args)
     backbone = load_backbone(args, device)
 
     seqs = collect_sequences(backbone, _read_list(args.train_list), args.root_dir, args, device)
     print('Collected {} training trajectories.'.format(len(seqs)))
+    val_seqs = None
+    if args.val_list:
+        val_seqs = collect_sequences(backbone, _read_list(args.val_list), args.root_dir, args, device)
+        print('Collected {} validation trajectories.'.format(len(val_seqs)))
 
     refine = RefinementNet(hidden=args.hidden, num_layers=args.layers, dropout=args.dropout).to(device)
     print('RefinementNet: {} params'.format(refine.get_num_params()))
@@ -111,17 +127,19 @@ def train(args):
             loss.backward()
             optimizer.step()
             total += loss.item()
-        avg = total / len(seqs)
-        scheduler.step(avg)
+        train_avg = total / len(seqs)
+        val_avg = eval_loss(refine, val_seqs, device, args.drift_weight) if val_seqs else train_avg
+        scheduler.step(val_avg)                       # schedule/select on val when available
         if epoch % 5 == 0 or epoch == args.epochs - 1:
-            print('epoch {:3d}  train_loss {:.6f}  lr {:.2e}'.format(
-                epoch, avg, optimizer.param_groups[0]['lr']))
-        if avg < best and args.out_dir:
-            best = avg
+            print('epoch {:3d}  train {:.6f}  val {:.6f}  lr {:.2e}'.format(
+                epoch, train_avg, val_avg, optimizer.param_groups[0]['lr']))
+        if val_avg < best and args.out_dir:
+            best = val_avg
             torch.save({'model_state_dict': refine.state_dict(), 'epoch': epoch,
                         'hidden': args.hidden, 'layers': args.layers},
                        osp.join(args.out_dir, 'refine_best.pt'))
-    print('Done. Best train loss {:.6f}. Saved to {}/refine_best.pt'.format(best, args.out_dir))
+    tag = 'val' if val_seqs else 'train'
+    print('Done. Best {} loss {:.6f}. Saved to {}/refine_best.pt'.format(tag, best, args.out_dir))
 
 
 def test(args):
@@ -165,6 +183,7 @@ if __name__ == '__main__':
     p.add_argument('--model_path', type=str, default=None, help='RefinementNet checkpoint (test)')
     p.add_argument('--root_dir', type=str, required=True)
     p.add_argument('--train_list', type=str, default=None)
+    p.add_argument('--val_list', type=str, default=None)
     p.add_argument('--test_list', type=str, default=None)
     p.add_argument('--cache_path', type=str, default=None)
     p.add_argument('--dataset', type=str, default='ronin', choices=['ronin', 'ridi'])
