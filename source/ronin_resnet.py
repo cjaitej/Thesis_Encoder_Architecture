@@ -72,6 +72,9 @@ def get_model(arch):
     elif arch == 'yolo26_eff_v2':
         from model_yolo26_1d import get_efficient_v2_model
         network = get_efficient_v2_model(in_channels=_input_channel, num_outputs=_output_channel)
+    elif arch == 'yolo26_eff_v2l':
+        from model_yolo26_1d import get_efficient_v2_large_model
+        network = get_efficient_v2_large_model(in_channels=_input_channel, num_outputs=_output_channel)
     else:
         raise ValueError('Invalid architecture: ', args.arch)
     return network
@@ -111,6 +114,9 @@ def get_dataset(root_dir, data_list, args, **kwargs):
         transforms = RandomHoriRotate(math.pi * 2)
         feat_noise_std = getattr(args, 'feat_noise_std', 0.0)
         feat_bias_std = getattr(args, 'feat_bias_std', 0.0)
+        if feat_noise_std > 0 or feat_bias_std > 0:
+            print('[aug] sensor augmentation ON (train only): '
+                  'feat_noise_std={}, feat_bias_std={}'.format(feat_noise_std, feat_bias_std))
     elif mode == 'val':
         shuffle = True
     elif mode == 'test':

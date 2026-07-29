@@ -434,6 +434,29 @@ def get_efficient_v2_model(in_channels=6, num_outputs=2, dropout=0.5, use_attent
     )
 
 
+def get_efficient_v2_large_model(in_channels=6, num_outputs=2, dropout=0.5, use_attention=True, attn_heads=4):
+    """V2-large: V2's higher temporal resolution (stem_pool_stride=1) PLUS a wider +
+    deeper backbone for more representational capacity. ~986K params -- still under the
+    1,174,594 ceiling and under the original YOLO. The extra capacity goes mostly into
+    the feature backbone (272K -> 469K), where it helps the model 'remember' harder
+    motion patterns, rather than back into the attention we deliberately slimmed."""
+    return YOLO26_1D_Efficient(
+        in_channels=in_channels,
+        num_outputs=num_outputs,
+        base_ch=32,
+        widths=(80, 160, 320),
+        n_blocks=(2, 2, 3),
+        dropout=dropout,
+        use_attention=use_attention,
+        attn_heads=attn_heads,
+        attn_dim=112,
+        ffn_ratio=0.75,
+        neck_fuse_dim=112,
+        neck_out=224,
+        stem_pool_stride=1,
+    )
+
+
 def reset_bn_stats(model, new_momentum=0.1):
     """Reset all BatchNorm1d running statistics (for RIDI->RoNIN fine-tuning)."""
     reset_count = 0
