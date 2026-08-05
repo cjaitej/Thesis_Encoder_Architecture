@@ -1,0 +1,2 @@
+== yolo26 ==
+{'count': 5, 'mean_sample_time_ms': 40.75585826634724, 'median_sample_time_ms': 40.835781673166835, 'std_sample_time_ms': 0.25911029628598775}

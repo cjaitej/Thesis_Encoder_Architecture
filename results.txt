@@ -1,0 +1,102 @@
+seen : 
+
+--savc --savc_accel_thresh 0.24 --savc_gyro_thresh 0.07 --savc_min_stationary 0.50 ::
+Overall loss: [0.019445 0.020906]/0.020175103098154068, avg ATE:4.312717371875324, avg RTE:2.794174497407802
+
+--savc --savc_accel_thresh 0.30 --savc_gyro_thresh 0.07 --savc_min_stationary 0.30 ::  
+Overall loss: [0.019445 0.020906]/0.020175103098154068, avg ATE:4.451900852053175, avg RTE:2.82961248906388
+
+without savc ::
+Overall loss: [0.019445 0.020906]/0.020175103098154068, avg ATE:3.711242829098884, avg RTE:2.7613935141207735
+
+--savc --savc_accel_thresh 0.14 --savc_gyro_thresh 0.04 --savc_min_stationary 0.70 --savc_no_ewt_z ::
+Overall loss: [0.019445 0.020906]/0.020175103098154068, avg ATE:4.648063813377406, avg RTE:2.852801414732003
+
+--savc --savc_accel_thresh 0.18 --savc_gyro_thresh 0.04 --savc_min_stationary 0.50 --savc_no_ewt_z
+Overall loss: [0.019445 0.020906]/0.020175103098154068, avg ATE:4.645884200095185, avg RTE:2.857248535983204
+
+--savc --savc_accel_thresh 0.18 --savc_gyro_thresh 0.06 --savc_min_stationary 0.70 --savc_no_ewt_z
+Overall loss: [0.019445 0.020906]/0.020175103098154068, avg ATE:4.35697613801337, avg RTE:2.8048235190106814
+
+--savc --savc_accel_thresh 0.22 --savc_gyro_thresh 0.06 --savc_min_stationary 0.50 --savc_no_ewt_z
+Overall loss: [0.019445 0.020906]/0.020175103098154068, avg ATE:4.3369443252929, avg RTE:2.803066973398538
+
+--savc --savc_accel_thresh 0.22 --savc_gyro_thresh 0.08 --savc_min_stationary 0.30
+Overall loss: [0.019445 0.020906]/0.020175103098154068, avg ATE:4.729447700244432, avg RTE:2.8357879525756426
+
+--savc --savc_accel_thresh 0.26 --savc_gyro_thresh 0.08 --savc_min_stationary 0.30
+Overall loss: [0.019445 0.020906]/0.020175103098154068, avg ATE:4.731708884785789, avg RTE:2.837244670340703
+
+Overall loss: [0.019445 0.020906]/0.020175103098154068, avg ATE:4.166219055744765, avg RTE:2.7660154326499846  -> with alpha 0.5
+Overall loss: [0.019445 0.020906]/0.020175103098154068, avg ATE:4.1325783187836915, avg RTE:2.7580381356638197 -> with alpha 0.2
+
+unseen : 
+
+with alpha -> 0.5 
+Overall loss: [0.044555 0.040079]/0.042317140847444534, avg ATE:5.270006840218123, avg RTE:4.379713710917592
+
+wihtout savc 
+Overall loss: [0.044555 0.040079]/0.042317140847444534, avg ATE:5.140424022385972, avg RTE:4.376881353936861
+
+
+spago seen : 
+Overall loss: [0.019445 0.020906]/0.020175103098154068, avg ATE:3.7095212904423165, avg RTE:2.7578716325046715
+
+spago unseen : 
+Overall loss: [0.044555 0.040079]/0.042317140847444534, avg ATE:5.138366606414694, avg RTE:4.373015928836531
+
+
+a046_2
+a005_3
+a011_2
+a012_2
+a044_2
+a000_11
+
+unseen_best :
+Overall loss: [0.044555 0.040079]/0.042317140847444534, avg ATE:5.124430757023925, avg RTE:4.338763947804705
+
+unseen baseline :
+Overall loss: [0.044555 0.040079]/0.042317140847444534, avg ATE:5.140424022385972, avg RTE:4.376881353936861
+
+python source/ronin_resnet.py --mode test --arch resnet18 --test_list lists/list_test_seen.txt --root_dir data/seen_subjects_test_set --model_path ronin_resnet/checkpoint_gsn_latest.pt --out_dir outputs/spago_and_windowing_only --spago --spago_lambda_zupt 500 --spago_motion_smooth --spago_motion_smooth_window 100 --spago_motion_smooth_blend 1.0 
+
+seen best (savc, spago, averaging)
+Overall loss: [0.019445 0.020906]/0.020175103098154068, avg ATE:3.699815348668815, avg RTE:2.725202322303974
+
+seen best (spago, averaging)
+Overall loss: [0.019445 0.020906]/0.020175103098154068, avg ATE:3.6987474583888647, avg RTE:2.725461263213939
+
+
+half data results : 
+
+seen test
+ronin yolo26 (parameters  1,174,594):
+Overall loss: [0.021362 0.024059]/0.0227, avg ATE:3.9573, avg RTE:3.0700
+
+ronin resnet (parameters 4,634,882)
+Overall loss: [0.019656 0.022026]/0.0208, avg ATE:3.7281, avg RTE:2.7201
+
+ronin yolo26 with postprocessing
+Overall loss: [0.018975 0.021419]/0.0201, avg ATE:3.7359, avg RTE:2.5979 ✅
+
+unseen test
+ronin resnet :
+Overall loss: [0.046433 0.043550]/0.0449, avg ATE:5.4680, avg RTE:4.4999
+
+yolov26 :
+Overall loss: [0.050671 0.047526]/0.0490, avg ATE:5.9686, avg RTE:4.9182
+
+yolov26 with postprocessing : 
+Overall loss: [0.042092 0.039996]/0.0410, avg ATE:5.5368, avg RTE:4.2805 ✅
+
+
+Ronin baseline
+Mean time per sample: Average (Mean): 0.646 ms, Standard Deviation: 0.031 ms
+
+[TIMING SUMMARY] YOLO26 Baseline Plain
+Mean time per sample: 0.3843ms, 0.3138 ms, 0.3923 ms, 0.4350 ms, 0.3476 ms, 0.2915 ms, 0.2833 ms, 0.3239 ms, 0.2833 ms, 0.2804 ms, 0.3101 ms, 0.2811 ms, 0.2945 ms, 0.2885 ms, 0.2985 ms, 0.2849 ms, 0.2671 ms, 0.2807 ms, 0.3270 ms, 0.2748 ms, 0.3091 ms, 0.2990 ms
+mean = 0.3114 ms stddev = 0.0430
+
+[TIMING SUMMARY] YOLO26 + RF Postprocessing
+'mean': 0.334, 'stdev': 0.053

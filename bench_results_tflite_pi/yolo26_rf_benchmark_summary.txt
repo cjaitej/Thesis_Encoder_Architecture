@@ -1,0 +1,2 @@
+== yolo26_rf ==
+{'count': 5, 'mean_sample_time_ms': 40.688188612770226, 'median_sample_time_ms': 40.56324383485625, 'std_sample_time_ms': 0.25971957834197806}

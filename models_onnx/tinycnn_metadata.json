@@ -1,0 +1,70 @@
+{
+  "name": "tinycnn",
+  "backbone": "tinycnn",
+  "script": "ronin_yolo26_baseline_plain",
+  "checkpoint": {
+    "path": "D:\\MTech CS IITK\\Thesis\\Mascots\\Yolov26_experiments\\ronin_yolov26\\output\\train_tinycnn\\checkpoints\\tinycnn_checkpoint_83.pt",
+    "size_bytes": 1489158,
+    "size_mb": 1.4201717376708984
+  },
+  "onnx": {
+    "path": "D:\\MTech CS IITK\\Thesis\\Mascots\\Yolov26_experiments\\ronin_yolov26\\models_onnx\\tinycnn.onnx",
+    "size_bytes": 465588,
+    "size_mb": 0.4440193176269531
+  },
+  "export": {
+    "opset": 13,
+    "window_size": 200,
+    "input_shape_used_for_export": [
+      1,
+      6,
+      200
+    ],
+    "torch_output_shape": [
+      1,
+      2
+    ],
+    "fixed_shape_export": true,
+    "notes": "No export-only model wrapper was required."
+  },
+  "pytorch_model": {
+    "total_parameters": 116146,
+    "trainable_parameters": 116146,
+    "buffer_values": 3153,
+    "fp32_parameter_size_bytes": 464584,
+    "fp32_parameter_size_mb": 0.44306182861328125
+  },
+  "onnx_model": {
+    "opset_imports": [
+      {
+        "domain": "ai.onnx",
+        "version": 13
+      }
+    ],
+    "graph_name": "main_graph",
+    "inputs": [
+      {
+        "name": "input",
+        "shape": [
+          1,
+          6,
+          200
+        ]
+      }
+    ],
+    "outputs": [
+      {
+        "name": "output",
+        "shape": [
+          1,
+          2
+        ]
+      }
+    ],
+    "initializer_tensors": 38,
+    "initializer_values": 114578,
+    "fp32_initializer_size_bytes": 458312,
+    "fp32_initializer_size_mb": 0.43708038330078125,
+    "node_count": 38
+  }
+}

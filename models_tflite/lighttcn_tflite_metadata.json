@@ -1,0 +1,39 @@
+{
+  "name": "lighttcn",
+  "method": "direct_pytorch_to_keras_to_tflite",
+  "checkpoint": {
+    "path": "D:\\MTech CS IITK\\Thesis\\Mascots\\Yolov26_experiments\\ronin_yolov26\\output\\train_lighttcn\\checkpoints\\lighttcn_checkpoint_42.pt",
+    "size_bytes": 1037130,
+    "size_mb": 0.9890842437744141
+  },
+  "tflite": {
+    "path": "D:\\MTech CS IITK\\Thesis\\Mascots\\Yolov26_experiments\\ronin_yolov26\\models_tflite\\lighttcn.tflite",
+    "size_bytes": 345012,
+    "size_mb": 0.3290290832519531
+  },
+  "input_shape": [
+    1,
+    6,
+    200
+  ],
+  "output_shape": [
+    1,
+    2
+  ],
+  "validation": {
+    "torch_output": [
+      [
+        -0.1649983674287796,
+        0.5863384008407593
+      ]
+    ],
+    "keras_output": [
+      [
+        -0.16499841213226318,
+        0.5863386392593384
+      ]
+    ],
+    "max_abs_diff": 2.384185791015625e-07
+  },
+  "notes": "Bypasses ONNX because onnx2tf mis-converts LightTCN causal chomp/residual axes."
+}

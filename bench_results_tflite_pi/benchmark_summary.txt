@@ -1,0 +1,2 @@
+== mobilenet ==
+{'count': 5, 'mean_sample_time_ms': 79.73710515059057, 'median_sample_time_ms': 79.77558206741669, 'std_sample_time_ms': 0.1773346215421309}

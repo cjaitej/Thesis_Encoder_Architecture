@@ -1,0 +1,2 @@
+== shufflenet ==
+{'count': 5, 'mean_sample_time_ms': 33.04784415250718, 'median_sample_time_ms': 33.12535403309541, 'std_sample_time_ms': 1.3890883725879979}

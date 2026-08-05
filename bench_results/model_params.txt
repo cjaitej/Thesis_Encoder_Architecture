@@ -1,0 +1,15 @@
+yolo26: 648,002
+mobilenetv2: 13,692,210
+shufflenetv2: 854,618
+efficientnet_lite0: 37,863,266
+tinycnn: 116,146
+lighttcn: 79,628
+
+
+
+yolo26: 648,002
+mobilenetv2: 2,642,562
+shufflenetv2: 854,618
+efficientnet_lite0: 4,049,378
+tinycnn: 116,146
+lighttcn: 79,628

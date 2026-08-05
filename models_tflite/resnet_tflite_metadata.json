@@ -1,0 +1,88 @@
+{
+  "name": "resnet",
+  "onnx": {
+    "path": "D:\\MTech CS IITK\\Thesis\\Mascots\\Yolov26_experiments\\ronin_yolov26\\models_onnx\\resnet.onnx",
+    "size_bytes": 18542140,
+    "size_mb": 17.683162689208984
+  },
+  "tflite": {
+    "path": "D:\\MTech CS IITK\\Thesis\\Mascots\\Yolov26_experiments\\ronin_yolov26\\models_tflite\\resnet.tflite",
+    "size_bytes": 9284496,
+    "size_mb": 8.854385375976562
+  },
+  "converter": {
+    "tool": "onnx2tf",
+    "work_dir": "D:\\MTech CS IITK\\Thesis\\Mascots\\Yolov26_experiments\\ronin_yolov26\\models_tflite_work\\resnet",
+    "tf_use_legacy_keras_unset_for_subprocess": true
+  },
+  "onnx_export_metadata": {
+    "name": "resnet",
+    "backbone": "resnet18",
+    "script": "ronin_resnet_baseline_plain",
+    "checkpoint": {
+      "path": "D:\\MTech CS IITK\\Thesis\\Mascots\\Yolov26_experiments\\ronin_yolov26\\ronin_resnet\\checkpoint_gsn_latest.pt",
+      "size_bytes": 55703174,
+      "size_mb": 53.1226863861084
+    },
+    "onnx": {
+      "path": "D:\\MTech CS IITK\\Thesis\\Mascots\\Yolov26_experiments\\ronin_yolov26\\models_onnx\\resnet.onnx",
+      "size_bytes": 18536956,
+      "size_mb": 17.678218841552734
+    },
+    "export": {
+      "opset": 13,
+      "window_size": 200,
+      "input_shape_used_for_export": [
+        1,
+        6,
+        200
+      ],
+      "torch_output_shape": [
+        1,
+        2
+      ],
+      "fixed_shape_export": true,
+      "notes": "No export-only model wrapper was required."
+    },
+    "pytorch_model": {
+      "total_parameters": 4634882,
+      "trainable_parameters": 4634882,
+      "buffer_values": 9877,
+      "fp32_parameter_size_bytes": 18539528,
+      "fp32_parameter_size_mb": 17.68067169189453
+    },
+    "onnx_model": {
+      "opset_imports": [
+        {
+          "domain": "ai.onnx",
+          "version": 13
+        }
+      ],
+      "graph_name": "main_graph",
+      "inputs": [
+        {
+          "name": "input",
+          "shape": [
+            1,
+            6,
+            200
+          ]
+        }
+      ],
+      "outputs": [
+        {
+          "name": "output",
+          "shape": [
+            1,
+            2
+          ]
+        }
+      ],
+      "initializer_tensors": 48,
+      "initializer_values": 4629954,
+      "fp32_initializer_size_bytes": 18519816,
+      "fp32_initializer_size_mb": 17.66187286376953,
+      "node_count": 54
+    }
+  }
+}

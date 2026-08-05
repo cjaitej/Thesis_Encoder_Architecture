@@ -1,0 +1,39 @@
+{
+  "name": "yolo26",
+  "method": "direct_pytorch_to_keras_to_tflite",
+  "checkpoint": {
+    "path": "D:\\MTech CS IITK\\Thesis\\Mascots\\Yolov26_experiments\\ronin_yolov26\\output\\yolo26_adam_attn_t2_r3\\checkpoints\\yolov26_checkpoint_35.pt",
+    "size_bytes": 14307738,
+    "size_mb": 13.644922256469727
+  },
+  "tflite": {
+    "path": "D:\\MTech CS IITK\\Thesis\\Mascots\\Yolov26_experiments\\ronin_yolov26\\models_tflite\\yolo26.tflite",
+    "size_bytes": 4772936,
+    "size_mb": 4.551826477050781
+  },
+  "input_shape": [
+    1,
+    6,
+    200
+  ],
+  "output_shape": [
+    1,
+    2
+  ],
+  "validation": {
+    "torch_output": [
+      [
+        0.005418500397354364,
+        -0.07959646731615067
+      ]
+    ],
+    "keras_output": [
+      [
+        0.005418345332145691,
+        -0.07959535717964172
+      ]
+    ],
+    "max_abs_diff": 1.1101365089416504e-06
+  },
+  "notes": "Bypasses ONNX because onnx2tf mis-converts YOLO26 neck channel/time axes."
+}

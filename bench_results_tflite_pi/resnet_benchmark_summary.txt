@@ -1,0 +1,2 @@
+== resnet ==
+{'count': 5, 'mean_sample_time_ms': 91.96615875814578, 'median_sample_time_ms': 91.95521686884331, 'std_sample_time_ms': 0.21253981508093295}

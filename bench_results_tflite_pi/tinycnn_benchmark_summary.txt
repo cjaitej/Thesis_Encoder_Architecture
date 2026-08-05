@@ -1,0 +1,2 @@
+== tinycnn ==
+{'count': 5, 'mean_sample_time_ms': 6.405304213639427, 'median_sample_time_ms': 6.596481341876604, 'std_sample_time_ms': 0.797787056421954}

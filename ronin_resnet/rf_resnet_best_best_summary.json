@@ -1,0 +1,35 @@
+{
+  "train_npz": "..\\outputs\\rf_train_80_05042026_t1t2u1.npz",
+  "val_npz": "..\\outputs\\rf_val_20_05042026_t1t2u1.npz",
+  "output_mode": "multi",
+  "best_params": {
+    "n_estimators": 300,
+    "max_depth": 9,
+    "min_samples_leaf": 5,
+    "max_features": "sqrt"
+  },
+  "val_mse_x": 0.03108294866979122,
+  "val_mse_y": 0.030333418399095535,
+  "val_mse_avg": 0.03070818353444338,
+  "baseline_zero_residual_mse_avg": 0.031975043937563896,
+  "feature_names": [
+    "pred_vx",
+    "pred_vy",
+    "pred_speed",
+    "gyro_x",
+    "gyro_y",
+    "gyro_z",
+    "acce_x",
+    "acce_y",
+    "acce_z",
+    "gyro_norm",
+    "acce_norm",
+    "gyro_norm_mean",
+    "gyro_norm_std",
+    "acce_norm_mean",
+    "acce_norm_std",
+    "d_pred_vx",
+    "d_pred_vy",
+    "time_progress"
+  ]
+}

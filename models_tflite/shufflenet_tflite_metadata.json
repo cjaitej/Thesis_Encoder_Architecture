@@ -1,0 +1,39 @@
+{
+  "name": "shufflenet",
+  "method": "direct_pytorch_to_keras_to_tflite",
+  "checkpoint": {
+    "path": "D:\\MTech CS IITK\\Thesis\\Mascots\\Yolov26_experiments\\ronin_yolov26\\output\\train_shufflenetv2\\checkpoints\\shufflenet_checkpoint_63.pt",
+    "size_bytes": 10574634,
+    "size_mb": 10.084756851196289
+  },
+  "tflite": {
+    "path": "D:\\MTech CS IITK\\Thesis\\Mascots\\Yolov26_experiments\\ronin_yolov26\\models_tflite\\shufflenet.tflite",
+    "size_bytes": 3524504,
+    "size_mb": 3.3612289428710938
+  },
+  "input_shape": [
+    1,
+    6,
+    200
+  ],
+  "output_shape": [
+    1,
+    2
+  ],
+  "validation": {
+    "torch_output": [
+      [
+        0.01637212187051773,
+        0.8280118703842163
+      ]
+    ],
+    "keras_output": [
+      [
+        0.016372591257095337,
+        0.8280121684074402
+      ]
+    ],
+    "max_abs_diff": 4.6938657760620117e-07
+  },
+  "notes": "Bypasses ONNX because onnx2tf produces zero-sized dimensions for ShuffleNet channel shuffle."
+}

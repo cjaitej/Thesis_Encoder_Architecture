@@ -1,0 +1,2 @@
+== mobilenet_rf ==
+{'count': 5, 'mean_sample_time_ms': 79.35097569841766, 'median_sample_time_ms': 79.38000298529083, 'std_sample_time_ms': 0.13763606834921083}

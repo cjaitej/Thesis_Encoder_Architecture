@@ -1,0 +1,72 @@
+[
+  {
+    "name": "shufflenet",
+    "backbone": "shufflenetv2",
+    "script": "ronin_yolo26_baseline_plain",
+    "checkpoint": {
+      "path": "D:\\MTech CS IITK\\Thesis\\Mascots\\Yolov26_experiments\\ronin_yolov26\\output\\train_shufflenetv2\\checkpoints\\shufflenet_checkpoint_63.pt",
+      "size_bytes": 10574634,
+      "size_mb": 10.084756851196289
+    },
+    "onnx": {
+      "path": "D:\\MTech CS IITK\\Thesis\\Mascots\\Yolov26_experiments\\ronin_yolov26\\models_onnx\\shufflenet.onnx",
+      "size_bytes": 3438737,
+      "size_mb": 3.279435157775879
+    },
+    "export": {
+      "opset": 13,
+      "window_size": 200,
+      "input_shape_used_for_export": [
+        1,
+        6,
+        200
+      ],
+      "torch_output_shape": [
+        1,
+        2
+      ],
+      "fixed_shape_export": true,
+      "notes": "No export-only model wrapper was required."
+    },
+    "pytorch_model": {
+      "total_parameters": 854618,
+      "trainable_parameters": 854618,
+      "buffer_values": 12792,
+      "fp32_parameter_size_bytes": 3418472,
+      "fp32_parameter_size_mb": 3.2601089477539062
+    },
+    "onnx_model": {
+      "opset_imports": [
+        {
+          "domain": "ai.onnx",
+          "version": 13
+        }
+      ],
+      "graph_name": "main_graph",
+      "inputs": [
+        {
+          "name": "input",
+          "shape": [
+            1,
+            6,
+            200
+          ]
+        }
+      ],
+      "outputs": [
+        {
+          "name": "output",
+          "shape": [
+            1,
+            2
+          ]
+        }
+      ],
+      "initializer_tensors": 116,
+      "initializer_values": 848250,
+      "fp32_initializer_size_bytes": 3393000,
+      "fp32_initializer_size_mb": 3.2358169555664062,
+      "node_count": 376
+    }
+  }
+]

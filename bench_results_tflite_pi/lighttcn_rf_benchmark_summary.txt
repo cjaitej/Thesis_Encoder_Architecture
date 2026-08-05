@@ -1,0 +1,2 @@
+== lighttcn_rf ==
+{'count': 5, 'mean_sample_time_ms': 49.71082752308892, 'median_sample_time_ms': 49.71288483987063, 'std_sample_time_ms': 0.05211654316672505}
