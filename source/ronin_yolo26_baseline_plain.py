@@ -403,6 +403,25 @@ def test_sequence(args):
         rf_model = joblib.load(args.rf_model_path)
         print('RF model {} loaded.'.format(args.rf_model_path))
 
+    stage2_model = None
+    stage2_alpha, stage2_clip = args.stage2_alpha, args.stage2_clip
+    if args.stage2_model_path is not None:
+        if args.use_rf_postprocess:
+            raise ValueError('--stage2_model_path and --use_rf_postprocess are mutually '
+                             'exclusive; run one corrector at a time')
+        from stage2_variants import load_corrector
+        stage2_model = load_corrector(args.stage2_model_path,
+                                      device='cpu' if args.cpu else 'auto')
+        if stage2_alpha is None:
+            stage2_alpha = stage2_model.best_alpha
+        if stage2_clip is None:
+            stage2_clip = stage2_model.best_clip
+        print('Stage-2 corrector {} loaded ({}), alpha={}, clip={}.'.format(
+            args.stage2_model_path, stage2_model.describe(), stage2_alpha, stage2_clip))
+
+    # Either corrector runs in the same post-processing slot for timing/reporting.
+    postprocess_enabled = rf_model is not None or stage2_model is not None
+
     preds_seq, targets_seq, losses_seq, ate_all, rte_all = [], [], [], [], []
     traj_lens = []
 
@@ -437,6 +456,21 @@ def test_sequence(args):
             preds = apply_rf_correction(preds, residual_hat, alpha=args.rf_alpha, residual_clip=args.rf_clip)
             seq_elapsed_rf = (time.time() - seq_start_rf) * 1000.0
             sequence_times_rf[data] = seq_elapsed_rf
+        elif stage2_model is not None:
+            seq_start_rf = time.time()
+            s2_X, s2_names = build_sequence_features(preds, feat_sparse, ts_sparse, args.rf_hist_window)
+            # One trajectory at a time, so the corrector's history never crosses
+            # a sequence boundary.
+            residual_hat = stage2_model.predict_residual({
+                'X': s2_X,
+                'feature_names': s2_names,
+                'pred': preds,
+                'segments': [(0, preds.shape[0])],
+            }).astype(np.float32)
+            preds = apply_rf_correction(preds, residual_hat,
+                                        alpha=stage2_alpha, residual_clip=stage2_clip)
+            seq_elapsed_rf = (time.time() - seq_start_rf) * 1000.0
+            sequence_times_rf[data] = seq_elapsed_rf
 
         seq_elapsed_total = seq_elapsed_neural + seq_elapsed_rf
         sequence_times[data] = seq_elapsed_total
@@ -464,7 +498,7 @@ def test_sequence(args):
         rte_all.append(rte)
         pos_cum_error = np.linalg.norm(pos_pred - pos_gt, axis=1)
 
-        if args.use_rf_postprocess:
+        if postprocess_enabled:
             print('Sequence {}, loss {} / {}, ate {:.6f}, rte {:.6f}, neural={:.2f}ms, rf={:.2f}ms, total={:.2f}ms, time_per_sample={:.4f}ms'.format(
                 data, losses, np.mean(losses), ate, rte, seq_elapsed_neural, seq_elapsed_rf, seq_elapsed_total, time_per_sample_total))
         else:
@@ -511,8 +545,9 @@ def test_sequence(args):
     
     # Print timing summary
     print('\n' + '='*80)
-    if args.use_rf_postprocess:
-        print('[TIMING SUMMARY] YOLO26 + RF Postprocessing')
+    if postprocess_enabled:
+        stage_label = 'RF Postprocessing' if rf_model is not None else stage2_model.name
+        print('[TIMING SUMMARY] YOLO26 + {}'.format(stage_label))
         print(f"Mean time per sample (neural): {np.mean(inference_times_neural):.4f} ms")
         print(f"Mean time per sample (RF): {np.mean(inference_times_rf):.4f} ms")
         print(f"Mean time per sample (total): {np.mean(inference_times_total):.4f} ms")
@@ -638,6 +673,14 @@ if __name__ == '__main__':
     parser.add_argument('--rf_alpha', type=float, default=1.0)
     parser.add_argument('--rf_clip', type=float, default=0.75)
     parser.add_argument('--rf_hist_window', type=int, default=50)
+
+    # Stage-2 correctors from stage2_variants.py (alternative to --use_rf_postprocess).
+    parser.add_argument('--stage2_model_path', type=str, default=None,
+                        help='fitted corrector saved by stage2_variants.py --out_dir')
+    parser.add_argument('--stage2_alpha', type=float, default=None,
+                        help='correction gain; defaults to the value tuned at fit time')
+    parser.add_argument('--stage2_clip', type=float, default=None,
+                        help='residual clip bound; defaults to the value tuned at fit time')
 
     args = parser.parse_args()
 
