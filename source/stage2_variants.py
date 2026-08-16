@@ -202,6 +202,83 @@ def load_corrector(path, device='auto'):
     return model
 
 
+def export_numpy(model, path):
+    """Write raw weights to a .npz that needs only numpy to run.
+
+    The joblib artifacts pickle the corrector object, so loading one imports
+    this module - and therefore torch and sklearn. That is far too heavy for
+    the Raspberry Pi, especially for C_ema (a single float). This export
+    strips the model down to plain arrays so the edge benchmark can implement
+    the forward pass in numpy alone.
+
+    Every variant gets a .npz so the benchmark has one uniform entry point.
+    The Random Forest cannot be plain arrays, so its npz is a descriptor that
+    points at a bare sklearn estimator dumped alongside it - loadable with
+    sklearn alone, without importing this module.
+    """
+    arrays = {}
+
+    if isinstance(model, RandomForestCorrector):
+        kind = 'rf'
+        sk_path = osp.splitext(path)[0] + '_sklearn.joblib'
+        joblib.dump(model.model, sk_path)
+        arrays['sklearn_file'] = np.array(osp.basename(sk_path))
+
+    elif isinstance(model, RidgeCorrector):
+        kind = 'ridge'
+        arrays['coef'] = model.model.coef_.astype(np.float32)             # (2, F)
+        arrays['intercept'] = np.atleast_1d(model.model.intercept_).astype(np.float32)
+        arrays['scaler_mean'] = model.scaler.mean.astype(np.float32)
+        arrays['scaler_std'] = model.scaler.std.astype(np.float32)
+
+    elif isinstance(model, CausalFilterCorrector):
+        kind = 'ema'
+        arrays['ema_alpha'] = np.float32(model.alpha)
+
+    elif isinstance(model, MLPCorrector):
+        kind = 'mlp'
+        arrays['scaler_mean'] = model.scaler.mean.astype(np.float32)
+        arrays['scaler_std'] = model.scaler.std.astype(np.float32)
+        linears = [m for m in model.model.net if isinstance(m, nn.Linear)]
+        arrays['n_layers'] = np.int32(len(linears))
+        for i, lin in enumerate(linears):
+            arrays['W%d' % i] = lin.weight.detach().cpu().numpy().astype(np.float32)
+            arrays['b%d' % i] = lin.bias.detach().cpu().numpy().astype(np.float32)
+
+    elif isinstance(model, TemporalCorrector):
+        kind = 'tcn'
+        net = model.model
+        arrays['scaler_mean'] = model.scaler.mean.astype(np.float32)
+        arrays['scaler_std'] = model.scaler.std.astype(np.float32)
+        arrays['kernel'] = np.int32(net.kernel)
+        arrays['dilations'] = np.asarray(net.dilations, dtype=np.int32)
+        arrays['n_blocks'] = np.int32(len(net.blocks))
+        arrays['receptive_field'] = np.int32(net.receptive_field)
+        for i, blk in enumerate(net.blocks):
+            arrays['conv%d_w' % i] = blk['conv'].weight.detach().cpu().numpy().astype(np.float32)
+            arrays['conv%d_b' % i] = blk['conv'].bias.detach().cpu().numpy().astype(np.float32)
+            arrays['ln%d_g' % i] = blk['norm'].norm.weight.detach().cpu().numpy().astype(np.float32)
+            arrays['ln%d_b' % i] = blk['norm'].norm.bias.detach().cpu().numpy().astype(np.float32)
+            arrays['ln%d_eps' % i] = np.float32(blk['norm'].norm.eps)
+        arrays['head_w'] = net.head.weight.detach().cpu().numpy().astype(np.float32)
+        arrays['head_b'] = net.head.bias.detach().cpu().numpy().astype(np.float32)
+
+    else:
+        raise TypeError('no numpy export defined for %s' % type(model).__name__)
+
+    clip = model.best_clip
+    np.savez(
+        path,
+        kind=np.array(kind),
+        name=np.array(model.name),
+        alpha=np.float32(model.best_alpha),
+        clip=np.float32(clip if clip is not None else np.nan),
+        feature_names=np.array('|'.join(model.feature_names or [])),
+        **arrays,
+    )
+    return path
+
+
 # --------------------------------------------------------------------------- #
 # A. Random Forest (incumbent)
 # --------------------------------------------------------------------------- #
@@ -818,6 +895,10 @@ def main():
                 json.dump(variant_summary, f, indent=2, default=str)
             print('  saved           : %s' % path)
             print('  summary         : %s' % (stem + '_summary.json'))
+
+            # Pi-friendly copy for the edge benchmark (numpy only; the RF npz
+            # is a descriptor pointing at a bare sklearn estimator beside it).
+            print('  numpy export    : %s' % export_numpy(model, stem + '.npz'))
 
     print('=' * 78)
     print('%-9s %-11s %12s %12s   %s' % ('variant', 'size', 'MSE(a=1)', 'MSE(tuned)', 'vs raw'))

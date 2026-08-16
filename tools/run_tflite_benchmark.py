@@ -44,6 +44,20 @@ MODELS = {
     "shufflenet_rf": {"path": "models_tflite/shufflenet.tflite", "rf": True},
     "tinycnn_rf": {"path": "models_tflite/tinycnn.tflite", "rf": True},
     "lighttcn_rf": {"path": "models_tflite/lighttcn.tflite", "rf": True},
+
+    # Stage-2 variants from source/stage2_variants.py. "stage2" names the .npz
+    # written by its --out_dir; alpha/clip travel inside that file. Override the
+    # directory with --stage2_dir. Only A_rf needs sklearn; the rest are numpy.
+    "yolo26_A_rf": {"path": "models_tflite/yolo26.tflite", "rf": False,
+                    "stage2": "A_rf_corrector.npz"},
+    "yolo26_B_ridge": {"path": "models_tflite/yolo26.tflite", "rf": False,
+                       "stage2": "B_ridge_corrector.npz"},
+    "yolo26_C_ema": {"path": "models_tflite/yolo26.tflite", "rf": False,
+                     "stage2": "C_ema_corrector.npz"},
+    "yolo26_D_mlp": {"path": "models_tflite/yolo26.tflite", "rf": False,
+                     "stage2": "D_mlp_corrector.npz"},
+    "yolo26_E_tcn": {"path": "models_tflite/yolo26.tflite", "rf": False,
+                     "stage2": "E_tcn_corrector.npz"},
 }
 
 
@@ -203,6 +217,110 @@ def apply_rf(preds, rf_model_path, feat_sparse, ts_sparse, hist_window, alpha, c
     return corrected.astype(np.float32), rf_elapsed_ms
 
 
+# --------------------------------------------------------------------------- #
+# Stage-2 correctors exported by source/stage2_variants.py.
+#
+# These run on numpy alone: the .npz holds raw weights, so the Pi does not need
+# torch, sklearn or source/ on sys.path. The one exception is the Random Forest,
+# whose npz is a descriptor naming a bare sklearn estimator beside it.
+# --------------------------------------------------------------------------- #
+
+def ema_stream(pred, alpha):
+    """Causal exponential moving average over one trajectory."""
+    out = np.empty_like(pred)
+    acc = pred[0].copy()
+    for i in range(pred.shape[0]):
+        acc = alpha * pred[i] + (1.0 - alpha) * acc
+        out[i] = acc
+    return out
+
+
+def causal_conv1d(x, w, b, dilation):
+    """x (C_in, T) -> (C_out, T), left-padded so output t sees only t and earlier."""
+    c_out, c_in, k = w.shape
+    pad = (k - 1) * dilation
+    xp = np.concatenate([np.zeros((c_in, pad), dtype=x.dtype), x], axis=1)
+    idx = np.arange(x.shape[1])[:, None] + np.arange(k)[None, :] * dilation
+    xg = xp[:, idx]                                   # (C_in, T, k)
+    return np.einsum("cij,ocj->oi", xg, w) + b[:, None]
+
+
+def channel_layernorm(x, g, b, eps):
+    """Normalise across channels at each timestep independently. x (C, T)."""
+    mu = x.mean(axis=0, keepdims=True)
+    var = x.var(axis=0, keepdims=True)
+    return (x - mu) / np.sqrt(var + eps) * g[:, None] + b[:, None]
+
+
+def silu(x):
+    return x / (1.0 + np.exp(-x))
+
+
+def run_stage2_numpy(art, X, preds):
+    """Predicted residual from a numpy-exported corrector."""
+    kind = str(art["kind"])
+
+    if kind == "ema":
+        return (ema_stream(preds, float(art["ema_alpha"])) - preds).astype(np.float32)
+
+    Xs = (X - art["scaler_mean"]) / art["scaler_std"]
+
+    if kind == "ridge":
+        return (Xs @ art["coef"].T + art["intercept"]).astype(np.float32)
+
+    if kind == "mlp":
+        h = Xs
+        n = int(art["n_layers"])
+        for i in range(n):
+            h = h @ art["W%d" % i].T + art["b%d" % i]
+            if i < n - 1:
+                h = np.maximum(h, 0.0)
+        return h.astype(np.float32)
+
+    if kind == "tcn":
+        h = Xs.T.astype(np.float32)                   # (F, T)
+        dil = art["dilations"]
+        for i in range(int(art["n_blocks"])):
+            h = causal_conv1d(h, art["conv%d_w" % i], art["conv%d_b" % i], int(dil[i]))
+            h = channel_layernorm(h, art["ln%d_g" % i], art["ln%d_b" % i],
+                                  float(art["ln%d_eps" % i]))
+            h = silu(h)
+        return causal_conv1d(h, art["head_w"], art["head_b"], 1).T.astype(np.float32)
+
+    raise ValueError("unknown stage-2 kind: %r" % kind)
+
+
+def apply_stage2(preds, artifact_path, feat_sparse, ts_sparse, hist_window):
+    """Correct predictions with a stage-2 variant.
+
+    The correction gain and clip bound travel inside the artifact (tuned on the
+    validation split at fit time), so they are not taken from the CLI.
+    """
+    art = np.load(artifact_path)
+    kind = str(art["kind"])
+    alpha = float(art["alpha"])
+    clip_raw = float(art["clip"])
+    clip = None if not np.isfinite(clip_raw) else clip_raw
+
+    rf_model = None
+    if kind == "rf":
+        import joblib
+        rf_model = joblib.load(Path(artifact_path).parent / str(art["sklearn_file"]))
+
+    start = time.perf_counter()
+    x = build_sequence_features(preds, feat_sparse, ts_sparse, hist_window)
+    if rf_model is not None:
+        residual_hat = rf_model.predict(x).astype(np.float32)
+    else:
+        residual_hat = run_stage2_numpy(art, x, preds)
+    elapsed_ms = (time.perf_counter() - start) * 1000.0
+
+    corrected = preds + alpha * residual_hat
+    if clip is not None and clip > 0:
+        corrected = preds + np.clip(corrected - preds, -clip, clip)
+    return corrected.astype(np.float32), elapsed_ms
+
+
 def write_csv(path, rows):
     with path.open("w", newline="") as f:
         writer = csv.DictWriter(
@@ -246,7 +364,16 @@ def benchmark_model(name, spec, args, windows, targets, features, ts, indices):
         preds, neural_ms = run_tflite(model_path, windows, args.batch_size)
         rf_ms = 0.0
         total_ms = neural_ms
-        if spec["rf"]:
+        if spec.get("stage2"):
+            preds, rf_ms = apply_stage2(
+                preds,
+                args.base_dir / args.stage2_dir / spec["stage2"],
+                features[indices],
+                ts[indices],
+                args.rf_hist_window,
+            )
+            total_ms = neural_ms + rf_ms
+        elif spec["rf"]:
             preds, rf_ms = apply_rf(
                 preds,
                 args.base_dir / args.rf_model_path,
@@ -295,6 +422,8 @@ def main():
     parser.add_argument("--step_size", type=int, default=10)
     parser.add_argument("--batch_size", type=int, default=1)
     parser.add_argument("--rf_model_path", default="rf_yolo26/rf_corrector.joblib")
+    parser.add_argument("--stage2_dir", default="stage2_models",
+                        help="directory holding the *_corrector.npz stage-2 exports")
     parser.add_argument("--rf_alpha", type=float, default=1.0)
     parser.add_argument("--rf_clip", type=float, default=0.75)
     parser.add_argument("--rf_hist_window", type=int, default=50)
