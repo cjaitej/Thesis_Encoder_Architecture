@@ -4,6 +4,17 @@ Drop-in replacement for ResNet1D in the RoNIN pipeline.
 Input:  (B, 6, 200)
 Output: (B, 2)
 All operations: 1D only (Conv1d, BatchNorm1d, AdaptiveAvgPool1d).
+
+Two backbones live here, sharing the same CBS / Bottleneck1D / C3k2_1D blocks:
+  YOLO26_1D_Regressor  backbone 'yolo26'      1,174,594 params  (get_model)
+  YOLO26_1D_Efficient  backbone 'yolo26_eff'    598,530 params  (get_efficient_model)
+
+The efficient variant keeps the convolutional stem/stages unchanged and only
+replaces the two modules that dominate the parameter count of the original:
+PSA1D (44.8%) and ELANNeck1D (29.2%) -- together 74% of the model, while the
+whole feature backbone is ~24%. PSA1D runs a full 256-d MultiheadAttention plus
+a 2x FFN over only 7 temporal tokens (200 -> /4 stem -> /8 stages), which is
+heavily over-parameterised; EfficientPSA1D and LiteNeck1D cut that back.
 """
 
 import torch
@@ -95,6 +106,78 @@ class PSA1D(nn.Module):
         return x.permute(0, 2, 1)
 
 
+class EfficientPSA1D(nn.Module):
+    """Parameter-efficient replacement for PSA1D.
+
+    Three cheap ingredients instead of one full-width attention block:
+      1. depthwise conv-3 over time -- local temporal mixing, ~ch*3 params
+      2. reduced-dimension attention -- project ch -> attn_dim (<< ch), attend
+         over the temporal tokens, project back; attention over 7 tokens does
+         not need full 256-d projections
+      3. a slim FFN (ffn_ratio < 1) -- the original 2x FFN was the single
+         biggest sub-cost
+
+    ch=256, attn_dim=96, ffn_ratio=0.5 -> ~154K params vs PSA1D's ~527K.
+    """
+
+    def __init__(self, ch, num_heads=4, attn_dim=96, ffn_ratio=0.5, dropout=0.0):
+        super().__init__()
+        assert attn_dim % num_heads == 0, "attn_dim must be divisible by num_heads"
+        self.local = nn.Conv1d(ch, ch, kernel_size=3, padding=1, groups=ch, bias=False)
+
+        self.norm1 = nn.LayerNorm(ch)
+        self.down = nn.Linear(ch, attn_dim)
+        self.attn = nn.MultiheadAttention(attn_dim, num_heads, batch_first=True, dropout=dropout)
+        self.up = nn.Linear(attn_dim, ch)
+
+        self.norm2 = nn.LayerNorm(ch)
+        hidden = max(1, int(ch * ffn_ratio))
+        self.ffn = nn.Sequential(
+            nn.Linear(ch, hidden),
+            nn.GELU(),
+            nn.Linear(hidden, ch),
+        )
+
+    def forward(self, x):
+        # x: (B, C, T)
+        x = x + self.local(x)                    # local temporal mixing
+        q = x.permute(0, 2, 1)                   # (B, T, C)
+
+        z = self.down(self.norm1(q))             # -> (B, T, attn_dim)
+        a, _ = self.attn(z, z, z)
+        q = q + self.up(a)                       # global temporal mixing
+
+        q = q + self.ffn(self.norm2(q))
+        return q.permute(0, 2, 1)
+
+
+class LiteNeck1D(nn.Module):
+    """Parameter-efficient replacement for ELANNeck1D.
+
+    ELANNeck1D lifts every scale to 256 channels and concatenates three full
+    256-d maps (768 ch) before the C3k2 fuse. Here each scale is first projected
+    down to a small fuse_dim (288 ch concatenated), and the fused output width
+    is reduced too.
+
+    fuse_dim=96, out_ch=192 -> ~152K params vs ELANNeck1D's ~343K.
+    """
+
+    def __init__(self, ch1=64, ch2=128, ch3=256, out_ch=192, fuse_dim=96):
+        super().__init__()
+        self.out_ch = out_ch
+        self.lat1 = CBS(ch1, fuse_dim, k=1)
+        self.lat2 = CBS(ch2, fuse_dim, k=1)
+        self.lat3 = CBS(ch3, fuse_dim, k=1)
+        self.fuse = C3k2_1D(3 * fuse_dim, out_ch, n=1, stride=1)
+
+    def forward(self, f1, f2, f3):
+        target_len = f3.shape[-1]
+        f1_up = self.lat1(F.adaptive_avg_pool1d(f1, target_len))
+        f2_up = self.lat2(F.adaptive_avg_pool1d(f2, target_len))
+        f3_p = self.lat3(f3)
+        return self.fuse(torch.cat([f1_up, f2_up, f3_p], dim=1))
+
+
 class YOLO26_1D_Regressor(nn.Module):
     def __init__(
         self,
@@ -131,6 +214,90 @@ class YOLO26_1D_Regressor(nn.Module):
             nn.ReLU(inplace=True),
             nn.Dropout(p=dropout),
             nn.Linear(ch3 // 2, num_outputs),
+        )
+
+        self._init_weights()
+
+    def _init_weights(self):
+        for m in self.modules():
+            if isinstance(m, nn.Conv1d):
+                nn.init.kaiming_normal_(m.weight, mode="fan_out", nonlinearity="relu")
+            elif isinstance(m, nn.BatchNorm1d):
+                nn.init.constant_(m.weight, 1)
+                nn.init.constant_(m.bias, 0)
+            elif isinstance(m, nn.Linear):
+                nn.init.normal_(m.weight, 0, 0.01)
+                nn.init.constant_(m.bias, 0)
+
+    def get_num_params(self):
+        return sum(p.numel() for p in self.parameters() if p.requires_grad)
+
+    def forward(self, x):
+        x = self.stem(x)
+        f1 = self.stage1(x)
+        f2 = self.stage2(f1)
+        f3 = self.stage3(f2)
+        f3 = self.psa(f3)
+        fused = self.neck(f1, f2, f3)
+        pooled = self.pool(fused).squeeze(-1)
+        return self.head(pooled)
+
+
+class YOLO26_1D_Efficient(nn.Module):
+    """Efficient YOLOv26-1D: same convolutional backbone as YOLO26_1D_Regressor,
+    with EfficientPSA1D and LiteNeck1D in place of PSA1D and ELANNeck1D.
+
+    598,530 params (2.28 MiB FP32), about half the original, same interface:
+    Input:  (B, in_channels, T)
+    Output: (B, num_outputs)
+    """
+
+    def __init__(
+        self,
+        in_channels=6,
+        num_outputs=2,
+        base_ch=32,
+        widths=(64, 128, 256),
+        n_blocks=(1, 2, 2),
+        dropout=0.5,
+        use_attention=True,
+        attn_heads=4,
+        attn_dim=96,
+        ffn_ratio=0.5,
+        neck_fuse_dim=96,
+        neck_out=192,
+        stem_pool_stride=2,
+    ):
+        super().__init__()
+
+        ch1, ch2, ch3 = widths
+
+        # stem_pool_stride=1 removes one downsampling, so the whole pyramid keeps
+        # ~2x more temporal tokens at ~0 extra params (conv/linear weights are
+        # independent of sequence length). Default 2 matches the original stem.
+        self.stem = nn.Sequential(
+            CBS(in_channels, base_ch, k=7, s=2),
+            nn.MaxPool1d(kernel_size=3, stride=stem_pool_stride, padding=1),
+        )
+
+        self.stage1 = C3k2_1D(base_ch, ch1, n=n_blocks[0], stride=2)
+        self.stage2 = C3k2_1D(ch1, ch2, n=n_blocks[1], stride=2)
+        self.stage3 = C3k2_1D(ch2, ch3, n=n_blocks[2], stride=2)
+
+        self.psa = (
+            EfficientPSA1D(ch3, num_heads=attn_heads, attn_dim=attn_dim, ffn_ratio=ffn_ratio)
+            if use_attention else nn.Identity()
+        )
+
+        self.neck = LiteNeck1D(ch1, ch2, ch3, out_ch=neck_out, fuse_dim=neck_fuse_dim)
+
+        self.pool = nn.AdaptiveAvgPool1d(1)
+
+        self.head = nn.Sequential(
+            nn.Linear(neck_out, neck_out // 2),
+            nn.ReLU(inplace=True),
+            nn.Dropout(p=dropout),
+            nn.Linear(neck_out // 2, num_outputs),
         )
 
         self._init_weights()
@@ -221,6 +388,24 @@ def get_model(in_channels=6, num_outputs=2, dropout=0.5, use_attention=True, att
         dropout=dropout,
         use_attention=use_attention,
         attn_heads=attn_heads,
+    )
+
+
+def get_efficient_model(in_channels=6, num_outputs=2, dropout=0.5, use_attention=True, attn_heads=4):
+    return YOLO26_1D_Efficient(
+        in_channels=in_channels,
+        num_outputs=num_outputs,
+        base_ch=32,
+        widths=(64, 128, 256),
+        n_blocks=(1, 2, 2),
+        dropout=dropout,
+        use_attention=use_attention,
+        attn_heads=attn_heads,
+        attn_dim=96,
+        ffn_ratio=0.5,
+        neck_fuse_dim=96,
+        neck_out=192,
+        stem_pool_stride=2,
     )
 
 

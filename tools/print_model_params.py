@@ -6,7 +6,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / 'source'))
 
-from model_yolo26_1d import YOLO26_1D_Regressor
+from model_yolo26_1d import YOLO26_1D_Regressor, YOLO26_1D_Efficient
 from model_mobilenet1d import MobileNetV2_1D
 from model_shufflenet1d import ShuffleNetV2_1D
 from model_efficientnet_lite1d import EfficientNetLite0_1D
@@ -21,7 +21,7 @@ def count_params(model):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--backbone', type=str, default='all',
-                        choices=['all', 'yolo26', 'mobilenetv2', 'shufflenetv2',
+                        choices=['all', 'yolo26', 'yolo26_eff', 'mobilenetv2', 'shufflenetv2',
                                  'efficientnet_lite0', 'tinycnn', 'lighttcn'])
     args = parser.parse_args()
 
@@ -34,6 +34,17 @@ def main():
             n_blocks=(1, 2, 2),
             dropout=0.2,
             use_attention=False,
+        ),
+        # Attention on: EfficientPSA1D is integral to this backbone, and
+        # ronin_yolo26_baseline_plain.py always builds it for 'yolo26_eff'.
+        'yolo26_eff': YOLO26_1D_Efficient(
+            in_channels=6,
+            num_outputs=2,
+            base_ch=32,
+            widths=(64, 128, 256),
+            n_blocks=(1, 2, 2),
+            dropout=0.2,
+            use_attention=True,
         ),
         'mobilenetv2': MobileNetV2_1D(in_channels=6, num_outputs=2, width_mult=0.9, dropout=0.2),
         'shufflenetv2': ShuffleNetV2_1D(in_channels=6, num_outputs=2, dropout=0.2),

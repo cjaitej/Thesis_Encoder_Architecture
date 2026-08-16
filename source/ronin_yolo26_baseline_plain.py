@@ -22,7 +22,7 @@ from data_glob_speed import *
 from transformations import *
 from metric import compute_ate_rte
 from model_resnet1d import *
-from model_yolo26_1d import YOLO26_1D_Regressor
+from model_yolo26_1d import YOLO26_1D_Regressor, YOLO26_1D_Efficient
 from model_mobilenet1d import MobileNetV2_1D
 from model_shufflenet1d import ShuffleNetV2_1D
 from model_efficientnet_lite1d import EfficientNetLite0_1D
@@ -47,6 +47,35 @@ def get_model(backbone, model_dropout=0.2, use_attention=False):
         )
         print("[YOLO26-1D] Plain baseline mode: training from scratch.")
         print(f"[YOLO26-1D] Attention: {use_attention}, dropout: {model_dropout}")
+    elif backbone == 'yolo26_eff':
+        # use_attention is deliberately NOT threaded through here. --use_attention is
+        # an opt-in store_true written for 'yolo26', where PSA1D is one optional block
+        # among many and switching it off yields a smaller variant of the same model.
+        # EfficientPSA1D is not optional in the same sense: the reduced-dimension
+        # attention that replaces the over-parameterised 256-d PSA1D is half of what
+        # defines this backbone. Building it as nn.Identity drops 154,464 params
+        # (598,530 -> 444,066) and leaves a plain CSP conv net wearing this model's
+        # name, so 'yolo26_eff' always builds the attention block.
+        network = YOLO26_1D_Efficient(
+            in_channels=_input_channel,
+            num_outputs=_output_channel,
+            base_ch=32,
+            widths=(64, 128, 256),
+            n_blocks=(1, 2, 2),
+            dropout=model_dropout,
+            use_attention=True,
+            attn_heads=4,
+            attn_dim=96,
+            ffn_ratio=0.5,
+            neck_fuse_dim=96,
+            neck_out=192,
+            stem_pool_stride=2,
+        )
+        print("[YOLO26-1D-Efficient] Plain baseline mode: training from scratch.")
+        print(f"[YOLO26-1D-Efficient] Attention: True (always on), dropout: {model_dropout}")
+        if not use_attention:
+            print("[YOLO26-1D-Efficient] Note: --use_attention not passed, but "
+                  "EfficientPSA1D is integral to this backbone and is built anyway.")
     elif backbone == 'mobilenetv2':
         network = MobileNetV2_1D(in_channels=6, num_outputs=2, width_mult=0.9, dropout=model_dropout)
         print("[MobileNetV2-1D] Plain baseline mode: training from scratch.")
@@ -651,7 +680,10 @@ if __name__ == '__main__':
     parser.add_argument('--epochs', type=int, default=100)
     parser.add_argument('--arch', type=str, default='resnet18')
     parser.add_argument('--backbone', type=str, default='yolo26',
-                        choices=['yolo26', 'mobilenetv2', 'shufflenetv2', 'efficientnet_lite0', 'tinycnn', 'lighttcn'])
+                        choices=['yolo26', 'yolo26_eff', 'mobilenetv2', 'shufflenetv2',
+                                 'efficientnet_lite0', 'tinycnn', 'lighttcn'],
+                        help="Stage-1 backbone. 'yolo26' = 1,174,594-param original, "
+                             "'yolo26_eff' = 598,530-param Efficient YOLOv26-1D.")
     parser.add_argument('--cpu', action='store_true')
     parser.add_argument('--run_ekf', action='store_true')
     parser.add_argument('--fast_test', action='store_true')
