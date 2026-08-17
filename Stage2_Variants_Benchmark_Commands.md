@@ -8,8 +8,8 @@ Instructions for benchmarking **two backbones and their five stage-2 correctors 
 | YOLOv26-1D | `models_tflite/yolo26.tflite` | 1,174,594 | 4.55 MiB |
 | Efficient YOLOv26-1D | `models_tflite/yolo26_eff.tflite` | 598,530 | 2.41 MiB |
 
-Both take `[1, 6, 200]` and return `[1, 2]`, so the data pipeline, windowing, CSV columns and
-INA219 measurement chain are identical for every target.
+Both take `[1, 6, 200]` and return `[1, 2]`, so the data pipeline, windowing and CSV columns are
+identical for every target. The benchmark measures **latency only** — see §6.
 
 PyTorch is **not** required on the Pi. Only the two `A_rf` targets need scikit-learn.
 
@@ -58,24 +58,32 @@ cd /media/shashwat/A431-E4641/ronin_yolov26
 - [ ] `yolo26.tflite` (4.55 MiB)
 - [ ] `yolo26_eff.tflite` (2.41 MiB)
 
-**Correctors** → two directories at the project root:
+**Correctors** → two directories at the project root. Copy from the training machine:
 
-- [ ] `stage2_models/` — for the `yolo26_*` targets
-- [ ] `stage2_models_yolo26_eff/` — for the `yolo26_eff_*` targets
-
-Each directory holds the same six files:
-
-| File | Approx. size | Needed for |
+| Copy from (training machine) | To (Pi, project root) | Used by |
 |---|---|---|
-| `B_ridge_corrector.npz` | 3.3 KB | `*_B_ridge` |
-| `C_ema_corrector.npz` | 2.3 KB | `*_C_ema` |
-| `D_mlp_corrector.npz` | 26 KB | `*_D_mlp` |
-| `E_tcn_corrector.npz` | 55 KB | `*_E_tcn` |
-| `A_rf_corrector.npz` | 2.4 KB | `*_A_rf` |
-| `A_rf_corrector_sklearn.joblib` | ~128 MB | `*_A_rf` |
+| `output/stage2_models_yolo26_ckpt35/` | `stage2_models/` | `yolo26_*` targets |
+| `output/stage2_models_yolo26_eff/` | `stage2_models_yolo26_eff/` | `yolo26_eff_*` targets |
 
-The four numpy variants total roughly 87 KB per backbone. Correction gain and clip bound are
-stored inside each `.npz`, so `--rf_alpha` and `--rf_clip` do not apply to these targets.
+Each directory holds the same six files (sizes measured from the actual artifacts):
+
+| File | Size | Needed for |
+|---|---|---|
+| `B_ridge_corrector.npz` | 3.2 KB | `*_B_ridge` |
+| `C_ema_corrector.npz` | 2.2 KB | `*_C_ema` |
+| `D_mlp_corrector.npz` | 25.7 KB | `*_D_mlp` |
+| `E_tcn_corrector.npz` | 53.4 KB | `*_E_tcn` |
+| `A_rf_corrector.npz` | 2.3 KB | `*_A_rf` |
+| `A_rf_corrector_sklearn.joblib` | **~185 MB** (yolo26) / **~181 MB** (yolo26_eff) | `*_A_rf` |
+
+The four numpy variants total roughly 84 KB per backbone; the Random Forest joblib dominates.
+`A_rf_corrector.npz` is only a descriptor — it points at `A_rf_corrector_sklearn.joblib` by
+filename and loads it **from its own directory**, so the two files must stay together.
+
+Correction gain and clip bound are stored inside each `.npz` (tuned per corrector on the
+validation split), so `--rf_alpha` and `--rf_clip` do not apply to these targets. The fitted
+values differ per variant and per backbone — e.g. `C_ema` uses alpha 0.75 with no clip, while
+`A_rf` uses alpha 1.25 with clip 0.25 — which is why the corrector sets are not interchangeable.
 
 > **The two corrector sets are not interchangeable.** A corrector is fitted on one backbone's
 > residual errors. The filenames are identical in both directories, so the only thing keeping
@@ -162,16 +170,21 @@ Written to `bench_results_tflite/`:
 - `<model>_benchmark_summary.txt` — per-model summary
 - `benchmark_summary.txt` — overall summary
 
-CSV columns:
+CSV columns — exactly ten, verified against both the script and the existing Pi result files:
 
-    model, run, voltage_v, current_a, power_w, energy_j, sample_time_ms,
-    seq_time_ms, neural_ms, rf_ms, total_ms, mse_x, mse_y, returncode
+    model, run, sample_time_ms, seq_time_ms, neural_ms, rf_ms, total_ms,
+    mse_x, mse_y, returncode
 
-For stage-2 targets, `rf_ms` holds the corrector time: feature construction, corrector
+`sample_time_ms` is the per-sample latency — this is the number quoted in the paper's Raspberry
+Pi table (the existing `yolo26` run recorded 40.688 ms here). `seq_time_ms` is the whole-sequence
+time. For stage-2 targets, `rf_ms` holds the corrector time: feature construction, corrector
 inference, and the correction itself.
 
-An INA219 records Voltage (V), Current (A), Power (W) and Energy (J) throughout, exactly as in
-the TinyCNN run.
+> **This script records timing only — no power or energy.** It contains no INA219 code and
+> writes no `voltage_v` / `current_a` / `power_w` / `energy_j` columns; every existing Pi result
+> CSV in `bench_results_tflite_pi/` confirms the ten columns above. If power and energy figures
+> are needed, they must come from a separate INA219 capture run alongside this benchmark, and
+> correlated by wall-clock time.
 
 ## 7. Checking the Results
 

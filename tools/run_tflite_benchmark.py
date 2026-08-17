@@ -32,6 +32,10 @@ except ImportError:
     from tensorflow.lite.python.interpreter import Interpreter
 
 
+# Fallback for *_rf targets that do not pin their own "rf_path" (the pre-existing
+# backbones, whose correctors all live here).
+DEFAULT_RF_MODEL_PATH = "rf_yolo26/rf_corrector.joblib"
+
 MODELS = {
     "resnet": {"path": "models_tflite/resnet.tflite", "rf": False},
     "yolo26": {"path": "models_tflite/yolo26.tflite", "rf": False},
@@ -40,8 +44,13 @@ MODELS = {
     "shufflenet": {"path": "models_tflite/shufflenet.tflite", "rf": False},
     "tinycnn": {"path": "models_tflite/tinycnn.tflite", "rf": False},
     "lighttcn": {"path": "models_tflite/lighttcn.tflite", "rf": False},
-    "yolo26_rf": {"path": "models_tflite/yolo26.tflite", "rf": True},
-    "yolo26_eff_rf": {"path": "models_tflite/yolo26_eff.tflite", "rf": True},
+    # "rf_path" pins the monolithic Random Forest corrector to the backbone it was
+    # fitted on. Without it every *_rf target would share one --rf_model_path and
+    # silently run yolo26's corrector on another backbone's predictions.
+    "yolo26_rf": {"path": "models_tflite/yolo26.tflite", "rf": True,
+                  "rf_path": "rf_yolo26/rf_corrector.joblib"},
+    "yolo26_eff_rf": {"path": "models_tflite/yolo26_eff.tflite", "rf": True,
+                      "rf_path": "rf_yolo26_eff/rf_corrector.joblib"},
     "mobilenet_rf": {"path": "models_tflite/mobilenet.tflite", "rf": True},
     "shufflenet_rf": {"path": "models_tflite/shufflenet.tflite", "rf": True},
     "tinycnn_rf": {"path": "models_tflite/tinycnn.tflite", "rf": True},
@@ -389,9 +398,11 @@ def benchmark_model(name, spec, args, windows, targets, features, ts, indices):
             )
             total_ms = neural_ms + rf_ms
         elif spec["rf"]:
+            # explicit --rf_model_path wins; otherwise the backbone's own corrector
+            rf_rel = args.rf_model_path or spec.get("rf_path") or DEFAULT_RF_MODEL_PATH
             preds, rf_ms = apply_rf(
                 preds,
-                args.base_dir / args.rf_model_path,
+                args.base_dir / rf_rel,
                 features[indices],
                 ts[indices],
                 args.rf_hist_window,
@@ -436,7 +447,9 @@ def main():
     parser.add_argument("--window_size", type=int, default=200)
     parser.add_argument("--step_size", type=int, default=10)
     parser.add_argument("--batch_size", type=int, default=1)
-    parser.add_argument("--rf_model_path", default="rf_yolo26/rf_corrector.joblib")
+    parser.add_argument("--rf_model_path", default=None,
+                        help="override the corrector for *_rf targets; defaults to the "
+                             "model's own 'rf_path', else " + DEFAULT_RF_MODEL_PATH)
     parser.add_argument("--stage2_dir", default="stage2_models",
                         help="directory holding the *_corrector.npz stage-2 exports")
     parser.add_argument("--rf_alpha", type=float, default=1.0)
