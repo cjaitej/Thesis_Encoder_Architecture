@@ -1,0 +1,42 @@
+{
+  "train_npz": "output/rf_yolo26_ckpt35/rf_train.npz",
+  "val_npz": "output/rf_yolo26_ckpt35/rf_val.npz",
+  "variant": "B",
+  "name": "B_ridge",
+  "model": "Ridge(alpha=1, n_features=18)",
+  "output_mode": "multi",
+  "best_params": {
+    "ridge_alpha": 1.0,
+    "n_features": 18
+  },
+  "val_mse_x": 0.029717380180954933,
+  "val_mse_y": 0.028378626331686974,
+  "val_mse_avg": 0.029048003256320953,
+  "baseline_zero_residual_mse_avg": 0.030850481241941452,
+  "val_mse_avg_tuned": 0.029009392485022545,
+  "correction_alpha": 1.25,
+  "correction_clip": null,
+  "size_bytes": 296,
+  "fit_seconds": 0.2754170894622803,
+  "predict_seconds": 0.023313045501708984,
+  "feature_names": [
+    "pred_vx",
+    "pred_vy",
+    "pred_speed",
+    "gyro_x",
+    "gyro_y",
+    "gyro_z",
+    "acce_x",
+    "acce_y",
+    "acce_z",
+    "gyro_norm",
+    "acce_norm",
+    "gyro_norm_mean",
+    "gyro_norm_std",
+    "acce_norm_mean",
+    "acce_norm_std",
+    "d_pred_vx",
+    "d_pred_vy",
+    "time_progress"
+  ]
+}

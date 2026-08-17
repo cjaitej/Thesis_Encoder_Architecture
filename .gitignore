@@ -173,4 +173,5 @@ fabric.properties
 
 data
 lists
-output
+*.png
+*.npy

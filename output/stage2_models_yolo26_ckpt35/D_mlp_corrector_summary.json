@@ -1,0 +1,49 @@
+{
+  "train_npz": "output/rf_yolo26_ckpt35/rf_train.npz",
+  "val_npz": "output/rf_yolo26_ckpt35/rf_val.npz",
+  "variant": "D",
+  "name": "D_mlp",
+  "model": "MLP(hidden=[64, 64], params=5506)",
+  "output_mode": "multi",
+  "best_params": {
+    "hidden": [
+      64,
+      64
+    ],
+    "epochs": 15,
+    "lr": 0.001,
+    "batch_size": 4096,
+    "weight_decay": 0.0,
+    "n_parameters": 5506
+  },
+  "val_mse_x": 0.032428815960884094,
+  "val_mse_y": 0.031972840428352356,
+  "val_mse_avg": 0.032200828194618225,
+  "baseline_zero_residual_mse_avg": 0.030850481241941452,
+  "val_mse_avg_tuned": 0.0301042003557086,
+  "correction_alpha": 0.5,
+  "correction_clip": 0.25,
+  "size_bytes": 22168,
+  "fit_seconds": 7.245841979980469,
+  "predict_seconds": 0.01466226577758789,
+  "feature_names": [
+    "pred_vx",
+    "pred_vy",
+    "pred_speed",
+    "gyro_x",
+    "gyro_y",
+    "gyro_z",
+    "acce_x",
+    "acce_y",
+    "acce_z",
+    "gyro_norm",
+    "acce_norm",
+    "gyro_norm_mean",
+    "gyro_norm_std",
+    "acce_norm_mean",
+    "acce_norm_std",
+    "d_pred_vx",
+    "d_pred_vy",
+    "time_progress"
+  ]
+}

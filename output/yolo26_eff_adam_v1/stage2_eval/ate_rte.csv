@@ -1,0 +1,13 @@
+split,variant,model,ate,rte
+seen,base,YOLOv26-1D (no stage 2),4.1656,3.1489
+seen,A_rf,+ Random Forest,3.5857,2.6083
+seen,B_ridge,+ Ridge,3.9482,2.9099
+seen,C_ema,+ Causal EMA,4.1582,3.1221
+seen,D_mlp,+ MLP,3.7301,2.8271
+seen,E_tcn,+ Causal TCN,4.8015,2.8997
+unseen,base,YOLOv26-1D (no stage 2),5.8983,4.9369
+unseen,A_rf,+ Random Forest,5.9052,4.7314
+unseen,B_ridge,+ Ridge,5.7987,4.7197
+unseen,C_ema,+ Causal EMA,5.8895,4.9137
+unseen,D_mlp,+ MLP,5.8743,4.8625
+unseen,E_tcn,+ Causal TCN,6.7953,4.8896
