@@ -1,0 +1,40 @@
+{
+  "name": "yolo26_eff",
+  "method": "direct_pytorch_to_keras_to_tflite",
+  "neural_params": 598530,
+  "checkpoint": {
+    "path": "/mnt/data/jaitej/Yolov26_experiments_raspberryPi/ronin_yolov26/output/yolo26_eff_adam_v1/checkpoints/checkpoint_59.pt",
+    "size_bytes": 7404422,
+    "size_mb": 7.061407089233398
+  },
+  "tflite": {
+    "path": "/mnt/data/jaitej/Yolov26_experiments_raspberryPi/ronin_yolov26/models_tflite/yolo26_eff.tflite",
+    "size_bytes": 2522260,
+    "size_mb": 2.405414581298828
+  },
+  "input_shape": [
+    1,
+    6,
+    200
+  ],
+  "output_shape": [
+    1,
+    2
+  ],
+  "validation": {
+    "torch_output": [
+      [
+        -0.390611857175827,
+        -0.038207702338695526
+      ]
+    ],
+    "keras_output": [
+      [
+        -0.39061257243156433,
+        -0.03820599988102913
+      ]
+    ],
+    "max_abs_diff": 1.7024576663970947e-06
+  },
+  "notes": "Bypasses ONNX because onnx2tf mis-converts the YOLO26 neck channel/time axes. EfficientPSA1D uses reduced-dimension attention (256->96->256) plus a depthwise temporal conv; LiteNeck1D projects all three scales to 96 ch before fusing."
+}
