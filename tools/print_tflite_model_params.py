@@ -9,6 +9,7 @@ import numpy as np
 DEFAULT_MODELS = [
     "resnet",
     "yolo26",
+    "yolo26_eff",
     "mobilenet",
     "shufflenet",
     "tinycnn",
