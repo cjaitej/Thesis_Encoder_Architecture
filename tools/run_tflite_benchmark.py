@@ -35,11 +35,13 @@ except ImportError:
 MODELS = {
     "resnet": {"path": "models_tflite/resnet.tflite", "rf": False},
     "yolo26": {"path": "models_tflite/yolo26.tflite", "rf": False},
+    "yolo26_eff": {"path": "models_tflite/yolo26_eff.tflite", "rf": False},
     "mobilenet": {"path": "models_tflite/mobilenet.tflite", "rf": False},
     "shufflenet": {"path": "models_tflite/shufflenet.tflite", "rf": False},
     "tinycnn": {"path": "models_tflite/tinycnn.tflite", "rf": False},
     "lighttcn": {"path": "models_tflite/lighttcn.tflite", "rf": False},
     "yolo26_rf": {"path": "models_tflite/yolo26.tflite", "rf": True},
+    "yolo26_eff_rf": {"path": "models_tflite/yolo26_eff.tflite", "rf": True},
     "mobilenet_rf": {"path": "models_tflite/mobilenet.tflite", "rf": True},
     "shufflenet_rf": {"path": "models_tflite/shufflenet.tflite", "rf": True},
     "tinycnn_rf": {"path": "models_tflite/tinycnn.tflite", "rf": True},
@@ -58,6 +60,19 @@ MODELS = {
                      "stage2": "D_mlp_corrector.npz"},
     "yolo26_E_tcn": {"path": "models_tflite/yolo26.tflite", "rf": False,
                      "stage2": "E_tcn_corrector.npz"},
+
+    # Same stage-2 correctors on the Efficient backbone. Point --stage2_dir at
+    # the correctors fitted on THIS backbone's residuals, not yolo26's.
+    "yolo26_eff_A_rf": {"path": "models_tflite/yolo26_eff.tflite", "rf": False,
+                        "stage2": "A_rf_corrector.npz"},
+    "yolo26_eff_B_ridge": {"path": "models_tflite/yolo26_eff.tflite", "rf": False,
+                           "stage2": "B_ridge_corrector.npz"},
+    "yolo26_eff_C_ema": {"path": "models_tflite/yolo26_eff.tflite", "rf": False,
+                         "stage2": "C_ema_corrector.npz"},
+    "yolo26_eff_D_mlp": {"path": "models_tflite/yolo26_eff.tflite", "rf": False,
+                         "stage2": "D_mlp_corrector.npz"},
+    "yolo26_eff_E_tcn": {"path": "models_tflite/yolo26_eff.tflite", "rf": False,
+                         "stage2": "E_tcn_corrector.npz"},
 }
 
 
