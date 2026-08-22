@@ -1,0 +1,36 @@
+{
+  "train_npz": "../output/rf_yolo26/rf_train.npz",
+  "val_npz": "../output/rf_yolo26/rf_val.npz",
+  "output_mode": "multi",
+  "best_params": {
+    "n_estimators": 400,
+    "max_depth": 12,
+    "min_samples_leaf": 1,
+    "max_features": "sqrt"
+  },
+  "val_mse_x": 0.03491204231977463,
+  "val_mse_y": 0.035717811435461044,
+  "val_mse_avg": 0.035314926877617836,
+  "baseline_zero_residual_mse_avg": 0.037157535552978516,
+  "feature_names": [
+    "pred_vx",
+    "pred_vy",
+    "pred_speed",
+    "gyro_x",
+    "gyro_y",
+    "gyro_z",
+    "acce_x",
+    "acce_y",
+    "acce_z",
+    "gyro_norm",
+    "acce_norm",
+    "gyro_norm_mean",
+    "gyro_norm_std",
+    "acce_norm_mean",
+    "acce_norm_std",
+    "d_pred_vx",
+    "d_pred_vy",
+    "time_progress"
+  ]
+}
+
