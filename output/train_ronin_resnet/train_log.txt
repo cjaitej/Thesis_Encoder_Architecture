@@ -1,0 +1,517 @@
+a001_1: device: asus7, ori_error (game_rv): 4.492
+a001_3: device: asus7, ori_error (game_rv): 4.842
+a002_1: device: asus4, ori_error (ekf): 0.202
+a002_2: device: asus4, ori_error (game_rv): 16.300
+a003_1: device: samsung1, ori_error (game_rv): 10.616
+a003_2: device: samsung1, ori_error (ekf): 6.719
+a004_2: device: asus3, ori_error (ekf): 9.161
+a005_1: device: samsung1, ori_error (game_rv): 3.970
+a007_2: device: samsung1, ori_error (ekf): 9.989
+a009_3: device: asus4, ori_error (game_rv): 4.977
+a010_1: device: samsung1, ori_error (ekf): 3.874
+a010_3: device: samsung1, ori_error (ekf): 1.013
+a011_1: device: samsung1, ori_error (game_rv): 9.471
+a011_3: device: samsung1, ori_error (gyro_integration): 2.988
+a012_1: device: samsung1, ori_error (game_rv): 8.180
+a012_3: device: samsung1, ori_error (ekf): 2.900
+a013_1: device: asus4, ori_error (game_rv): 11.683
+a013_3: device: asus4, ori_error (game_rv): 1.129
+a014_1: device: asus4, ori_error (game_rv): 18.514
+a015_1: device: samsung1, ori_error (game_rv): 16.236
+a015_3: device: samsung1, ori_error (game_rv): 7.806
+a016_3: device: asus4, ori_error (game_rv): 2.559
+a017_1: device: samsung1, ori_error (game_rv): 4.741
+a017_3: device: samsung1, ori_error (game_rv): 3.693
+a018_1: device: asus4, ori_error (game_rv): 0.988
+a018_2: device: asus4, ori_error (ekf): 3.249
+a018_3: device: asus4, ori_error (game_rv): 2.196
+a020_1: device: asus3, ori_error (game_rv): 5.644
+a020_3: device: asus3, ori_error (game_rv): 4.346
+a021_1: device: samsung1, ori_error (ekf): 1.009
+a022_1: device: asus5, ori_error (game_rv): 15.663
+a022_3: device: asus5, ori_error (game_rv): 1.703
+a023_2: device: asus5, ori_error (game_rv): 2.423
+a023_3: device: asus5, ori_error (game_rv): 3.493
+a025_1: device: samsung1, ori_error (ekf): 0.678
+a025_3: device: samsung1, ori_error (ekf): 5.755
+a026_3: device: asus4, ori_error (game_rv): 11.625
+a027_1: device: samsung1, ori_error (game_rv): 1.311
+a027_3: device: samsung1, ori_error (game_rv): 8.191
+a028_3: device: asus4, ori_error (game_rv): 4.216
+a030_1: device: samsung1, ori_error (game_rv): 8.240
+a031_1: device: samsung1, ori_error (game_rv): 2.492
+a031_3: device: samsung1, ori_error (game_rv): 6.005
+a033_1: device: samsung1, ori_error (game_rv): 7.305
+a033_3: device: samsung1, ori_error (game_rv): 10.423
+a034_1: device: asus7, ori_error (ekf): 3.702
+a034_2: device: asus7, ori_error (game_rv): 5.309
+a034_3: device: asus7, ori_error (game_rv): 8.244
+a035_1: device: samsung1, ori_error (ekf): 8.230
+a036_1: device: asus4, ori_error (game_rv): 2.034
+a036_3: device: asus4, ori_error (game_rv): 12.798
+a037_3: device: asus4, ori_error (ekf): 1.919
+a038_3: device: samsung1, ori_error (game_rv): 8.722
+a040_2: device: samsung1, ori_error (game_rv): 11.225
+a040_3: device: samsung1, ori_error (game_rv): 4.998
+a043_1: device: asus4, ori_error (game_rv): 4.197
+a043_3: device: asus4, ori_error (game_rv): 1.466
+a044_1: device: samsung1, ori_error (game_rv): 12.306
+a044_3: device: samsung1, ori_error (game_rv): 19.618
+a045_1: device: samsung1, ori_error (game_rv): 13.831
+a045_3: device: samsung1, ori_error (game_rv): 12.975
+a046_1: device: samsung1, ori_error (ekf): 6.108
+a046_3: device: samsung1, ori_error (ekf): 2.514
+a047_3: device: asus4, ori_error (game_rv): 16.464
+a000_1: device: asus5, ori_error (game_rv): 3.520
+a000_10: device: asus4, ori_error (game_rv): 6.669
+a000_2: device: asus5, ori_error (game_rv): 6.297
+a000_3: device: asus7, ori_error (game_rv): 5.766
+a000_4: device: asus3, ori_error (game_rv): 3.275
+a000_5: device: asus3, ori_error (game_rv): 6.396
+a059_1: device: asus4, ori_error (game_rv): 11.312
+a059_3: device: asus4, ori_error (game_rv): 9.448
+Training set loaded. Feature size: 6, target size: 2. Time usage: 5.774s
+a000_6: device: asus3, ori_error (game_rv): 3.249
+a000_8: device: samsung1, ori_error (game_rv): 8.601
+a000_9: device: samsung1, ori_error (game_rv): 3.001
+a009_2: device: asus4, ori_error (game_rv): 0.892
+a014_3: device: asus4, ori_error (game_rv): 9.837
+a015_2: device: samsung1, ori_error (game_rv): 14.623
+a021_3: device: samsung1, ori_error (game_rv): 15.148
+a026_1: device: asus4, ori_error (game_rv): 1.881
+a028_1: device: asus4, ori_error (game_rv): 1.019
+a038_1: device: samsung1, ori_error (game_rv): 10.237
+a039_1: device: asus3, ori_error (game_rv): 2.205
+a039_2: device: asus3, ori_error (game_rv): 17.383
+a045_2: device: samsung1, ori_error (game_rv): 4.817
+a047_1: device: asus4, ori_error (game_rv): 15.231
+a056_1: device: asus3, ori_error (game_rv): 10.203
+a056_3: device: asus3, ori_error (game_rv): 14.046
+[ResNet1D] Plain baseline mode: training from scratch.
+[ResNet1D] Parameters: 4,634,882
+Number of train samples: 795215
+Number of val samples: 162955
+Total number of parameters:  4634882
+[Optimizer] Adam lr=1.00e-04, weight_decay=1.00e-04
+Start from epoch 0
+-------------------------
+Init: average loss: [0.342351 0.343095]/0.342723
+Validation loss: [0.352818 0.406362]/0.379590
+-------------------------
+Epoch 0, time usage: 145.318s, average loss: [0.046186 0.044989]/0.045588
+Validation loss: [0.051990 0.051152]/0.051571
+  LR: 1.00e-04
+Model saved to  ../output/train_ronin_resnet/checkpoints/checkpoint_0.pt
+-------------------------
+Epoch 1, time usage: 152.681s, average loss: [0.028478 0.028378]/0.028428
+Validation loss: [0.043865 0.041714]/0.042789
+  LR: 1.00e-04
+Model saved to  ../output/train_ronin_resnet/checkpoints/checkpoint_1.pt
+-------------------------
+Epoch 2, time usage: 152.167s, average loss: [0.024715 0.024689]/0.024702
+Validation loss: [0.042427 0.037022]/0.039725
+  LR: 1.00e-04
+Model saved to  ../output/train_ronin_resnet/checkpoints/checkpoint_2.pt
+-------------------------
+Epoch 3, time usage: 153.214s, average loss: [0.022391 0.022215]/0.022303
+Validation loss: [0.038770 0.038906]/0.038838
+  LR: 1.00e-04
+Model saved to  ../output/train_ronin_resnet/checkpoints/checkpoint_3.pt
+-------------------------
+Epoch 4, time usage: 152.369s, average loss: [0.020797 0.020763]/0.020780
+Validation loss: [0.037840 0.037814]/0.037827
+  LR: 1.00e-04
+Model saved to  ../output/train_ronin_resnet/checkpoints/checkpoint_4.pt
+-------------------------
+Epoch 5, time usage: 154.184s, average loss: [0.019643 0.019528]/0.019586
+Validation loss: [0.035115 0.032150]/0.033633
+  LR: 1.00e-04
+Model saved to  ../output/train_ronin_resnet/checkpoints/checkpoint_5.pt
+-------------------------
+Epoch 6, time usage: 154.897s, average loss: [0.018703 0.018622]/0.018663
+Validation loss: [0.034866 0.037308]/0.036087
+  LR: 1.00e-04
+-------------------------
+Epoch 7, time usage: 155.091s, average loss: [0.018003 0.017826]/0.017914
+Validation loss: [0.038738 0.037702]/0.038220
+  LR: 1.00e-04
+-------------------------
+Epoch 8, time usage: 153.880s, average loss: [0.017374 0.017258]/0.017316
+Validation loss: [0.033451 0.033286]/0.033369
+  LR: 1.00e-04
+Model saved to  ../output/train_ronin_resnet/checkpoints/checkpoint_8.pt
+-------------------------
+Epoch 9, time usage: 154.139s, average loss: [0.016816 0.016825]/0.016820
+Validation loss: [0.034895 0.032619]/0.033757
+  LR: 1.00e-04
+-------------------------
+Epoch 10, time usage: 156.355s, average loss: [0.016405 0.016300]/0.016353
+Validation loss: [0.035906 0.033711]/0.034808
+  LR: 1.00e-04
+-------------------------
+Epoch 11, time usage: 153.491s, average loss: [0.016084 0.015913]/0.015999
+Validation loss: [0.032711 0.032589]/0.032650
+  LR: 1.00e-04
+Model saved to  ../output/train_ronin_resnet/checkpoints/checkpoint_11.pt
+-------------------------
+Epoch 12, time usage: 159.434s, average loss: [0.015567 0.015657]/0.015612
+Validation loss: [0.033931 0.031996]/0.032964
+  LR: 1.00e-04
+-------------------------
+Epoch 13, time usage: 157.424s, average loss: [0.015460 0.015421]/0.015440
+Validation loss: [0.034908 0.030875]/0.032891
+  LR: 1.00e-04
+-------------------------
+Epoch 14, time usage: 151.968s, average loss: [0.015131 0.015047]/0.015089
+Validation loss: [0.035484 0.030391]/0.032938
+  LR: 1.00e-04
+-------------------------
+Epoch 15, time usage: 151.460s, average loss: [0.014890 0.014812]/0.014851
+Validation loss: [0.031177 0.029249]/0.030213
+  LR: 1.00e-04
+Model saved to  ../output/train_ronin_resnet/checkpoints/checkpoint_15.pt
+-------------------------
+Epoch 16, time usage: 152.521s, average loss: [0.014641 0.014578]/0.014609
+Validation loss: [0.034913 0.033173]/0.034043
+  LR: 1.00e-04
+-------------------------
+Epoch 17, time usage: 164.084s, average loss: [0.014300 0.014528]/0.014414
+Validation loss: [0.031142 0.030732]/0.030937
+  LR: 1.00e-04
+-------------------------
+Epoch 18, time usage: 167.164s, average loss: [0.014357 0.014200]/0.014279
+Validation loss: [0.031063 0.030716]/0.030889
+  LR: 1.00e-04
+-------------------------
+Epoch 19, time usage: 164.153s, average loss: [0.014010 0.014082]/0.014046
+Validation loss: [0.034970 0.032923]/0.033947
+  LR: 1.00e-04
+-------------------------
+Epoch 20, time usage: 154.455s, average loss: [0.013938 0.013872]/0.013905
+Validation loss: [0.036024 0.034113]/0.035068
+  LR: 1.00e-04
+-------------------------
+Epoch 21, time usage: 154.433s, average loss: [0.013776 0.013726]/0.013751
+Validation loss: [0.032060 0.033163]/0.032612
+  LR: 1.00e-04
+-------------------------
+Epoch 22, time usage: 154.471s, average loss: [0.013635 0.013693]/0.013664
+Validation loss: [0.031179 0.034956]/0.033068
+  LR: 1.00e-04
+-------------------------
+Epoch 23, time usage: 154.470s, average loss: [0.013638 0.013562]/0.013600
+Validation loss: [0.033765 0.032816]/0.033290
+  LR: 1.00e-04
+-------------------------
+Epoch 24, time usage: 154.389s, average loss: [0.013376 0.013449]/0.013412
+Validation loss: [0.032670 0.029698]/0.031184
+  LR: 1.00e-04
+-------------------------
+Epoch 25, time usage: 154.729s, average loss: [0.013363 0.013202]/0.013283
+Validation loss: [0.030666 0.029930]/0.030298
+  LR: 1.00e-04
+-------------------------
+Epoch 26, time usage: 154.679s, average loss: [0.013286 0.013205]/0.013245
+Validation loss: [0.032629 0.031431]/0.032030
+Epoch 00027: reducing learning rate of group 0 to 1.0000e-05.
+  LR: 1.00e-05
+-------------------------
+Epoch 27, time usage: 154.571s, average loss: [0.010323 0.010189]/0.010256
+Validation loss: [0.029032 0.028820]/0.028926
+  LR: 1.00e-05
+Model saved to  ../output/train_ronin_resnet/checkpoints/checkpoint_27.pt
+-------------------------
+Epoch 28, time usage: 156.032s, average loss: [0.009432 0.009258]/0.009345
+Validation loss: [0.028895 0.028923]/0.028909
+  LR: 1.00e-05
+Model saved to  ../output/train_ronin_resnet/checkpoints/checkpoint_28.pt
+-------------------------
+Epoch 29, time usage: 153.783s, average loss: [0.008960 0.008886]/0.008923
+Validation loss: [0.029017 0.029329]/0.029173
+  LR: 1.00e-05
+-------------------------
+Epoch 30, time usage: 152.269s, average loss: [0.008658 0.008628]/0.008643
+Validation loss: [0.028402 0.029049]/0.028726
+  LR: 1.00e-05
+Model saved to  ../output/train_ronin_resnet/checkpoints/checkpoint_30.pt
+-------------------------
+Epoch 31, time usage: 154.342s, average loss: [0.008496 0.008317]/0.008406
+Validation loss: [0.029037 0.028698]/0.028867
+  LR: 1.00e-05
+-------------------------
+Epoch 32, time usage: 154.669s, average loss: [0.008219 0.008251]/0.008235
+Validation loss: [0.028719 0.029580]/0.029150
+  LR: 1.00e-05
+-------------------------
+Epoch 33, time usage: 157.372s, average loss: [0.008097 0.007999]/0.008048
+Validation loss: [0.029323 0.029321]/0.029322
+  LR: 1.00e-05
+-------------------------
+Epoch 34, time usage: 159.028s, average loss: [0.007935 0.007923]/0.007929
+Validation loss: [0.029438 0.029090]/0.029264
+  LR: 1.00e-05
+-------------------------
+Epoch 35, time usage: 155.575s, average loss: [0.007819 0.007758]/0.007788
+Validation loss: [0.028931 0.029048]/0.028990
+  LR: 1.00e-05
+-------------------------
+Epoch 36, time usage: 154.859s, average loss: [0.007609 0.007728]/0.007668
+Validation loss: [0.029638 0.029979]/0.029808
+  LR: 1.00e-05
+-------------------------
+Epoch 37, time usage: 150.033s, average loss: [0.007553 0.007545]/0.007549
+Validation loss: [0.030163 0.029469]/0.029816
+  LR: 1.00e-05
+-------------------------
+Epoch 38, time usage: 155.264s, average loss: [0.007495 0.007405]/0.007450
+Validation loss: [0.029369 0.030065]/0.029717
+  LR: 1.00e-05
+-------------------------
+Epoch 39, time usage: 151.229s, average loss: [0.007419 0.007318]/0.007368
+Validation loss: [0.029729 0.029508]/0.029618
+  LR: 1.00e-05
+-------------------------
+Epoch 40, time usage: 153.674s, average loss: [0.007283 0.007235]/0.007259
+Validation loss: [0.029488 0.029480]/0.029484
+  LR: 1.00e-05
+-------------------------
+Epoch 41, time usage: 158.709s, average loss: [0.007156 0.007191]/0.007173
+Validation loss: [0.030548 0.029590]/0.030069
+Epoch 00042: reducing learning rate of group 0 to 1.0000e-06.
+  LR: 1.00e-06
+-------------------------
+Epoch 42, time usage: 159.460s, average loss: [0.006895 0.006844]/0.006870
+Validation loss: [0.029788 0.029884]/0.029836
+  LR: 1.00e-06
+-------------------------
+Epoch 43, time usage: 154.046s, average loss: [0.006777 0.006791]/0.006784
+Validation loss: [0.029745 0.030080]/0.029912
+  LR: 1.00e-06
+-------------------------
+Epoch 44, time usage: 157.431s, average loss: [0.006708 0.006748]/0.006728
+Validation loss: [0.029800 0.029935]/0.029867
+  LR: 1.00e-06
+-------------------------
+Epoch 45, time usage: 164.352s, average loss: [0.006711 0.006716]/0.006714
+Validation loss: [0.029853 0.029977]/0.029915
+  LR: 1.00e-06
+-------------------------
+Epoch 46, time usage: 154.283s, average loss: [0.006688 0.006698]/0.006693
+Validation loss: [0.029910 0.030029]/0.029969
+  LR: 1.00e-06
+-------------------------
+Epoch 47, time usage: 152.680s, average loss: [0.006651 0.006665]/0.006658
+Validation loss: [0.029916 0.029913]/0.029914
+  LR: 1.00e-06
+-------------------------
+Epoch 48, time usage: 155.434s, average loss: [0.006679 0.006621]/0.006650
+Validation loss: [0.029934 0.029776]/0.029855
+  LR: 1.00e-06
+-------------------------
+Epoch 49, time usage: 152.536s, average loss: [0.006621 0.006624]/0.006623
+Validation loss: [0.029753 0.029765]/0.029759
+  LR: 1.00e-06
+-------------------------
+Epoch 50, time usage: 157.735s, average loss: [0.006608 0.006593]/0.006600
+Validation loss: [0.029919 0.029658]/0.029789
+  LR: 1.00e-06
+-------------------------
+Epoch 51, time usage: 162.710s, average loss: [0.006601 0.006568]/0.006585
+Validation loss: [0.029651 0.029783]/0.029717
+  LR: 1.00e-06
+-------------------------
+Epoch 52, time usage: 160.647s, average loss: [0.006573 0.006564]/0.006569
+Validation loss: [0.029972 0.029919]/0.029946
+Epoch 00053: reducing learning rate of group 0 to 1.0000e-07.
+  LR: 1.00e-07
+-------------------------
+Epoch 53, time usage: 154.048s, average loss: [0.006529 0.006551]/0.006540
+Validation loss: [0.029939 0.029747]/0.029843
+  LR: 1.00e-07
+-------------------------
+Epoch 54, time usage: 158.023s, average loss: [0.006502 0.006594]/0.006548
+Validation loss: [0.029927 0.029661]/0.029794
+  LR: 1.00e-07
+-------------------------
+Epoch 55, time usage: 154.416s, average loss: [0.006568 0.006496]/0.006532
+Validation loss: [0.029774 0.029829]/0.029801
+  LR: 1.00e-07
+-------------------------
+Epoch 56, time usage: 125.836s, average loss: [0.006520 0.006551]/0.006535
+Validation loss: [0.029781 0.029734]/0.029758
+  LR: 1.00e-07
+-------------------------
+Epoch 57, time usage: 157.464s, average loss: [0.006558 0.006508]/0.006533
+Validation loss: [0.029968 0.029994]/0.029981
+  LR: 1.00e-07
+-------------------------
+Epoch 58, time usage: 161.064s, average loss: [0.006503 0.006558]/0.006531
+Validation loss: [0.029936 0.030036]/0.029986
+  LR: 1.00e-07
+-------------------------
+Epoch 59, time usage: 152.806s, average loss: [0.006550 0.006516]/0.006533
+Validation loss: [0.029884 0.030035]/0.029959
+  LR: 1.00e-07
+-------------------------
+Epoch 60, time usage: 165.146s, average loss: [0.006515 0.006508]/0.006512
+Validation loss: [0.029797 0.029997]/0.029897
+  LR: 1.00e-07
+-------------------------
+Epoch 61, time usage: 157.273s, average loss: [0.006541 0.006518]/0.006530
+Validation loss: [0.029896 0.029786]/0.029841
+  LR: 1.00e-07
+-------------------------
+Epoch 62, time usage: 150.852s, average loss: [0.006510 0.006536]/0.006523
+Validation loss: [0.029923 0.029887]/0.029905
+  LR: 1.00e-07
+-------------------------
+Epoch 63, time usage: 160.214s, average loss: [0.006493 0.006531]/0.006512
+Validation loss: [0.029895 0.029840]/0.029867
+Epoch 00064: reducing learning rate of group 0 to 1.0000e-08.
+  LR: 1.00e-08
+-------------------------
+Epoch 64, time usage: 160.476s, average loss: [0.006511 0.006533]/0.006522
+Validation loss: [0.029869 0.029903]/0.029886
+  LR: 1.00e-08
+-------------------------
+Epoch 65, time usage: 103.231s, average loss: [0.006548 0.006487]/0.006518
+Validation loss: [0.029934 0.030060]/0.029997
+  LR: 1.00e-08
+-------------------------
+Epoch 66, time usage: 157.852s, average loss: [0.006579 0.006459]/0.006519
+Validation loss: [0.029837 0.029812]/0.029824
+  LR: 1.00e-08
+-------------------------
+Epoch 67, time usage: 160.418s, average loss: [0.006512 0.006505]/0.006509
+Validation loss: [0.029957 0.029888]/0.029923
+  LR: 1.00e-08
+-------------------------
+Epoch 68, time usage: 154.340s, average loss: [0.006518 0.006514]/0.006516
+Validation loss: [0.030038 0.029813]/0.029925
+  LR: 1.00e-08
+-------------------------
+Epoch 69, time usage: 154.452s, average loss: [0.006526 0.006513]/0.006519
+Validation loss: [0.029983 0.029936]/0.029959
+  LR: 1.00e-08
+-------------------------
+Epoch 70, time usage: 154.873s, average loss: [0.006511 0.006499]/0.006505
+Validation loss: [0.029823 0.029830]/0.029827
+  LR: 1.00e-08
+-------------------------
+Epoch 71, time usage: 156.398s, average loss: [0.006521 0.006513]/0.006517
+Validation loss: [0.030047 0.030175]/0.030111
+  LR: 1.00e-08
+-------------------------
+Epoch 72, time usage: 157.126s, average loss: [0.006515 0.006521]/0.006518
+Validation loss: [0.029949 0.029831]/0.029890
+  LR: 1.00e-08
+-------------------------
+Epoch 73, time usage: 159.810s, average loss: [0.006530 0.006504]/0.006517
+Validation loss: [0.029924 0.029849]/0.029887
+  LR: 1.00e-08
+-------------------------
+Epoch 74, time usage: 160.754s, average loss: [0.006518 0.006509]/0.006514
+Validation loss: [0.030007 0.030017]/0.030012
+  LR: 1.00e-08
+-------------------------
+Epoch 75, time usage: 156.771s, average loss: [0.006544 0.006475]/0.006509
+Validation loss: [0.030141 0.029843]/0.029992
+  LR: 1.00e-08
+-------------------------
+Epoch 76, time usage: 156.660s, average loss: [0.006537 0.006480]/0.006508
+Validation loss: [0.029747 0.029801]/0.029774
+  LR: 1.00e-08
+-------------------------
+Epoch 77, time usage: 156.307s, average loss: [0.006557 0.006472]/0.006515
+Validation loss: [0.029854 0.029841]/0.029848
+  LR: 1.00e-08
+-------------------------
+Epoch 78, time usage: 153.914s, average loss: [0.006500 0.006515]/0.006507
+Validation loss: [0.029780 0.029819]/0.029799
+  LR: 1.00e-08
+-------------------------
+Epoch 79, time usage: 156.537s, average loss: [0.006518 0.006483]/0.006500
+Validation loss: [0.030121 0.029939]/0.030030
+  LR: 1.00e-08
+-------------------------
+Epoch 80, time usage: 157.477s, average loss: [0.006494 0.006536]/0.006515
+Validation loss: [0.029782 0.029809]/0.029796
+  LR: 1.00e-08
+-------------------------
+Epoch 81, time usage: 157.474s, average loss: [0.006537 0.006509]/0.006523
+Validation loss: [0.030080 0.029849]/0.029965
+  LR: 1.00e-08
+-------------------------
+Epoch 82, time usage: 158.105s, average loss: [0.006494 0.006531]/0.006512
+Validation loss: [0.029830 0.029786]/0.029808
+  LR: 1.00e-08
+-------------------------
+Epoch 83, time usage: 156.014s, average loss: [0.006514 0.006524]/0.006519
+Validation loss: [0.029845 0.029852]/0.029849
+  LR: 1.00e-08
+-------------------------
+Epoch 84, time usage: 157.616s, average loss: [0.006495 0.006511]/0.006503
+Validation loss: [0.030040 0.030017]/0.030029
+  LR: 1.00e-08
+-------------------------
+Epoch 85, time usage: 156.233s, average loss: [0.006513 0.006494]/0.006503
+Validation loss: [0.030036 0.029870]/0.029953
+  LR: 1.00e-08
+-------------------------
+Epoch 86, time usage: 156.311s, average loss: [0.006523 0.006538]/0.006531
+Validation loss: [0.030027 0.030141]/0.030084
+  LR: 1.00e-08
+-------------------------
+Epoch 87, time usage: 158.280s, average loss: [0.006549 0.006443]/0.006496
+Validation loss: [0.029923 0.029950]/0.029936
+  LR: 1.00e-08
+-------------------------
+Epoch 88, time usage: 156.971s, average loss: [0.006562 0.006464]/0.006513
+Validation loss: [0.030054 0.029990]/0.030022
+  LR: 1.00e-08
+-------------------------
+Epoch 89, time usage: 157.709s, average loss: [0.006506 0.006505]/0.006506
+Validation loss: [0.029892 0.029873]/0.029882
+  LR: 1.00e-08
+-------------------------
+Epoch 90, time usage: 155.337s, average loss: [0.006507 0.006516]/0.006512
+Validation loss: [0.030082 0.029827]/0.029955
+  LR: 1.00e-08
+-------------------------
+Epoch 91, time usage: 156.664s, average loss: [0.006550 0.006470]/0.006510
+Validation loss: [0.029813 0.029835]/0.029824
+  LR: 1.00e-08
+-------------------------
+Epoch 92, time usage: 159.079s, average loss: [0.006501 0.006509]/0.006505
+Validation loss: [0.029854 0.029889]/0.029872
+  LR: 1.00e-08
+-------------------------
+Epoch 93, time usage: 159.493s, average loss: [0.006505 0.006469]/0.006487
+Validation loss: [0.030084 0.030032]/0.030058
+  LR: 1.00e-08
+-------------------------
+Epoch 94, time usage: 156.760s, average loss: [0.006479 0.006556]/0.006518
+Validation loss: [0.029763 0.029843]/0.029803
+  LR: 1.00e-08
+-------------------------
+Epoch 95, time usage: 155.292s, average loss: [0.006525 0.006460]/0.006492
+Validation loss: [0.030145 0.030054]/0.030099
+  LR: 1.00e-08
+-------------------------
+Epoch 96, time usage: 169.778s, average loss: [0.006521 0.006483]/0.006502
+Validation loss: [0.030163 0.029989]/0.030076
+  LR: 1.00e-08
+-------------------------
+Epoch 97, time usage: 171.941s, average loss: [0.006548 0.006491]/0.006520
+Validation loss: [0.029989 0.029871]/0.029930
+  LR: 1.00e-08
+-------------------------
+Epoch 98, time usage: 158.519s, average loss: [0.006531 0.006498]/0.006514
+Validation loss: [0.029782 0.030071]/0.029927
+  LR: 1.00e-08
+-------------------------
+Epoch 99, time usage: 157.632s, average loss: [0.006494 0.006540]/0.006517
+Validation loss: [0.029851 0.029941]/0.029896
+  LR: 1.00e-08
+Training complete
+Checkpoint saved to  ../output/train_ronin_resnet/checkpoints/checkpoint_latest.pt

@@ -175,3 +175,4 @@ data
 lists
 *.png
 *.npy
+cache
