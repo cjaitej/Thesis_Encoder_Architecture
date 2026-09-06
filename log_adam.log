@@ -1,0 +1,571 @@
+(ronin) [12:09:44] user@user:~/RoNIN/ronin/ronin_yolo/source$ python ronin_resnet.py --mode train --root_dir ../data/train_dataset --train_list ../lists/list_train.txt --val_list ../lists/list_val.txt 
+--cache_path /tmp/ronin_cache --out_dir ../output/yolo26_adam --epochs 100 --batch_size 128 --optim adam --lr 1e-4 --weight_decay 0
+Training set loaded. Feature size: 6, target size: 2. Time usage: 2.010s
+[YOLO26-1D] Parameters: 648,002
+Number of train samples: 795215
+Number of val samples: 162955
+Total number of parameters:  648002
+Optimizer: adam, lr: 0.0001, weight_decay: 0.0
+Start from epoch 0
+-------------------------
+Init: average loss: [0.342933 0.342201]/0.342567
+Validation loss: [0.352711 0.406239]/0.379475
+-------------------------
+Epoch 0, time usage: 222.489s, average loss: [0.071767 0.070406]/0.071087
+Validation loss: [0.060095 0.053973]/0.057034
+Model saved to  ../output/yolo26_adam/checkpoints/checkpoint_0.pt
+-------------------------
+Epoch 1, time usage: 223.785s, average loss: [0.044923 0.045004]/0.044964
+Validation loss: [0.053325 0.047985]/0.050655
+Model saved to  ../output/yolo26_adam/checkpoints/checkpoint_1.pt
+-------------------------
+Epoch 2, time usage: 224.096s, average loss: [0.039536 0.039456]/0.039496
+Validation loss: [0.048470 0.044954]/0.046712
+Model saved to  ../output/yolo26_adam/checkpoints/checkpoint_2.pt
+-------------------------
+Epoch 3, time usage: 224.047s, average loss: [0.036289 0.036411]/0.036350
+Validation loss: [0.046869 0.041022]/0.043946
+Model saved to  ../output/yolo26_adam/checkpoints/checkpoint_3.pt
+-------------------------
+Epoch 4, time usage: 224.141s, average loss: [0.034329 0.034361]/0.034345
+Validation loss: [0.043741 0.039461]/0.041601
+Model saved to  ../output/yolo26_adam/checkpoints/checkpoint_4.pt
+-------------------------
+Epoch 5, time usage: 216.254s, average loss: [0.032656 0.032701]/0.032679
+Validation loss: [0.043189 0.038363]/0.040776
+Model saved to  ../output/yolo26_adam/checkpoints/checkpoint_5.pt
+-------------------------
+Epoch 6, time usage: 223.793s, average loss: [0.031483 0.031411]/0.031447
+Validation loss: [0.043059 0.039333]/0.041196
+-------------------------
+Epoch 7, time usage: 223.699s, average loss: [0.030501 0.030446]/0.030473
+Validation loss: [0.040656 0.037265]/0.038961
+Model saved to  ../output/yolo26_adam/checkpoints/checkpoint_7.pt
+-------------------------
+Epoch 8, time usage: 222.255s, average loss: [0.029499 0.029644]/0.029571
+Validation loss: [0.040044 0.038421]/0.039232
+-------------------------
+Epoch 9, time usage: 221.281s, average loss: [0.028806 0.028649]/0.028728
+Validation loss: [0.040149 0.036902]/0.038526
+Model saved to  ../output/yolo26_adam/checkpoints/checkpoint_9.pt
+-------------------------
+Epoch 10, time usage: 220.710s, average loss: [0.028081 0.028102]/0.028091
+Validation loss: [0.039793 0.036743]/0.038268
+Model saved to  ../output/yolo26_adam/checkpoints/checkpoint_10.pt
+-------------------------
+Epoch 11, time usage: 221.226s, average loss: [0.027517 0.027530]/0.027524
+Validation loss: [0.039714 0.036340]/0.038027
+Model saved to  ../output/yolo26_adam/checkpoints/checkpoint_11.pt
+-------------------------
+Epoch 12, time usage: 221.705s, average loss: [0.026807 0.026976]/0.026891
+Validation loss: [0.040197 0.035885]/0.038041
+-------------------------
+Epoch 13, time usage: 221.653s, average loss: [0.026361 0.026396]/0.026378
+Validation loss: [0.039154 0.036247]/0.037701
+Model saved to  ../output/yolo26_adam/checkpoints/checkpoint_13.pt
+-------------------------
+Epoch 14, time usage: 221.821s, average loss: [0.025925 0.025908]/0.025917
+Validation loss: [0.039133 0.035467]/0.037300
+Model saved to  ../output/yolo26_adam/checkpoints/checkpoint_14.pt
+-------------------------
+Epoch 15, time usage: 220.968s, average loss: [0.025552 0.025598]/0.025575
+Validation loss: [0.038943 0.035590]/0.037266
+Model saved to  ../output/yolo26_adam/checkpoints/checkpoint_15.pt
+-------------------------
+Epoch 16, time usage: 220.542s, average loss: [0.025064 0.025172]/0.025118
+Validation loss: [0.039380 0.034688]/0.037034
+Model saved to  ../output/yolo26_adam/checkpoints/checkpoint_16.pt
+-------------------------
+Epoch 17, time usage: 221.083s, average loss: [0.024828 0.024858]/0.024843
+Validation loss: [0.038151 0.034917]/0.036534
+Model saved to  ../output/yolo26_adam/checkpoints/checkpoint_17.pt
+-------------------------
+Epoch 18, time usage: 220.984s, average loss: [0.024391 0.024449]/0.024420
+Validation loss: [0.037760 0.034246]/0.036003
+Model saved to  ../output/yolo26_adam/checkpoints/checkpoint_18.pt
+-------------------------
+Epoch 19, time usage: 221.113s, average loss: [0.024127 0.024173]/0.024150
+Validation loss: [0.036107 0.035201]/0.035654
+Model saved to  ../output/yolo26_adam/checkpoints/checkpoint_19.pt
+-------------------------
+Epoch 20, time usage: 214.097s, average loss: [0.023854 0.023873]/0.023864
+Validation loss: [0.036243 0.033662]/0.034953
+Model saved to  ../output/yolo26_adam/checkpoints/checkpoint_20.pt
+-------------------------
+Epoch 21, time usage: 220.569s, average loss: [0.023579 0.023575]/0.023577
+Validation loss: [0.037550 0.034192]/0.035871
+-------------------------
+Epoch 22, time usage: 220.475s, average loss: [0.023380 0.023270]/0.023325
+Validation loss: [0.037174 0.034559]/0.035866
+-------------------------
+Epoch 23, time usage: 220.520s, average loss: [0.022962 0.023172]/0.023067
+Validation loss: [0.036819 0.034750]/0.035784
+-------------------------
+Epoch 24, time usage: 220.500s, average loss: [0.022788 0.022871]/0.022829
+Validation loss: [0.036001 0.034019]/0.035010
+-------------------------
+Epoch 25, time usage: 220.626s, average loss: [0.022641 0.022730]/0.022685
+Validation loss: [0.037228 0.033307]/0.035268
+-------------------------
+Epoch 26, time usage: 219.198s, average loss: [0.022481 0.022433]/0.022457
+Validation loss: [0.038034 0.035237]/0.036635
+-------------------------
+Epoch 27, time usage: 204.520s, average loss: [0.022212 0.022237]/0.022224
+Validation loss: [0.036596 0.033778]/0.035187
+
+-------------------------
+
+
+Epoch 24, time usage: 220.500s, average loss: [0.022788 0.022871]/0.022829
+Validation loss: [0.036001 0.034019]/0.035010
+-------------------------
+Epoch 25, time usage: 220.626s, average loss: [0.022641 0.022730]/0.022685
+Validation loss: [0.037228 0.033307]/0.035268
+-------------------------
+Epoch 26, time usage: 219.198s, average loss: [0.022481 0.022433]/0.022457
+Validation loss: [0.038034 0.035237]/0.036635
+-------------------------
+Epoch 27, time usage: 204.520s, average loss: [0.022212 0.022237]/0.022224
+Validation loss: [0.036596 0.033778]/0.035187
+
+Epoch 27, time usage: 204.520s, average loss: [0.022212 0.022237]/0.022224
+
+-------------------------
+Epoch 24, time usage: 220.500s, average loss: [0.022788 0.022871]/0.022829
+Validation loss: [0.036001 0.034019]/0.035010
+-------------------------
+Epoch 25, time usage: 220.626s, average loss: [0.022641 0.022730]/0.022685
+Validation loss: [0.037228 0.033307]/0.035268
+-------------------------
+Epoch 26, time usage: 219.198s, average loss: [0.022481 0.022433]/0.022457
+Validation loss: [0.038034 0.035237]/0.036635
+-------------------------
+Epoch 27, time usage: 204.520s, average loss: [0.022212 0.022237]/0.022224
+Validation loss: [0.036596 0.033778]/0.035187
+
+Validation loss: [0.036596 0.033778]/0.035187
+Validation loss: [0.036819 0.034750]/0.035784
+-------------------------
+Epoch 24, time usage: 220.500s, average loss: [0.022788 0.022871]/0.022829
+Validation loss: [0.036001 0.034019]/0.035010
+-------------------------
+Epoch 25, time usage: 220.626s, average loss: [0.022641 0.022730]/0.022685
+Validation loss: [0.037228 0.033307]/0.035268
+-------------------------
+Epoch 26, time usage: 219.198s, average loss: [0.022481 0.022433]/0.022457
+Validation loss: [0.038034 0.035237]/0.036635
+-------------------------
+Epoch 27, time usage: 204.520s, average loss: [0.022212 0.022237]/0.022224
+Validation loss: [0.036596 0.033778]/0.035187
+Epoch 23, time usage: 220.520s, average loss: [0.022962 0.023172]/0.023067
+Validation loss: [0.036819 0.034750]/0.035784
+-------------------------
+Epoch 24, time usage: 220.500s, average loss: [0.022788 0.022871]/0.022829
+Validation loss: [0.036001 0.034019]/0.035010
+-------------------------
+Epoch 25, time usage: 220.626s, average loss: [0.022641 0.022730]/0.022685
+Validation loss: [0.037228 0.033307]/0.035268
+-------------------------
+Epoch 26, time usage: 219.198s, average loss: [0.022481 0.022433]/0.022457
+Validation loss: [0.038034 0.035237]/0.036635
+-------------------------
+Epoch 27, time usage: 204.520s, average loss: [0.022212 0.022237]/0.022224
+Validation loss: [0.036596 0.033778]/0.035187
+-------------------------
+Epoch 23, time usage: 220.520s, average loss: [0.022962 0.023172]/0.023067
+Validation loss: [0.036819 0.034750]/0.035784
+-------------------------
+Epoch 24, time usage: 220.500s, average loss: [0.022788 0.022871]/0.022829
+Validation loss: [0.036001 0.034019]/0.035010
+-------------------------
+Epoch 25, time usage: 220.626s, average loss: [0.022641 0.022730]/0.022685
+Validation loss: [0.037228 0.033307]/0.035268
+-------------------------
+Epoch 26, time usage: 219.198s, average loss: [0.022481 0.022433]/0.022457
+Validation loss: [0.038034 0.035237]/0.036635
+-------------------------
+Epoch 27, time usage: 204.520s, average loss: [0.022212 0.022237]/0.022224
+Validation loss: [0.036596 0.033778]/0.035187
+Validation loss: [0.037174 0.034559]/0.035866
+-------------------------
+Epoch 23, time usage: 220.520s, average loss: [0.022962 0.023172]/0.023067
+Validation loss: [0.036819 0.034750]/0.035784
+-------------------------
+Epoch 24, time usage: 220.500s, average loss: [0.022788 0.022871]/0.022829
+Validation loss: [0.036001 0.034019]/0.035010
+-------------------------
+Epoch 25, time usage: 220.626s, average loss: [0.022641 0.022730]/0.022685
+Validation loss: [0.037228 0.033307]/0.035268
+-------------------------
+Epoch 26, time usage: 219.198s, average loss: [0.022481 0.022433]/0.022457
+Validation loss: [0.038034 0.035237]/0.036635
+-------------------------
+Epoch 27, time usage: 204.520s, average loss: [0.022212 0.022237]/0.022224
+Validation loss: [0.036596 0.033778]/0.035187
+Epoch 22, time usage: 220.475s, average loss: [0.023380 0.023270]/0.023325
+Validation loss: [0.037174 0.034559]/0.035866
+-------------------------
+Epoch 23, time usage: 220.520s, average loss: [0.022962 0.023172]/0.023067
+Validation loss: [0.036819 0.034750]/0.035784
+-------------------------
+Epoch 24, time usage: 220.500s, average loss: [0.022788 0.022871]/0.022829
+Validation loss: [0.036001 0.034019]/0.035010
+-------------------------
+Epoch 25, time usage: 220.626s, average loss: [0.022641 0.022730]/0.022685
+Validation loss: [0.037228 0.033307]/0.035268
+-------------------------
+Epoch 26, time usage: 219.198s, average loss: [0.022481 0.022433]/0.022457
+Validation loss: [0.038034 0.035237]/0.036635
+-------------------------
+Epoch 27, time usage: 204.520s, average loss: [0.022212 0.022237]/0.022224
+Validation loss: [0.036596 0.033778]/0.035187
+-------------------------
+Epoch 22, time usage: 220.475s, average loss: [0.023380 0.023270]/0.023325
+Validation loss: [0.037174 0.034559]/0.035866
+-------------------------
+Epoch 23, time usage: 220.520s, average loss: [0.022962 0.023172]/0.023067
+Validation loss: [0.036819 0.034750]/0.035784
+-------------------------
+Epoch 24, time usage: 220.500s, average loss: [0.022788 0.022871]/0.022829
+Validation loss: [0.036001 0.034019]/0.035010
+-------------------------
+Epoch 25, time usage: 220.626s, average loss: [0.022641 0.022730]/0.022685
+Validation loss: [0.037228 0.033307]/0.035268
+-------------------------
+Epoch 26, time usage: 219.198s, average loss: [0.022481 0.022433]/0.022457
+Validation loss: [0.038034 0.035237]/0.036635
+-------------------------
+Epoch 27, time usage: 204.520s, average loss: [0.022212 0.022237]/0.022224
+Validation loss: [0.036596 0.033778]/0.035187
+Validation loss: [0.037550 0.034192]/0.035871
+-------------------------
+Epoch 22, time usage: 220.475s, average loss: [0.023380 0.023270]/0.023325
+Validation loss: [0.037174 0.034559]/0.035866
+-------------------------
+Epoch 23, time usage: 220.520s, average loss: [0.022962 0.023172]/0.023067
+Validation loss: [0.036819 0.034750]/0.035784
+-------------------------
+Epoch 24, time usage: 220.500s, average loss: [0.022788 0.022871]/0.022829
+Validation loss: [0.036001 0.034019]/0.035010
+-------------------------
+Epoch 25, time usage: 220.626s, average loss: [0.022641 0.022730]/0.022685
+Validation loss: [0.037228 0.033307]/0.035268
+-------------------------
+Epoch 26, time usage: 219.198s, average loss: [0.022481 0.022433]/0.022457
+Validation loss: [0.038034 0.035237]/0.036635
+-------------------------
+Epoch 27, time usage: 204.520s, average loss: [0.022212 0.022237]/0.022224
+Validation loss: [0.036596 0.033778]/0.035187
+Epoch 21, time usage: 220.569s, average loss: [0.023579 0.023575]/0.023577
+Validation loss: [0.037550 0.034192]/0.035871
+-------------------------
+Epoch 22, time usage: 220.475s, average loss: [0.023380 0.023270]/0.023325
+Validation loss: [0.037174 0.034559]/0.035866
+-------------------------
+Epoch 23, time usage: 220.520s, average loss: [0.022962 0.023172]/0.023067
+Validation loss: [0.036819 0.034750]/0.035784
+-------------------------
+Epoch 24, time usage: 220.500s, average loss: [0.022788 0.022871]/0.022829
+Validation loss: [0.036001 0.034019]/0.035010
+-------------------------
+Epoch 25, time usage: 220.626s, average loss: [0.022641 0.022730]/0.022685
+Validation loss: [0.037228 0.033307]/0.035268
+-------------------------
+Epoch 26, time usage: 219.198s, average loss: [0.022481 0.022433]/0.022457
+Validation loss: [0.038034 0.035237]/0.036635
+-------------------------
+Epoch 27, time usage: 204.520s, average loss: [0.022212 0.022237]/0.022224
+Validation loss: [0.036596 0.033778]/0.035187
+-------------------------
+Epoch 21, time usage: 220.569s, average loss: [0.023579 0.023575]/0.023577
+Validation loss: [0.037550 0.034192]/0.035871
+-------------------------
+Epoch 22, time usage: 220.475s, average loss: [0.023380 0.023270]/0.023325
+Validation loss: [0.037174 0.034559]/0.035866
+-------------------------
+Epoch 23, time usage: 220.520s, average loss: [0.022962 0.023172]/0.023067
+Validation loss: [0.036819 0.034750]/0.035784
+-------------------------
+Epoch 24, time usage: 220.500s, average loss: [0.022788 0.022871]/0.022829
+Validation loss: [0.036001 0.034019]/0.035010
+-------------------------
+Epoch 25, time usage: 220.626s, average loss: [0.022641 0.022730]/0.022685
+Validation loss: [0.037228 0.033307]/0.035268
+-------------------------
+Epoch 26, time usage: 219.198s, average loss: [0.022481 0.022433]/0.022457
+Validation loss: [0.038034 0.035237]/0.036635
+-------------------------
+Epoch 27, time usage: 204.520s, average loss: [0.022212 0.022237]/0.022224
+Validation loss: [0.036596 0.033778]/0.035187
+-------------------------
+Epoch 21, time usage: 220.569s, average loss: [0.023579 0.023575]/0.023577
+Validation loss: [0.037550 0.034192]/0.035871
+-------------------------
+Epoch 22, time usage: 220.475s, average loss: [0.023380 0.023270]/0.023325
+Validation loss: [0.037174 0.034559]/0.035866
+-------------------------
+Epoch 23, time usage: 220.520s, average loss: [0.022962 0.023172]/0.023067
+Validation loss: [0.036819 0.034750]/0.035784
+-------------------------
+Epoch 24, time usage: 220.500s, average loss: [0.022788 0.022871]/0.022829
+Validation loss: [0.036001 0.034019]/0.035010
+-------------------------
+Epoch 25, time usage: 220.626s, average loss: [0.022641 0.022730]/0.022685
+Validation loss: [0.037228 0.033307]/0.035268
+-------------------------
+Epoch 26, time usage: 219.198s, average loss: [0.022481 0.022433]/0.022457
+Validation loss: [0.038034 0.035237]/0.036635
+-------------------------
+Epoch 27, time usage: 204.520s, average loss: [0.022212 0.022237]/0.022224
+Validation loss: [0.036596 0.033778]/0.035187
+-------------------------
+Epoch 28, time usage: 195.947s, average loss: [0.022005 0.022169]/0.022087
+Validation loss: [0.035554 0.034471]/0.035012
+-------------------------
+Epoch 22, time usage: 220.475s, average loss: [0.023380 0.023270]/0.023325
+Validation loss: [0.037174 0.034559]/0.035866
+-------------------------
+Epoch 23, time usage: 220.520s, average loss: [0.022962 0.023172]/0.023067
+Validation loss: [0.036819 0.034750]/0.035784
+-------------------------
+Epoch 24, time usage: 220.500s, average loss: [0.022788 0.022871]/0.022829
+Validation loss: [0.036001 0.034019]/0.035010
+-------------------------
+Epoch 25, time usage: 220.626s, average loss: [0.022641 0.022730]/0.022685
+Validation loss: [0.037228 0.033307]/0.035268
+-------------------------
+Epoch 26, time usage: 219.198s, average loss: [0.022481 0.022433]/0.022457
+Validation loss: [0.038034 0.035237]/0.036635
+-------------------------
+Epoch 27, time usage: 204.520s, average loss: [0.022212 0.022237]/0.022224
+Validation loss: [0.036596 0.033778]/0.035187
+-------------------------
+Epoch 28, time usage: 195.947s, average loss: [0.022005 0.022169]/0.022087
+Validation loss: [0.035554 0.034471]/0.035012
+-------------------------
+Epoch 29, time usage: 217.619s, average loss: [0.021856 0.021948]/0.021902
+Validation loss: [0.036402 0.034346]/0.035374
+-------------------------
+Epoch 30, time usage: 219.465s, average loss: [0.021735 0.021718]/0.021727
+Validation loss: [0.035148 0.032926]/0.034037
+Model saved to  ../output/yolo26_adam/checkpoints/checkpoint_30.pt
+-------------------------
+Epoch 31, time usage: 221.151s, average loss: [0.021483 0.021620]/0.021552
+Validation loss: [0.035950 0.034426]/0.035188
+-------------------------
+Epoch 32, time usage: 221.111s, average loss: [0.021326 0.021459]/0.021392
+Validation loss: [0.036449 0.034357]/0.035403
+-------------------------
+Epoch 33, time usage: 221.377s, average loss: [0.021304 0.021231]/0.021267
+Validation loss: [0.035402 0.032166]/0.033784
+Model saved to  ../output/yolo26_adam/checkpoints/checkpoint_33.pt
+-------------------------
+Epoch 34, time usage: 221.022s, average loss: [0.021063 0.021179]/0.021121
+Validation loss: [0.036469 0.033526]/0.034998
+-------------------------
+Epoch 35, time usage: 221.519s, average loss: [0.020974 0.020963]/0.020968
+Validation loss: [0.034584 0.033622]/0.034103
+-------------------------
+Epoch 36, time usage: 221.295s, average loss: [0.020838 0.020929]/0.020883
+Validation loss: [0.036137 0.033750]/0.034943
+-------------------------
+Epoch 37, time usage: 221.147s, average loss: [0.020666 0.020741]/0.020704
+Validation loss: [0.035660 0.034417]/0.035039
+-------------------------
+Epoch 38, time usage: 221.364s, average loss: [0.020653 0.020525]/0.020589
+Validation loss: [0.035396 0.034019]/0.034707
+-------------------------
+Epoch 39, time usage: 220.471s, average loss: [0.020515 0.020454]/0.020484
+Validation loss: [0.034387 0.032914]/0.033650
+Model saved to  ../output/yolo26_adam/checkpoints/checkpoint_39.pt
+-------------------------
+Epoch 40, time usage: 220.436s, average loss: [0.020406 0.020341]/0.020374
+Validation loss: [0.035356 0.034907]/0.035132
+-------------------------
+Epoch 41, time usage: 220.510s, average loss: [0.020288 0.020301]/0.020294
+Validation loss: [0.034109 0.032517]/0.033313
+Model saved to  ../output/yolo26_adam/checkpoints/checkpoint_41.pt
+-------------------------
+Epoch 42, time usage: 221.341s, average loss: [0.020206 0.020221]/0.020213
+Validation loss: [0.035904 0.033250]/0.034577
+-------------------------
+Epoch 43, time usage: 221.479s, average loss: [0.020037 0.020078]/0.020057
+Validation loss: [0.033900 0.033516]/0.033708
+-------------------------
+Epoch 44, time usage: 221.411s, average loss: [0.019951 0.019937]/0.019944
+Validation loss: [0.035496 0.033619]/0.034557
+-------------------------
+Epoch 45, time usage: 220.532s, average loss: [0.019831 0.019885]/0.019858
+Validation loss: [0.035384 0.032448]/0.033916
+-------------------------
+Epoch 46, time usage: 214.798s, average loss: [0.019806 0.019711]/0.019759
+Validation loss: [0.035097 0.033869]/0.034483
+-------------------------
+Epoch 47, time usage: 221.752s, average loss: [0.019717 0.019641]/0.019679
+Validation loss: [0.035353 0.033900]/0.034627
+-------------------------
+Epoch 48, time usage: 221.883s, average loss: [0.019632 0.019603]/0.019617
+Validation loss: [0.034960 0.032943]/0.033952
+-------------------------
+Epoch 49, time usage: 221.015s, average loss: [0.019542 0.019537]/0.019539
+Validation loss: [0.034264 0.033574]/0.033919
+-------------------------
+Epoch 50, time usage: 182.256s, average loss: [0.019456 0.019367]/0.019411
+Validation loss: [0.035286 0.033105]/0.034195
+-------------------------
+Epoch 51, time usage: 221.590s, average loss: [0.019381 0.019370]/0.019375
+Validation loss: [0.035249 0.033987]/0.034618
+-------------------------
+Epoch 52, time usage: 219.420s, average loss: [0.019288 0.019303]/0.019295
+Validation loss: [0.035243 0.033440]/0.034342
+Epoch 00053: reducing learning rate of group 0 to 1.0000e-05.
+-------------------------
+Epoch 53, time usage: 220.758s, average loss: [0.018326 0.018474]/0.018400
+Validation loss: [0.034037 0.032312]/0.033174
+Model saved to  ../output/yolo26_adam/checkpoints/checkpoint_53.pt
+-------------------------
+Epoch 54, time usage: 217.649s, average loss: [0.018181 0.018275]/0.018228
+Validation loss: [0.034316 0.032006]/0.033161
+Model saved to  ../output/yolo26_adam/checkpoints/checkpoint_54.pt
+-------------------------
+Epoch 55, time usage: 210.626s, average loss: [0.018242 0.018154]/0.018198
+Validation loss: [0.034107 0.032277]/0.033192
+-------------------------
+Epoch 56, time usage: 225.033s, average loss: [0.018108 0.018078]/0.018093
+Validation loss: [0.033914 0.032137]/0.033026
+Model saved to  ../output/yolo26_adam/checkpoints/checkpoint_56.pt
+-------------------------
+Epoch 57, time usage: 224.084s, average loss: [0.018091 0.018074]/0.018082
+Validation loss: [0.033938 0.031984]/0.032961
+Model saved to  ../output/yolo26_adam/checkpoints/checkpoint_57.pt
+-------------------------
+Epoch 58, time usage: 219.156s, average loss: [0.018060 0.018000]/0.018030
+Validation loss: [0.034249 0.031954]/0.033101
+-------------------------
+Epoch 59, time usage: 222.974s, average loss: [0.018017 0.018019]/0.018018
+Validation loss: [0.034442 0.032138]/0.033290
+-------------------------
+Epoch 60, time usage: 226.928s, average loss: [0.017982 0.018044]/0.018013
+Validation loss: [0.034561 0.032088]/0.033324
+-------------------------
+Epoch 61, time usage: 210.032s, average loss: [0.018050 0.017940]/0.017995
+Validation loss: [0.034413 0.031801]/0.033107
+-------------------------
+Epoch 62, time usage: 225.381s, average loss: [0.017998 0.017906]/0.017952
+Validation loss: [0.034353 0.032518]/0.033435
+-------------------------
+Epoch 63, time usage: 229.817s, average loss: [0.018009 0.017952]/0.017981
+Validation loss: [0.034296 0.032378]/0.033337
+-------------------------
+Epoch 64, time usage: 234.572s, average loss: [0.018011 0.017862]/0.017937
+Validation loss: [0.034533 0.032426]/0.033480
+-------------------------
+Epoch 65, time usage: 229.779s, average loss: [0.017873 0.017908]/0.017890
+Validation loss: [0.034237 0.032451]/0.033344
+-------------------------
+Epoch 66, time usage: 213.426s, average loss: [0.017853 0.017869]/0.017861
+Validation loss: [0.034110 0.031877]/0.032994
+-------------------------
+Epoch 67, time usage: 229.416s, average loss: [0.017886 0.017811]/0.017849
+Validation loss: [0.033850 0.032631]/0.033241
+-------------------------
+Epoch 68, time usage: 229.122s, average loss: [0.017875 0.017860]/0.017868
+Validation loss: [0.033975 0.032307]/0.033141
+Epoch 00069: reducing learning rate of group 0 to 1.0000e-06.
+-------------------------
+Epoch 69, time usage: 229.837s, average loss: [0.017830 0.017810]/0.017820
+Validation loss: [0.034488 0.032107]/0.033297
+-------------------------
+Epoch 70, time usage: 227.120s, average loss: [0.017856 0.017815]/0.017836
+Validation loss: [0.034097 0.032200]/0.033149
+-------------------------
+Epoch 71, time usage: 230.036s, average loss: [0.017802 0.017699]/0.017751
+Validation loss: [0.034251 0.032141]/0.033196
+-------------------------
+Epoch 72, time usage: 227.243s, average loss: [0.017786 0.017774]/0.017780
+Validation loss: [0.034297 0.032536]/0.033416
+-------------------------
+Epoch 73, time usage: 224.048s, average loss: [0.017803 0.017779]/0.017791
+Validation loss: [0.034248 0.032581]/0.033414
+-------------------------
+Epoch 74, time usage: 226.377s, average loss: [0.017814 0.017783]/0.017799
+Validation loss: [0.034256 0.032213]/0.033235
+-------------------------
+Epoch 75, time usage: 227.559s, average loss: [0.017732 0.017817]/0.017774
+Validation loss: [0.034022 0.031960]/0.032991
+-------------------------
+Epoch 76, time usage: 227.737s, average loss: [0.017687 0.017775]/0.017731
+Validation loss: [0.034272 0.032075]/0.033173
+-------------------------
+Epoch 77, time usage: 227.140s, average loss: [0.017696 0.017800]/0.017748
+Validation loss: [0.034097 0.032134]/0.033115
+-------------------------
+Epoch 78, time usage: 227.526s, average loss: [0.017709 0.017717]/0.017713
+Validation loss: [0.034377 0.032178]/0.033278
+-------------------------
+Epoch 79, time usage: 226.415s, average loss: [0.017702 0.017845]/0.017773
+Validation loss: [0.034247 0.032255]/0.033251
+Epoch 00080: reducing learning rate of group 0 to 1.0000e-07.
+-------------------------
+Epoch 80, time usage: 227.725s, average loss: [0.017725 0.017732]/0.017728
+Validation loss: [0.033961 0.032101]/0.033031
+-------------------------
+Epoch 81, time usage: 227.969s, average loss: [0.017753 0.017726]/0.017739
+Validation loss: [0.033967 0.032421]/0.033194
+-------------------------
+Epoch 82, time usage: 228.039s, average loss: [0.017757 0.017787]/0.017772
+Validation loss: [0.034176 0.031945]/0.033061
+-------------------------
+Epoch 83, time usage: 227.247s, average loss: [0.017803 0.017695]/0.017749
+Validation loss: [0.034205 0.032190]/0.033198
+-------------------------
+Epoch 84, time usage: 226.714s, average loss: [0.017721 0.017662]/0.017691
+Validation loss: [0.034072 0.032162]/0.033117
+-------------------------
+Epoch 85, time usage: 225.834s, average loss: [0.017642 0.017792]/0.017717
+Validation loss: [0.034385 0.032264]/0.033324
+-------------------------
+Epoch 86, time usage: 225.652s, average loss: [0.017680 0.017779]/0.017729
+Validation loss: [0.034460 0.032193]/0.033326
+-------------------------
+Epoch 87, time usage: 225.150s, average loss: [0.017823 0.017723]/0.017773
+Validation loss: [0.034153 0.032099]/0.033126
+-------------------------
+Epoch 88, time usage: 226.743s, average loss: [0.017728 0.017684]/0.017706
+Validation loss: [0.034353 0.032142]/0.033248
+-------------------------
+Epoch 89, time usage: 226.063s, average loss: [0.017768 0.017750]/0.017759
+Validation loss: [0.034103 0.032047]/0.033075
+-------------------------
+Epoch 90, time usage: 224.109s, average loss: [0.017690 0.017778]/0.017734
+Validation loss: [0.034288 0.032214]/0.033251
+Epoch 00091: reducing learning rate of group 0 to 1.0000e-08.
+-------------------------
+Epoch 91, time usage: 218.632s, average loss: [0.017780 0.017700]/0.017740
+Validation loss: [0.034151 0.032202]/0.033176
+-------------------------
+Epoch 92, time usage: 215.622s, average loss: [0.017709 0.017778]/0.017744
+Validation loss: [0.034072 0.032230]/0.033151
+-------------------------
+Epoch 93, time usage: 224.241s, average loss: [0.017706 0.017792]/0.017749
+Validation loss: [0.033981 0.032375]/0.033178
+-------------------------
+Epoch 94, time usage: 224.722s, average loss: [0.017731 0.017828]/0.017779
+Validation loss: [0.034336 0.032578]/0.033457
+-------------------------
+Epoch 95, time usage: 220.892s, average loss: [0.017773 0.017694]/0.017734
+Validation loss: [0.034086 0.032296]/0.033191
+-------------------------
+Epoch 96, time usage: 208.562s, average loss: [0.017752 0.017784]/0.017768
+Validation loss: [0.034059 0.032176]/0.033118
+-------------------------
+Epoch 97, time usage: 213.737s, average loss: [0.017642 0.017810]/0.017726
+Validation loss: [0.034193 0.032208]/0.033201
+-------------------------
+Epoch 98, time usage: 223.730s, average loss: [0.017691 0.017755]/0.017723
+Validation loss: [0.034195 0.032229]/0.033212
+-------------------------
+Epoch 99, time usage: 224.367s, average loss: [0.017730 0.017804]/0.017767
+Validation loss: [0.034331 0.032137]/0.033234
+Training complete
+Checkpoint saved to  ../output/yolo26_adam/checkpoints/checkpoint_latest.pt

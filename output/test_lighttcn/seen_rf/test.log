@@ -1,0 +1,87 @@
+a001_2: device: asus7, ori_error (game_rv): 8.617
+/home/user/anaconda3/envs/ronin/lib/python3.9/site-packages/torch/nn/utils/weight_norm.py:30: UserWarning: torch.nn.utils.weight_norm is deprecated in favor of torch.nn.utils.parametrizations.weight_norm.
+  warnings.warn("torch.nn.utils.weight_norm is deprecated in favor of torch.nn.utils.parametrizations.weight_norm.")
+[LightTCN-1D] Plain baseline mode: training from scratch.
+[lighttcn] Parameters: 79,628
+Model output/train_lighttcn/checkpoints/lighttcn_checkpoint_42.pt loaded to device cuda:0.
+/home/user/.local/lib/python3.9/site-packages/sklearn/base.py:376: InconsistentVersionWarning: Trying to unpickle estimator DecisionTreeRegressor from version 1.8.0 when using version 1.5.2. This might lead to breaking code or invalid results. Use at your own risk. For more info please refer to:
+https://scikit-learn.org/stable/model_persistence.html#security-maintainability-limitations
+  warnings.warn(
+/home/user/.local/lib/python3.9/site-packages/sklearn/base.py:376: InconsistentVersionWarning: Trying to unpickle estimator RandomForestRegressor from version 1.8.0 when using version 1.5.2. This might lead to breaking code or invalid results. Use at your own risk. For more info please refer to:
+https://scikit-learn.org/stable/model_persistence.html#security-maintainability-limitations
+  warnings.warn(
+RF model output/rf_yolo26/rf_corrector.joblib loaded.
+a001_2: device: asus7, ori_error (game_rv): 8.617
+Sequence a001_2, loss [0.024440 0.032037] / 0.02823839709162712, ate 3.560742, rte 3.144610, neural=698.79ms, rf=211.48ms, total=910.27ms, time_per_sample=0.0724ms
+a003_3: device: samsung1, ori_error (game_rv): 1.669
+Sequence a003_3, loss [0.028005 0.045789] / 0.036897141486406326, ate 8.089613, rte 3.552110, neural=260.62ms, rf=166.19ms, total=426.81ms, time_per_sample=0.0439ms
+a004_3: device: asus3, ori_error (game_rv): 14.735
+Sequence a004_3, loss [0.015205 0.026561] / 0.02088305726647377, ate 3.126599, rte 1.933521, neural=142.21ms, rf=149.62ms, total=291.82ms, time_per_sample=0.0571ms
+a005_3: device: samsung1, ori_error (game_rv): 1.271
+Sequence a005_3, loss [0.045616 0.054155] / 0.04988531395792961, ate 10.566741, rte 4.242377, neural=355.31ms, rf=175.64ms, total=530.95ms, time_per_sample=0.0450ms
+a009_1: device: asus4, ori_error (game_rv): 2.222
+Sequence a009_1, loss [0.048821 0.072569] / 0.06069514900445938, ate 3.645402, rte 3.225570, neural=246.54ms, rf=168.84ms, total=415.38ms, time_per_sample=0.0503ms
+a010_2: device: samsung1, ori_error (game_rv): 17.991
+Sequence a010_2, loss [0.017608 0.017517] / 0.01756243407726288, ate 5.688744, rte 2.618516, neural=389.91ms, rf=334.73ms, total=724.64ms, time_per_sample=0.0556ms
+a011_2: device: samsung1, ori_error (game_rv): 30.493
+Sequence a011_2, loss [0.020896 0.029163] / 0.025029592216014862, ate 7.919722, rte 6.081387, neural=399.09ms, rf=204.01ms, total=603.10ms, time_per_sample=0.0441ms
+a012_2: device: samsung1, ori_error (game_rv): 4.979
+Sequence a012_2, loss [0.040869 0.044575] / 0.042722176760435104, ate 10.079649, rte 3.110926, neural=333.41ms, rf=187.10ms, total=520.51ms, time_per_sample=0.0440ms
+a013_2: device: asus4, ori_error (game_rv): 5.244
+Sequence a013_2, loss [0.030364 0.029259] / 0.029811453074216843, ate 13.235940, rte 3.284149, neural=384.22ms, rf=178.23ms, total=562.45ms, time_per_sample=0.0444ms
+a014_2: device: asus4, ori_error (game_rv): 7.929
+Sequence a014_2, loss [0.026797 0.026550] / 0.02667327970266342, ate 8.184859, rte 2.638635, neural=349.39ms, rf=196.99ms, total=546.37ms, time_per_sample=0.0474ms
+a016_1: device: asus4, ori_error (game_rv): 5.513
+Sequence a016_1, loss [0.034704 0.046636] / 0.040670134127140045, ate 6.246480, rte 4.912078, neural=250.23ms, rf=359.24ms, total=609.48ms, time_per_sample=0.0685ms
+a017_2: device: samsung1, ori_error (game_rv): 4.091
+Sequence a017_2, loss [0.039405 0.032112] / 0.03575834631919861, ate 5.571442, rte 2.471782, neural=366.38ms, rf=180.95ms, total=547.33ms, time_per_sample=0.0435ms
+a020_2: device: asus3, ori_error (game_rv): 3.441
+Sequence a020_2, loss [0.042543 0.051484] / 0.04701358824968338, ate 6.471411, rte 4.122645, neural=255.10ms, rf=160.15ms, total=415.25ms, time_per_sample=0.0547ms
+a021_2: device: samsung1, ori_error (game_rv): 6.462
+Sequence a021_2, loss [0.024064 0.023629] / 0.023846600204706192, ate 5.640290, rte 2.379458, neural=339.74ms, rf=193.94ms, total=533.68ms, time_per_sample=0.0468ms
+a022_2: device: asus5, ori_error (game_rv): 3.583
+Sequence a022_2, loss [0.091641 0.099827] / 0.09573434293270111, ate 12.282920, rte 6.365014, neural=317.98ms, rf=180.31ms, total=498.28ms, time_per_sample=0.0450ms
+a023_1: device: asus5, ori_error (game_rv): 7.791
+Sequence a023_1, loss [0.017295 0.023559] / 0.020426906645298004, ate 2.997799, rte 2.584422, neural=292.10ms, rf=178.46ms, total=470.56ms, time_per_sample=0.0598ms
+a025_2: device: samsung1, ori_error (game_rv): 2.222
+Sequence a025_2, loss [0.075993 0.072418] / 0.07420550286769867, ate 8.170166, rte 5.216915, neural=343.61ms, rf=189.65ms, total=533.26ms, time_per_sample=0.0430ms
+a026_2: device: asus4, ori_error (game_rv): 8.912
+Sequence a026_2, loss [0.020462 0.026242] / 0.023351827636361122, ate 3.604032, rte 2.916301, neural=392.67ms, rf=205.17ms, total=597.85ms, time_per_sample=0.0502ms
+a027_2: device: samsung1, ori_error (game_rv): 11.382
+Sequence a027_2, loss [0.018387 0.022275] / 0.020331284031271935, ate 4.643170, rte 1.923642, neural=406.20ms, rf=189.36ms, total=595.56ms, time_per_sample=0.0449ms
+a030_3: device: samsung1, ori_error (game_rv): 5.627
+Sequence a030_3, loss [0.016265 0.028057] / 0.022160738706588745, ate 2.957567, rte 2.547016, neural=433.66ms, rf=197.17ms, total=630.82ms, time_per_sample=0.0423ms
+a031_2: device: samsung1, ori_error (game_rv): 4.495
+Sequence a031_2, loss [0.015236 0.038525] / 0.02688053622841835, ate 5.060755, rte 2.744120, neural=422.45ms, rf=187.48ms, total=609.93ms, time_per_sample=0.0494ms
+a033_2: device: samsung1, ori_error (game_rv): 1.657
+Sequence a033_2, loss [0.018061 0.019931] / 0.018996380269527435, ate 4.154463, rte 2.281557, neural=394.86ms, rf=196.18ms, total=591.04ms, time_per_sample=0.0416ms
+a035_3: device: samsung1, ori_error (game_rv): 8.565
+Sequence a035_3, loss [0.023408 0.025041] / 0.024224454537034035, ate 3.576767, rte 3.817475, neural=390.35ms, rf=197.08ms, total=587.43ms, time_per_sample=0.0503ms
+a036_2: device: asus4, ori_error (game_rv): 16.805
+Sequence a036_2, loss [0.028268 0.020889] / 0.024578645825386047, ate 5.239112, rte 4.113827, neural=483.95ms, rf=182.85ms, total=666.80ms, time_per_sample=0.0462ms
+a037_1: device: asus4, ori_error (game_rv): 4.859
+Sequence a037_1, loss [0.009438 0.014859] / 0.01214857492595911, ate 3.731579, rte 2.003584, neural=265.20ms, rf=166.91ms, total=432.11ms, time_per_sample=0.0437ms
+a038_2: device: samsung1, ori_error (game_rv): 5.030
+Sequence a038_2, loss [0.011112 0.022292] / 0.016701897606253624, ate 5.081262, rte 3.038340, neural=432.35ms, rf=161.21ms, total=593.55ms, time_per_sample=0.0661ms
+a044_2: device: samsung1, ori_error (game_rv): 2.577
+Sequence a044_2, loss [0.041262 0.050216] / 0.045739226043224335, ate 5.549624, rte 3.793593, neural=395.11ms, rf=189.74ms, total=584.84ms, time_per_sample=0.0467ms
+a046_2: device: samsung1, ori_error (game_rv): 12.161
+Sequence a046_2, loss [0.040046 0.109848] / 0.07494692504405975, ate 7.758948, rte 8.582276, neural=468.12ms, rf=208.34ms, total=676.45ms, time_per_sample=0.0449ms
+a047_2: device: asus4, ori_error (game_rv): 16.972
+Sequence a047_2, loss [0.020419 0.017587] / 0.019003018736839294, ate 1.977221, rte 2.685499, neural=417.63ms, rf=198.34ms, total=615.98ms, time_per_sample=0.0461ms
+a000_7: device: asus4, ori_error (game_rv): 8.354
+Sequence a000_7, loss [0.010750 0.009395] / 0.010072465986013412, ate 3.430492, rte 2.044397, neural=175.18ms, rf=161.69ms, total=336.87ms, time_per_sample=0.0574ms
+a000_11: device: asus6, ori_error (game_rv): 16.363
+Sequence a000_11, loss [0.014987 0.015355] / 0.015171388164162636, ate 3.423696, rte 3.436586, neural=204.04ms, rf=139.51ms, total=343.54ms, time_per_sample=0.0615ms
+a059_2: device: asus4, ori_error (game_rv): 7.410
+Sequence a059_2, loss [0.026552 0.042012] / 0.03428207337856293, ate 3.365932, rte 2.398405, neural=261.86ms, rf=174.51ms, total=436.37ms, time_per_sample=0.0509ms
+
+================================================================================
+[TIMING SUMMARY] YOLO26 + RF Postprocessing
+Mean time per sample (neural): 0.0318 ms
+Mean time per sample (RF): 0.0174 ms
+Mean time per sample (total): 0.0492 ms
+================================================================================
+
+----------
+Overall loss: [0.029341 0.037199]/0.03327009081840515, avg ATE:5.78228561938229, avg RTE:3.4440853777143703

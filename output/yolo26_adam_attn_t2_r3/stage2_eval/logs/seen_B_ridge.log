@@ -1,0 +1,149 @@
+/mnt/data/jaitej/Yolov26_experiments_raspberryPi/ronin_yolov26/source/transformations.py:10: NumbaDeprecationWarning: The 'nopython' keyword argument was not supplied to the 'numba.jit' decorator. The implicit default value for this argument is currently False, but it will be changed to True in Numba 0.59.0. See https://numba.readthedocs.io/en/stable/reference/deprecation.html#deprecation-of-object-mode-fall-back-behaviour-when-using-jit for details.
+  def change_cf(ori, vectors):
+/mnt/data/jaitej/Yolov26_experiments_raspberryPi/ronin_yolov26/source/transformations.py:96: NumbaDeprecationWarning: The 'nopython' keyword argument was not supplied to the 'numba.jit' decorator. The implicit default value for this argument is currently False, but it will be changed to True in Numba 0.59.0. See https://numba.readthedocs.io/en/stable/reference/deprecation.html#deprecation-of-object-mode-fall-back-behaviour-when-using-jit for details.
+  def __call__(self, feature, target):
+source/ronin_yolo26_baseline_plain.py:410: FutureWarning: You are using `torch.load` with `weights_only=False` (the current default value), which uses the default pickle module implicitly. It is possible to construct malicious pickle data which will execute arbitrary code during unpickling (See https://github.com/pytorch/pytorch/blob/main/SECURITY.md#untrusted-models for more details). In a future release, the default value for `weights_only` will be flipped to `True`. This limits the functions that could be executed during unpickling. Arbitrary objects will no longer be allowed to be loaded via this mode unless they are explicitly allowlisted by the user via `torch.serialization.add_safe_globals`. We recommend you start setting `weights_only=True` for any use case where you don't have full control of the loaded file. Please open an issue on GitHub for any issues related to this experimental feature.
+  checkpoint = torch.load(args.model_path)
+/mnt/data/jaitej/Yolov26_experiments_raspberryPi/ronin_yolov26/source/data_utils.py:77: UserWarning: The cached dataset has different flag in "grv_only". Ignore
+  warnings.warn('The cached dataset has different flag in "grv_only". Ignore')
+/mnt/data/jaitej/Yolov26_experiments_raspberryPi/ronin_yolov26/source/data_utils.py:77: UserWarning: The cached dataset has different flag in "grv_only". Ignore
+  warnings.warn('The cached dataset has different flag in "grv_only". Ignore')
+/mnt/data/jaitej/Yolov26_experiments_raspberryPi/ronin_yolov26/source/data_utils.py:77: UserWarning: The cached dataset has different flag in "grv_only". Ignore
+  warnings.warn('The cached dataset has different flag in "grv_only". Ignore')
+/mnt/data/jaitej/Yolov26_experiments_raspberryPi/ronin_yolov26/source/data_utils.py:77: UserWarning: The cached dataset has different flag in "grv_only". Ignore
+  warnings.warn('The cached dataset has different flag in "grv_only". Ignore')
+/mnt/data/jaitej/Yolov26_experiments_raspberryPi/ronin_yolov26/source/data_utils.py:77: UserWarning: The cached dataset has different flag in "grv_only". Ignore
+  warnings.warn('The cached dataset has different flag in "grv_only". Ignore')
+/mnt/data/jaitej/Yolov26_experiments_raspberryPi/ronin_yolov26/source/data_utils.py:77: UserWarning: The cached dataset has different flag in "grv_only". Ignore
+  warnings.warn('The cached dataset has different flag in "grv_only". Ignore')
+/mnt/data/jaitej/Yolov26_experiments_raspberryPi/ronin_yolov26/source/data_utils.py:77: UserWarning: The cached dataset has different flag in "grv_only". Ignore
+  warnings.warn('The cached dataset has different flag in "grv_only". Ignore')
+/mnt/data/jaitej/Yolov26_experiments_raspberryPi/ronin_yolov26/source/data_utils.py:77: UserWarning: The cached dataset has different flag in "grv_only". Ignore
+  warnings.warn('The cached dataset has different flag in "grv_only". Ignore')
+/mnt/data/jaitej/Yolov26_experiments_raspberryPi/ronin_yolov26/source/data_utils.py:77: UserWarning: The cached dataset has different flag in "grv_only". Ignore
+  warnings.warn('The cached dataset has different flag in "grv_only". Ignore')
+/mnt/data/jaitej/Yolov26_experiments_raspberryPi/ronin_yolov26/source/data_utils.py:77: UserWarning: The cached dataset has different flag in "grv_only". Ignore
+  warnings.warn('The cached dataset has different flag in "grv_only". Ignore')
+/mnt/data/jaitej/Yolov26_experiments_raspberryPi/ronin_yolov26/source/data_utils.py:77: UserWarning: The cached dataset has different flag in "grv_only". Ignore
+  warnings.warn('The cached dataset has different flag in "grv_only". Ignore')
+/mnt/data/jaitej/Yolov26_experiments_raspberryPi/ronin_yolov26/source/data_utils.py:77: UserWarning: The cached dataset has different flag in "grv_only". Ignore
+  warnings.warn('The cached dataset has different flag in "grv_only". Ignore')
+/mnt/data/jaitej/Yolov26_experiments_raspberryPi/ronin_yolov26/source/data_utils.py:77: UserWarning: The cached dataset has different flag in "grv_only". Ignore
+  warnings.warn('The cached dataset has different flag in "grv_only". Ignore')
+/mnt/data/jaitej/Yolov26_experiments_raspberryPi/ronin_yolov26/source/data_utils.py:77: UserWarning: The cached dataset has different flag in "grv_only". Ignore
+  warnings.warn('The cached dataset has different flag in "grv_only". Ignore')
+/mnt/data/jaitej/Yolov26_experiments_raspberryPi/ronin_yolov26/source/data_utils.py:77: UserWarning: The cached dataset has different flag in "grv_only". Ignore
+  warnings.warn('The cached dataset has different flag in "grv_only". Ignore')
+/mnt/data/jaitej/Yolov26_experiments_raspberryPi/ronin_yolov26/source/data_utils.py:77: UserWarning: The cached dataset has different flag in "grv_only". Ignore
+  warnings.warn('The cached dataset has different flag in "grv_only". Ignore')
+/mnt/data/jaitej/Yolov26_experiments_raspberryPi/ronin_yolov26/source/data_utils.py:77: UserWarning: The cached dataset has different flag in "grv_only". Ignore
+  warnings.warn('The cached dataset has different flag in "grv_only". Ignore')
+/mnt/data/jaitej/Yolov26_experiments_raspberryPi/ronin_yolov26/source/data_utils.py:77: UserWarning: The cached dataset has different flag in "grv_only". Ignore
+  warnings.warn('The cached dataset has different flag in "grv_only". Ignore')
+/mnt/data/jaitej/Yolov26_experiments_raspberryPi/ronin_yolov26/source/data_utils.py:77: UserWarning: The cached dataset has different flag in "grv_only". Ignore
+  warnings.warn('The cached dataset has different flag in "grv_only". Ignore')
+/mnt/data/jaitej/Yolov26_experiments_raspberryPi/ronin_yolov26/source/data_utils.py:77: UserWarning: The cached dataset has different flag in "grv_only". Ignore
+  warnings.warn('The cached dataset has different flag in "grv_only". Ignore')
+/mnt/data/jaitej/Yolov26_experiments_raspberryPi/ronin_yolov26/source/data_utils.py:77: UserWarning: The cached dataset has different flag in "grv_only". Ignore
+  warnings.warn('The cached dataset has different flag in "grv_only". Ignore')
+/mnt/data/jaitej/Yolov26_experiments_raspberryPi/ronin_yolov26/source/data_utils.py:77: UserWarning: The cached dataset has different flag in "grv_only". Ignore
+  warnings.warn('The cached dataset has different flag in "grv_only". Ignore')
+/mnt/data/jaitej/Yolov26_experiments_raspberryPi/ronin_yolov26/source/data_utils.py:77: UserWarning: The cached dataset has different flag in "grv_only". Ignore
+  warnings.warn('The cached dataset has different flag in "grv_only". Ignore')
+/mnt/data/jaitej/Yolov26_experiments_raspberryPi/ronin_yolov26/source/data_utils.py:77: UserWarning: The cached dataset has different flag in "grv_only". Ignore
+  warnings.warn('The cached dataset has different flag in "grv_only". Ignore')
+/mnt/data/jaitej/Yolov26_experiments_raspberryPi/ronin_yolov26/source/data_utils.py:77: UserWarning: The cached dataset has different flag in "grv_only". Ignore
+  warnings.warn('The cached dataset has different flag in "grv_only". Ignore')
+/mnt/data/jaitej/Yolov26_experiments_raspberryPi/ronin_yolov26/source/data_utils.py:77: UserWarning: The cached dataset has different flag in "grv_only". Ignore
+  warnings.warn('The cached dataset has different flag in "grv_only". Ignore')
+/mnt/data/jaitej/Yolov26_experiments_raspberryPi/ronin_yolov26/source/data_utils.py:77: UserWarning: The cached dataset has different flag in "grv_only". Ignore
+  warnings.warn('The cached dataset has different flag in "grv_only". Ignore')
+/mnt/data/jaitej/Yolov26_experiments_raspberryPi/ronin_yolov26/source/data_utils.py:77: UserWarning: The cached dataset has different flag in "grv_only". Ignore
+  warnings.warn('The cached dataset has different flag in "grv_only". Ignore')
+/mnt/data/jaitej/Yolov26_experiments_raspberryPi/ronin_yolov26/source/data_utils.py:77: UserWarning: The cached dataset has different flag in "grv_only". Ignore
+  warnings.warn('The cached dataset has different flag in "grv_only". Ignore')
+/mnt/data/jaitej/Yolov26_experiments_raspberryPi/ronin_yolov26/source/data_utils.py:77: UserWarning: The cached dataset has different flag in "grv_only". Ignore
+  warnings.warn('The cached dataset has different flag in "grv_only". Ignore')
+/mnt/data/jaitej/Yolov26_experiments_raspberryPi/ronin_yolov26/source/data_utils.py:77: UserWarning: The cached dataset has different flag in "grv_only". Ignore
+  warnings.warn('The cached dataset has different flag in "grv_only". Ignore')
+/mnt/data/jaitej/Yolov26_experiments_raspberryPi/ronin_yolov26/source/data_utils.py:77: UserWarning: The cached dataset has different flag in "grv_only". Ignore
+  warnings.warn('The cached dataset has different flag in "grv_only". Ignore')
+[YOLO26-1D] Plain baseline mode: training from scratch.
+[YOLO26-1D] Attention: True, dropout: 0.2
+[yolo26] Parameters: 1,174,594
+Model output/yolo26_adam_attn_t2_r3/checkpoints/yolov26_checkpoint_35.pt loaded to device cuda:0.
+Stage-2 corrector output/stage2_models_yolo26_ckpt35/B_ridge_corrector.joblib loaded (Ridge(alpha=1, n_features=18)), alpha=1.25, clip=None.
+a001_2: device: asus7, ori_error (game_rv): 8.617
+Sequence a001_2, loss [0.018707 0.015238] / 0.0169722530990839, ate 5.366107, rte 3.148418, neural=713.69ms, rf=50.93ms, total=764.62ms, time_per_sample=0.0608ms
+a003_3: device: samsung1, ori_error (game_rv): 1.669
+Sequence a003_3, loss [0.030272 0.023914] / 0.027093030512332916, ate 3.721730, rte 3.379600, neural=230.09ms, rf=37.02ms, total=267.10ms, time_per_sample=0.0275ms
+a004_3: device: asus3, ori_error (game_rv): 14.735
+Sequence a004_3, loss [0.010045 0.015092] / 0.012568351812660694, ate 2.574548, rte 2.195091, neural=138.99ms, rf=19.88ms, total=158.87ms, time_per_sample=0.0311ms
+a005_3: device: samsung1, ori_error (game_rv): 1.271
+Sequence a005_3, loss [0.034525 0.034061] / 0.03429299592971802, ate 7.226663, rte 4.136650, neural=283.84ms, rf=47.91ms, total=331.74ms, time_per_sample=0.0281ms
+a009_1: device: asus4, ori_error (game_rv): 2.222
+Sequence a009_1, loss [0.031384 0.048367] / 0.03987570106983185, ate 3.274270, rte 2.615970, neural=206.13ms, rf=32.17ms, total=238.30ms, time_per_sample=0.0288ms
+a010_2: device: samsung1, ori_error (game_rv): 17.991
+Sequence a010_2, loss [0.012508 0.010042] / 0.011274999007582664, ate 3.756348, rte 2.617903, neural=290.63ms, rf=53.47ms, total=344.10ms, time_per_sample=0.0264ms
+a011_2: device: samsung1, ori_error (game_rv): 30.493
+Sequence a011_2, loss [0.018273 0.016941] / 0.01760675385594368, ate 5.204729, rte 5.306879, neural=307.88ms, rf=51.46ms, total=359.34ms, time_per_sample=0.0263ms
+a012_2: device: samsung1, ori_error (game_rv): 4.979
+Sequence a012_2, loss [0.028967 0.029122] / 0.029044492170214653, ate 5.457356, rte 2.796363, neural=267.76ms, rf=45.51ms, total=313.27ms, time_per_sample=0.0265ms
+a013_2: device: asus4, ori_error (game_rv): 5.244
+Sequence a013_2, loss [0.015472 0.019042] / 0.017256636172533035, ate 4.615615, rte 2.776822, neural=394.90ms, rf=49.11ms, total=444.01ms, time_per_sample=0.0351ms
+a014_2: device: asus4, ori_error (game_rv): 7.929
+Sequence a014_2, loss [0.026717 0.018430] / 0.022573333233594894, ate 3.194902, rte 2.370938, neural=269.18ms, rf=44.60ms, total=313.78ms, time_per_sample=0.0272ms
+a016_1: device: asus4, ori_error (game_rv): 5.513
+Sequence a016_1, loss [0.021078 0.018713] / 0.019895756617188454, ate 3.572698, rte 1.864498, neural=207.39ms, rf=34.01ms, total=241.40ms, time_per_sample=0.0272ms
+a017_2: device: samsung1, ori_error (game_rv): 4.091
+Sequence a017_2, loss [0.020757 0.018186] / 0.019471408799290657, ate 2.223365, rte 2.165018, neural=300.07ms, rf=46.61ms, total=346.67ms, time_per_sample=0.0276ms
+a020_2: device: asus3, ori_error (game_rv): 3.441
+Sequence a020_2, loss [0.026635 0.029186] / 0.027910415083169937, ate 2.537967, rte 2.940717, neural=189.82ms, rf=29.76ms, total=219.58ms, time_per_sample=0.0289ms
+a021_2: device: samsung1, ori_error (game_rv): 6.462
+Sequence a021_2, loss [0.020338 0.019992] / 0.02016458660364151, ate 4.392886, rte 2.616461, neural=269.76ms, rf=46.24ms, total=316.01ms, time_per_sample=0.0277ms
+a022_2: device: asus5, ori_error (game_rv): 3.583
+Sequence a022_2, loss [0.047287 0.050495] / 0.04889141023159027, ate 7.880901, rte 4.084621, neural=268.38ms, rf=42.97ms, total=311.34ms, time_per_sample=0.0281ms
+a023_1: device: asus5, ori_error (game_rv): 7.791
+Sequence a023_1, loss [0.011439 0.010657] / 0.011048097163438797, ate 3.349410, rte 1.946306, neural=194.55ms, rf=30.38ms, total=224.93ms, time_per_sample=0.0286ms
+a025_2: device: samsung1, ori_error (game_rv): 2.222
+Sequence a025_2, loss [0.055880 0.050302] / 0.05309075117111206, ate 4.241116, rte 4.952556, neural=291.17ms, rf=48.05ms, total=339.22ms, time_per_sample=0.0273ms
+a026_2: device: asus4, ori_error (game_rv): 8.912
+Sequence a026_2, loss [0.015571 0.011195] / 0.013383220881223679, ate 2.386725, rte 2.251314, neural=288.53ms, rf=49.17ms, total=337.70ms, time_per_sample=0.0283ms
+a027_2: device: samsung1, ori_error (game_rv): 11.382
+Sequence a027_2, loss [0.013538 0.011819] / 0.012678325176239014, ate 2.464759, rte 2.025265, neural=311.17ms, rf=51.25ms, total=362.41ms, time_per_sample=0.0273ms
+a030_3: device: samsung1, ori_error (game_rv): 5.627
+Sequence a030_3, loss [0.012515 0.018697] / 0.015605781227350235, ate 5.232943, rte 2.299581, neural=354.61ms, rf=62.93ms, total=417.53ms, time_per_sample=0.0280ms
+a031_2: device: samsung1, ori_error (game_rv): 4.495
+Sequence a031_2, loss [0.009184 0.027781] / 0.018482143059372902, ate 2.214219, rte 1.578491, neural=293.71ms, rf=47.46ms, total=341.17ms, time_per_sample=0.0277ms
+a033_2: device: samsung1, ori_error (game_rv): 1.657
+Sequence a033_2, loss [0.012533 0.007903] / 0.010218340903520584, ate 2.737797, rte 1.543198, neural=321.38ms, rf=55.10ms, total=376.48ms, time_per_sample=0.0265ms
+a035_3: device: samsung1, ori_error (game_rv): 8.565
+Sequence a035_3, loss [0.011556 0.012591] / 0.01207350380718708, ate 2.513936, rte 2.348713, neural=281.14ms, rf=48.15ms, total=329.29ms, time_per_sample=0.0282ms
+a036_2: device: asus4, ori_error (game_rv): 16.805
+Sequence a036_2, loss [0.024478 0.013411] / 0.018944084644317627, ate 3.874482, rte 4.057766, neural=334.98ms, rf=54.99ms, total=389.97ms, time_per_sample=0.0270ms
+a037_1: device: asus4, ori_error (game_rv): 4.859
+Sequence a037_1, loss [0.005299 0.005312] / 0.00530533492565155, ate 1.112842, rte 1.110979, neural=244.96ms, rf=38.59ms, total=283.55ms, time_per_sample=0.0287ms
+a038_2: device: samsung1, ori_error (game_rv): 5.030
+Sequence a038_2, loss [0.005343 0.004668] / 0.005005574785172939, ate 1.760416, rte 1.326894, neural=220.60ms, rf=36.16ms, total=256.76ms, time_per_sample=0.0286ms
+a044_2: device: samsung1, ori_error (game_rv): 2.577
+Sequence a044_2, loss [0.020426 0.025215] / 0.02282029576599598, ate 7.189066, rte 2.793619, neural=294.66ms, rf=51.05ms, total=345.71ms, time_per_sample=0.0276ms
+a046_2: device: samsung1, ori_error (game_rv): 12.161
+Sequence a046_2, loss [0.040691 0.112874] / 0.07678274810314178, ate 7.361925, rte 9.269550, neural=351.45ms, rf=57.90ms, total=409.34ms, time_per_sample=0.0272ms
+a047_2: device: asus4, ori_error (game_rv): 16.972
+Sequence a047_2, loss [0.007850 0.008147] / 0.007998727262020111, ate 4.996166, rte 1.960469, neural=315.08ms, rf=53.05ms, total=368.13ms, time_per_sample=0.0275ms
+a000_7: device: asus4, ori_error (game_rv): 8.354
+Sequence a000_7, loss [0.014266 0.012856] / 0.013561472296714783, ate 2.199030, rte 2.951532, neural=152.16ms, rf=22.60ms, total=174.76ms, time_per_sample=0.0298ms
+a000_11: device: asus6, ori_error (game_rv): 16.363
+Sequence a000_11, loss [0.012610 0.010072] / 0.011341073550283909, ate 4.660864, rte 3.787255, neural=152.96ms, rf=21.91ms, total=174.87ms, time_per_sample=0.0313ms
+a059_2: device: asus4, ori_error (game_rv): 7.410
+Sequence a059_2, loss [0.015493 0.021027] / 0.018260089680552483, ate 5.129648, rte 2.275211, neural=212.02ms, rf=33.11ms, total=245.13ms, time_per_sample=0.0286ms
+
+================================================================================
+[TIMING SUMMARY] YOLO26 + B_ridge
+Mean time per sample (neural): 0.0253 ms
+Mean time per sample (RF): 0.0039 ms
+Mean time per sample (total): 0.0292 ms
+================================================================================
+
+----------
+Overall loss: [0.020364 0.022855]/0.021609114482998848, avg ATE:4.013294738463436, avg RTE:2.9217076777667836
