@@ -29,15 +29,35 @@ OUT_DIR="output/train_${RUN_NAME}"
 TEST_DIR="output/test_${RUN_NAME}"
 CACHE_DIR="cache/${RUN_NAME}"
 
+# ---- pre-flight -------------------------------------------------------------
+# Training root: the original run used data/seen_subjects_train_set; the server
+# currently has data/train_dataset (same split lists). Use whichever exists.
+if [ -z "${TRAIN_ROOT:-}" ]; then
+    for d in data/seen_subjects_train_set data/train_dataset; do
+        if [ -d "${d}" ]; then TRAIN_ROOT="${d}"; break; fi
+    done
+fi
+for p in "${TRAIN_ROOT:-<none>}" data/seen_subjects_test_set data/unseen_subjects_test_set \
+         lists/list_train.txt lists/list_val.txt lists/list_test_seen.txt lists/list_test_unseen.txt; do
+    if [ ! -e "${p}" ]; then echo "ERROR: missing ${p} (set TRAIN_ROOT=... if the data lives elsewhere)" >&2; exit 1; fi
+done
+# Refuse to mix runs: best-checkpoint selection takes the highest checkpoint_N.pt,
+# so leftovers from an earlier or aborted run would be picked up silently.
+if ls "${OUT_DIR}"/checkpoints/checkpoint_[0-9]*.pt >/dev/null 2>&1; then
+    echo "ERROR: ${OUT_DIR}/checkpoints already has checkpoints. Remove the folder or set RUN_NAME=..." >&2
+    exit 1
+fi
+
 export CUDA_VISIBLE_DEVICES="${GPU}"
 mkdir -p "${OUT_DIR}/checkpoints" "${CACHE_DIR}"
+echo "training root: ${TRAIN_ROOT} | GPU ${GPU} | out: ${OUT_DIR}"
 
 echo "=== [1/3] training MobileNetV2-1D for ${EPOCHS} epochs on GPU ${GPU} -> ${OUT_DIR}"
 python source/ronin_yolo26_baseline_plain.py \
     --mode          train \
     --backbone      mobilenetv2 \
     --model_dropout 0.2 \
-    --root_dir      data/seen_subjects_train_set \
+    --root_dir      "${TRAIN_ROOT}" \
     --train_list    lists/list_train.txt \
     --val_list      lists/list_val.txt \
     --cache_path    "${CACHE_DIR}" \
