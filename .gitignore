@@ -174,5 +174,7 @@ fabric.properties
 data
 lists
 *.png
+!paper/*.png
 *.npy
 cache
+
