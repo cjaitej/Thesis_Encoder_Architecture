@@ -4,6 +4,10 @@ Reads the <seq>_gsn.npy files written by the test scripts
 ([pred_x, pred_y, gt_x, gt_y] per frame) and the per-sequence ATE/RTE printed
 in each run's test.log, so the numbers in the figure match the paper tables.
 
+Step 0 - draw every sequence on one contact sheet and pick by eye:
+    python tools/plot_trajectories.py --gallery --out_dir output/paper_figures
+    (add --wins_only to show only sequences where ours beats ResNet on ATE and RTE)
+
 Step 1 - list every sequence with both models' errors, then choose:
     python tools/plot_trajectories.py --list \
         --resnet_dir output/test_resnet/seen \
@@ -124,6 +128,40 @@ def draw(ax, seq, res, ours, res_m, our_m, labels, fs):
     leg.get_frame().set_linewidth(0.6)
 
 
+def gallery(args, res_m, our_m):
+    seqs = sorted(set(res_m) & set(our_m))
+    if args.wins_only:
+        seqs = [q for q in seqs if our_m[q][0] < res_m[q][0] and our_m[q][1] < res_m[q][1]]
+    items, missing = [], []
+    for q in seqs:
+        res, ours = load_traj(args.resnet_dir, q), load_traj(args.ours_dir, q)
+        if res is None or ours is None:
+            missing.append(q)
+        else:
+            items.append((q, res, ours))
+    if missing:
+        print('skipped (no _gsn.npy): %s' % ' '.join(missing))
+    if not items:
+        sys.exit('ERROR: no sequence has _gsn.npy in both %s and %s' % (args.resnet_dir, args.ours_dir))
+
+    cols = 4
+    rows = int(np.ceil(len(items) / cols))
+    fig, axes = plt.subplots(rows, cols, figsize=(4.6 * cols, 4.9 * rows), squeeze=False)
+    for ax, (q, res, ours) in zip(axes.flat, items):
+        draw(ax, q, res, ours, res_m, our_m, args.labels, args.font_size)
+        both = our_m[q][0] < res_m[q][0] and our_m[q][1] < res_m[q][1]
+        ax.set_title('%s%s' % (q, '   (ours better on A and R)' if both else ''),
+                     fontsize=args.font_size + 1, color=INK, loc='left')
+    for ax in list(axes.flat)[len(items):]:
+        ax.axis('off')
+    fig.tight_layout()
+    os.makedirs(args.out_dir, exist_ok=True)
+    out = osp.join(args.out_dir, '%s_gallery%s.png' % (args.prefix, '_wins' if args.wins_only else ''))
+    fig.savefig(out, dpi=110, bbox_inches='tight', facecolor='white')
+    plt.close(fig)
+    print('saved %s  (%d sequences)' % (out, len(items)))
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument('--resnet_dir', default='output/test_resnet/seen')
@@ -131,6 +169,10 @@ def main():
     ap.add_argument('--ours_dir', default='output/test_yolo26_eff/seen_A_rf')
     ap.add_argument('--seqs', nargs='+', help='sequences to plot, in figure order')
     ap.add_argument('--list', action='store_true', help='print per-sequence ATE/RTE and exit')
+    ap.add_argument('--gallery', action='store_true',
+                    help='plot every sequence into one labeled contact sheet and exit')
+    ap.add_argument('--wins_only', action='store_true',
+                    help='with --gallery: only sequences where ours is lower on both ATE and RTE')
     ap.add_argument('--out_dir', default='paper')
     ap.add_argument('--prefix', default='traj', help='files: <prefix><i>_large_text.png')
     ap.add_argument('--labels', nargs=3, default=['Ground Truth', 'RoNIN-ResNet', 'YOLOv26-1D-Eff + RF'])
@@ -139,6 +181,9 @@ def main():
     args = ap.parse_args()
 
     res_m, our_m = read_metrics(args.resnet_dir), read_metrics(args.ours_dir)
+    if args.gallery:
+        gallery(args, res_m, our_m)
+        return
     if args.list or not args.seqs:
         list_sequences(args, res_m, our_m)
         if not args.seqs:

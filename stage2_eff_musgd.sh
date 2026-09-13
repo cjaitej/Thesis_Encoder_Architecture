@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # =============================================================================
-# Stage-2 pipeline for the RETRAINED (MuSGD) YOLOv26-1D-Eff: build the residual
+# Stage-2 pipeline for the RETRAINED YOLOv26-1D-Eff (wd 1e-4, dropout 0.2): build the residual
 # dataset, fit all five correctors, evaluate base + 5 variants on both splits.
 #
 # Mirrors how the published Eff numbers were produced, in the same folder fashion:
@@ -16,8 +16,12 @@
 # time_progress is kept (non-causal), unchanged from the published setup; add
 # --drop_non_causal to STAGE2_ARGS to remove it.
 #
+# NOTE: --optim musgd is parsed but ignored by the training script (always Adam);
+# "musgd" in folder names is just the run name.
+#
 # Run AFTER retrain_eff_musgd.sh. Roughly 30-60 min total:
 #   GPU=3 bash stage2_eff_musgd.sh 2>&1 | tee stage2_eff_musgd.out
+# Other checkpoint:  CKPT=output/train_yolo26_eff_musgd/checkpoints/checkpoint_N.pt GPU=3 bash stage2_eff_musgd.sh
 # =============================================================================
 set -euo pipefail
 
@@ -53,6 +57,13 @@ done
 if [ -z "${BEST_CKPT}" ]; then
     echo "ERROR: no checkpoint in ${TRAIN_DIR}/checkpoints -- run retrain_eff_musgd.sh first" >&2; exit 1
 fi
+# Default: the best-validation checkpoint (highest N = epoch 56 for this run).
+if [ -n "${CKPT:-}" ]; then
+    if [ ! -f "${CKPT}" ]; then echo "ERROR: checkpoint not found: ${CKPT}" >&2; exit 1; fi
+    [ "${CKPT}" != "${BEST_CKPT}" ] && echo "WARNING: ${CKPT} is not the best-val checkpoint (${BEST_CKPT})"
+    BEST_CKPT="${CKPT}"; best_epoch="${CKPT##*/checkpoint_}"; best_epoch="${best_epoch%.pt}"
+fi
+export PYTHONUNBUFFERED=1
 if ls "${S2_DIR}"/*_corrector.joblib >/dev/null 2>&1; then
     echo "ERROR: ${S2_DIR} already has correctors. Remove it or set RUN_NAME=..." >&2; exit 1
 fi
@@ -126,7 +137,7 @@ done
 
 # ---- [4/4] collate ------------------------------------------------------------
 echo
-echo "=== [4/4] collating -> ${TEST_DIR}/ate_rte.csv"
+echo "=== [4/4] RESULTS: YOLOv26-1D-Eff retrain, ${BEST_CKPT##*/} (epoch ${best_epoch})  -> ${TEST_DIR}/ate_rte.csv"
 python - "${TEST_DIR}" "${VARIANTS}" <<'PY'
 import os, re, sys, csv
 test_dir, variants = sys.argv[1], sys.argv[2].split()
@@ -146,12 +157,15 @@ for split in ('seen','unseen'):
         rows.append((split, v, float(m[-1][0]), float(m[-1][1])))
 with open(os.path.join(test_dir, 'ate_rte.csv'), 'w', newline='') as f:
     w = csv.writer(f); w.writerow(['split','variant','ate','rte']); w.writerows(rows)
-print("%-7s %-9s %18s %22s" % ('split','variant','MuSGD ATE / RTE','published Adam ATE / RTE'))
-print('-'*62)
+base = {(sp, 'base'): (a, r) for sp, v, a, r in rows if v == 'base'}
+print("%-7s %-8s %-19s %-16s %-19s" % ('split','variant','retrain ATE / RTE','dRTE vs base','old Adam ATE / RTE'))
+print('-'*80)
 for split, v, ate, rte in rows:
-    o = old.get((split, v))
-    ref = '%.4f / %.4f' % o if o else '-'
-    print("%-7s %-9s %8.4f / %.4f %14s" % (split, v, ate, rte, ref))
+    o = old.get((split, v)); ref = '%.4f / %.4f' % o if o else '-'
+    b = base.get((split, 'base'))
+    d = '-' if (v == 'base' or not b) else '%+.1f%%' % (100.0 * (rte - b[1]) / b[1])
+    print("%-7s %-8s %-19s %-16s %-19s" % (split, v, '%.4f / %.4f' % (ate, rte), d, ref))
+    if v == variants[-1]: print()
 PY
 echo
 echo "saved: ${RF_DIR} (npz)  ${S2_DIR} (correctors)  ${TEST_DIR} (results + ate_rte.csv)"
