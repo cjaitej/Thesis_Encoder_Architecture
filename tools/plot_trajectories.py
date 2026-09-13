@@ -7,12 +7,12 @@ in each run's test.log, so the numbers in the figure match the paper tables.
 Step 1 - list every sequence with both models' errors, then choose:
     python tools/plot_trajectories.py --list \
         --resnet_dir output/test_resnet/seen \
-        --ours_dir   output/test_yolo26_eff_musgd/seen_A_rf
+        --ours_dir   output/test_yolo26_eff/seen_A_rf
 
 Step 2 - plot the chosen sequences (one PNG + PDF each, plus a 2x2 overview):
     python tools/plot_trajectories.py \
         --resnet_dir output/test_resnet/seen \
-        --ours_dir   output/test_yolo26_eff_musgd/seen_A_rf \
+        --ours_dir   output/test_yolo26_eff/seen_A_rf \
         --seqs a001_2 a003_3 a005_1 a006_2 --out_dir paper
     -> paper/traj1_large_text.png ... traj4_large_text.png (names used by paper.tex)
 """
@@ -126,8 +126,9 @@ def draw(ax, seq, res, ours, res_m, our_m, labels, fs):
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument('--resnet_dir', required=True)
-    ap.add_argument('--ours_dir', required=True)
+    ap.add_argument('--resnet_dir', default='output/test_resnet/seen')
+    # Adam-trained YOLOv26-1D-Eff (checkpoint_59) + Random Forest, as in the paper tables.
+    ap.add_argument('--ours_dir', default='output/test_yolo26_eff/seen_A_rf')
     ap.add_argument('--seqs', nargs='+', help='sequences to plot, in figure order')
     ap.add_argument('--list', action='store_true', help='print per-sequence ATE/RTE and exit')
     ap.add_argument('--out_dir', default='paper')
