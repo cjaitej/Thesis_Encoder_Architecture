@@ -1,0 +1,614 @@
+nohup: ignoring input
+training root: data/train_dataset | GPU 3 | out: output/train_yolo26_eff_musgd
+=== [1/4] training YOLOv26-1D-Eff with MuSGD for 100 epochs
+Training set loaded. Feature size: 6, target size: 2. Time usage: 3.286s
+[YOLO26-1D-Efficient] Plain baseline mode: training from scratch.
+[YOLO26-1D-Efficient] Attention: True (always on), dropout: 0.2
+[YOLO26-1D-Efficient] Note: --use_attention not passed, but EfficientPSA1D is integral to this backbone and is built anyway.
+[yolo26_eff] Parameters: 598,530
+Number of train samples: 795215
+Number of val samples: 162955
+Total number of parameters:  598530
+[Optimizer] Adam lr=1.00e-04, weight_decay=1.00e-04
+Start from epoch 0
+-------------------------
+Init: average loss: [0.342995 0.342595]/0.342795
+Validation loss: [0.352776 0.406172]/0.379474
+-------------------------
+Epoch 0, time usage: 247.355s, average loss: [0.066845 0.071285]/0.069065
+Validation loss: [0.059761 0.057683]/0.058722
+  LR: 1.00e-04
+Model saved to  output/train_yolo26_eff_musgd/checkpoints/checkpoint_0.pt
+-------------------------
+Epoch 1, time usage: 256.892s, average loss: [0.039646 0.039986]/0.039816
+Validation loss: [0.051400 0.050200]/0.050800
+  LR: 1.00e-04
+Model saved to  output/train_yolo26_eff_musgd/checkpoints/checkpoint_1.pt
+-------------------------
+Epoch 2, time usage: 264.903s, average loss: [0.033831 0.034064]/0.033948
+Validation loss: [0.046807 0.043084]/0.044945
+  LR: 1.00e-04
+Model saved to  output/train_yolo26_eff_musgd/checkpoints/checkpoint_2.pt
+-------------------------
+Epoch 3, time usage: 250.742s, average loss: [0.030645 0.030592]/0.030618
+Validation loss: [0.044148 0.042893]/0.043521
+  LR: 1.00e-04
+Model saved to  output/train_yolo26_eff_musgd/checkpoints/checkpoint_3.pt
+-------------------------
+Epoch 4, time usage: 248.988s, average loss: [0.028606 0.028481]/0.028544
+Validation loss: [0.041473 0.037908]/0.039690
+  LR: 1.00e-04
+Model saved to  output/train_yolo26_eff_musgd/checkpoints/checkpoint_4.pt
+-------------------------
+Epoch 5, time usage: 248.935s, average loss: [0.027253 0.026971]/0.027112
+Validation loss: [0.039098 0.038676]/0.038887
+  LR: 1.00e-04
+Model saved to  output/train_yolo26_eff_musgd/checkpoints/checkpoint_5.pt
+-------------------------
+Epoch 6, time usage: 249.170s, average loss: [0.026122 0.025940]/0.026031
+Validation loss: [0.041719 0.039224]/0.040472
+  LR: 1.00e-04
+-------------------------
+Epoch 7, time usage: 248.813s, average loss: [0.025328 0.025110]/0.025219
+Validation loss: [0.038041 0.039316]/0.038679
+  LR: 1.00e-04
+Model saved to  output/train_yolo26_eff_musgd/checkpoints/checkpoint_7.pt
+-------------------------
+Epoch 8, time usage: 250.037s, average loss: [0.024685 0.024494]/0.024590
+Validation loss: [0.036202 0.034386]/0.035294
+  LR: 1.00e-04
+Model saved to  output/train_yolo26_eff_musgd/checkpoints/checkpoint_8.pt
+-------------------------
+Epoch 9, time usage: 231.592s, average loss: [0.024219 0.023902]/0.024060
+Validation loss: [0.038313 0.035209]/0.036761
+  LR: 1.00e-04
+-------------------------
+Epoch 10, time usage: 247.913s, average loss: [0.023691 0.023672]/0.023682
+Validation loss: [0.037430 0.035706]/0.036568
+  LR: 1.00e-04
+-------------------------
+Epoch 11, time usage: 238.703s, average loss: [0.023320 0.023286]/0.023303
+Validation loss: [0.035787 0.034749]/0.035268
+  LR: 1.00e-04
+Model saved to  output/train_yolo26_eff_musgd/checkpoints/checkpoint_11.pt
+-------------------------
+Epoch 12, time usage: 273.010s, average loss: [0.023064 0.022921]/0.022992
+Validation loss: [0.037206 0.035482]/0.036344
+  LR: 1.00e-04
+-------------------------
+Epoch 13, time usage: 279.886s, average loss: [0.022738 0.022704]/0.022721
+Validation loss: [0.036287 0.034522]/0.035405
+  LR: 1.00e-04
+-------------------------
+Epoch 14, time usage: 278.487s, average loss: [0.022526 0.022500]/0.022513
+Validation loss: [0.039799 0.036568]/0.038184
+  LR: 1.00e-04
+-------------------------
+Epoch 15, time usage: 261.368s, average loss: [0.022299 0.022188]/0.022244
+Validation loss: [0.035127 0.034892]/0.035010
+  LR: 1.00e-04
+Model saved to  output/train_yolo26_eff_musgd/checkpoints/checkpoint_15.pt
+-------------------------
+Epoch 16, time usage: 244.462s, average loss: [0.022055 0.021875]/0.021965
+Validation loss: [0.037193 0.033436]/0.035314
+  LR: 1.00e-04
+-------------------------
+Epoch 17, time usage: 252.775s, average loss: [0.022020 0.021841]/0.021931
+Validation loss: [0.034499 0.034264]/0.034382
+  LR: 1.00e-04
+Model saved to  output/train_yolo26_eff_musgd/checkpoints/checkpoint_17.pt
+-------------------------
+Epoch 18, time usage: 248.166s, average loss: [0.021721 0.021731]/0.021726
+Validation loss: [0.036533 0.034065]/0.035299
+  LR: 1.00e-04
+-------------------------
+Epoch 19, time usage: 248.028s, average loss: [0.021609 0.021457]/0.021533
+Validation loss: [0.035299 0.032536]/0.033917
+  LR: 1.00e-04
+Model saved to  output/train_yolo26_eff_musgd/checkpoints/checkpoint_19.pt
+-------------------------
+Epoch 20, time usage: 248.358s, average loss: [0.021449 0.021444]/0.021446
+Validation loss: [0.038552 0.036572]/0.037562
+  LR: 1.00e-04
+-------------------------
+Epoch 21, time usage: 248.831s, average loss: [0.021318 0.021255]/0.021286
+Validation loss: [0.038725 0.036382]/0.037553
+  LR: 1.00e-04
+-------------------------
+Epoch 22, time usage: 252.937s, average loss: [0.021128 0.021191]/0.021159
+Validation loss: [0.036609 0.033783]/0.035196
+  LR: 1.00e-04
+-------------------------
+Epoch 23, time usage: 265.258s, average loss: [0.020967 0.020917]/0.020942
+Validation loss: [0.037171 0.034392]/0.035782
+  LR: 1.00e-04
+-------------------------
+Epoch 24, time usage: 280.488s, average loss: [0.020941 0.020813]/0.020877
+Validation loss: [0.035960 0.034750]/0.035355
+  LR: 1.00e-04
+-------------------------
+Epoch 25, time usage: 262.387s, average loss: [0.020762 0.020714]/0.020738
+Validation loss: [0.038113 0.034246]/0.036179
+  LR: 1.00e-04
+-------------------------
+Epoch 26, time usage: 254.884s, average loss: [0.020696 0.020652]/0.020674
+Validation loss: [0.038334 0.035109]/0.036721
+  LR: 1.00e-04
+-------------------------
+Epoch 27, time usage: 276.848s, average loss: [0.020471 0.020521]/0.020496
+Validation loss: [0.035738 0.032789]/0.034264
+  LR: 1.00e-04
+-------------------------
+Epoch 28, time usage: 252.220s, average loss: [0.020413 0.020403]/0.020408
+Validation loss: [0.034255 0.032701]/0.033478
+  LR: 1.00e-04
+Model saved to  output/train_yolo26_eff_musgd/checkpoints/checkpoint_28.pt
+-------------------------
+Epoch 29, time usage: 247.929s, average loss: [0.020276 0.020240]/0.020258
+Validation loss: [0.036436 0.033666]/0.035051
+  LR: 1.00e-04
+-------------------------
+Epoch 30, time usage: 234.532s, average loss: [0.020096 0.020218]/0.020157
+Validation loss: [0.033947 0.031676]/0.032812
+  LR: 1.00e-04
+Model saved to  output/train_yolo26_eff_musgd/checkpoints/checkpoint_30.pt
+-------------------------
+Epoch 31, time usage: 246.331s, average loss: [0.020088 0.020109]/0.020098
+Validation loss: [0.038082 0.036075]/0.037078
+  LR: 1.00e-04
+-------------------------
+Epoch 32, time usage: 247.330s, average loss: [0.019935 0.019935]/0.019935
+Validation loss: [0.036109 0.034468]/0.035288
+  LR: 1.00e-04
+-------------------------
+Epoch 33, time usage: 215.614s, average loss: [0.019899 0.019710]/0.019805
+Validation loss: [0.035689 0.033617]/0.034653
+  LR: 1.00e-04
+-------------------------
+Epoch 34, time usage: 247.957s, average loss: [0.019739 0.019718]/0.019728
+Validation loss: [0.038626 0.034578]/0.036602
+  LR: 1.00e-04
+-------------------------
+Epoch 35, time usage: 247.424s, average loss: [0.019633 0.019654]/0.019643
+Validation loss: [0.035455 0.033764]/0.034609
+  LR: 1.00e-04
+-------------------------
+Epoch 36, time usage: 246.976s, average loss: [0.019610 0.019502]/0.019556
+Validation loss: [0.034265 0.032517]/0.033391
+  LR: 1.00e-04
+-------------------------
+Epoch 37, time usage: 247.552s, average loss: [0.019468 0.019428]/0.019448
+Validation loss: [0.035595 0.031486]/0.033541
+  LR: 1.00e-04
+-------------------------
+Epoch 38, time usage: 247.766s, average loss: [0.019339 0.019290]/0.019315
+Validation loss: [0.037109 0.034182]/0.035646
+  LR: 1.00e-04
+-------------------------
+Epoch 39, time usage: 241.221s, average loss: [0.019279 0.019303]/0.019291
+Validation loss: [0.035348 0.031871]/0.033610
+  LR: 1.00e-04
+-------------------------
+Epoch 40, time usage: 236.196s, average loss: [0.019089 0.019151]/0.019120
+Validation loss: [0.035888 0.032500]/0.034194
+  LR: 1.00e-04
+-------------------------
+Epoch 41, time usage: 247.459s, average loss: [0.019042 0.019058]/0.019050
+Validation loss: [0.038764 0.033969]/0.036366
+Epoch 00042: reducing learning rate of group 0 to 1.0000e-05.
+  LR: 1.00e-05
+-------------------------
+Epoch 42, time usage: 248.593s, average loss: [0.015630 0.015793]/0.015711
+Validation loss: [0.032104 0.030220]/0.031162
+  LR: 1.00e-05
+Model saved to  output/train_yolo26_eff_musgd/checkpoints/checkpoint_42.pt
+-------------------------
+Epoch 43, time usage: 250.327s, average loss: [0.015137 0.015189]/0.015163
+Validation loss: [0.032065 0.030351]/0.031208
+  LR: 1.00e-05
+-------------------------
+Epoch 44, time usage: 253.367s, average loss: [0.014897 0.014967]/0.014932
+Validation loss: [0.031435 0.030130]/0.030782
+  LR: 1.00e-05
+Model saved to  output/train_yolo26_eff_musgd/checkpoints/checkpoint_44.pt
+-------------------------
+Epoch 45, time usage: 246.939s, average loss: [0.014822 0.014804]/0.014813
+Validation loss: [0.033015 0.031188]/0.032101
+  LR: 1.00e-05
+-------------------------
+Epoch 46, time usage: 249.712s, average loss: [0.014766 0.014654]/0.014710
+Validation loss: [0.031993 0.030659]/0.031326
+  LR: 1.00e-05
+-------------------------
+Epoch 47, time usage: 249.145s, average loss: [0.014658 0.014590]/0.014624
+Validation loss: [0.031904 0.029853]/0.030878
+  LR: 1.00e-05
+-------------------------
+Epoch 48, time usage: 249.251s, average loss: [0.014497 0.014649]/0.014573
+Validation loss: [0.032223 0.030287]/0.031255
+  LR: 1.00e-05
+-------------------------
+Epoch 49, time usage: 244.753s, average loss: [0.014447 0.014494]/0.014471
+Validation loss: [0.032030 0.030265]/0.031148
+  LR: 1.00e-05
+-------------------------
+Epoch 50, time usage: 248.032s, average loss: [0.014455 0.014395]/0.014425
+Validation loss: [0.032922 0.030462]/0.031692
+  LR: 1.00e-05
+-------------------------
+Epoch 51, time usage: 247.239s, average loss: [0.014370 0.014303]/0.014336
+Validation loss: [0.031876 0.030257]/0.031066
+  LR: 1.00e-05
+-------------------------
+Epoch 52, time usage: 247.660s, average loss: [0.014305 0.014330]/0.014318
+Validation loss: [0.032066 0.030617]/0.031341
+  LR: 1.00e-05
+-------------------------
+Epoch 53, time usage: 247.542s, average loss: [0.014163 0.014283]/0.014223
+Validation loss: [0.031492 0.029921]/0.030706
+  LR: 1.00e-05
+Model saved to  output/train_yolo26_eff_musgd/checkpoints/checkpoint_53.pt
+-------------------------
+Epoch 54, time usage: 246.128s, average loss: [0.014165 0.014243]/0.014204
+Validation loss: [0.032289 0.030544]/0.031417
+  LR: 1.00e-05
+-------------------------
+Epoch 55, time usage: 236.790s, average loss: [0.014128 0.014157]/0.014142
+Validation loss: [0.032075 0.030398]/0.031237
+  LR: 1.00e-05
+-------------------------
+Epoch 56, time usage: 241.409s, average loss: [0.014055 0.014132]/0.014094
+Validation loss: [0.031758 0.029204]/0.030481
+  LR: 1.00e-05
+Model saved to  output/train_yolo26_eff_musgd/checkpoints/checkpoint_56.pt
+-------------------------
+Epoch 57, time usage: 246.798s, average loss: [0.014017 0.014093]/0.014055
+Validation loss: [0.032460 0.030826]/0.031643
+  LR: 1.00e-05
+-------------------------
+Epoch 58, time usage: 246.865s, average loss: [0.013958 0.014077]/0.014017
+Validation loss: [0.032626 0.030555]/0.031590
+  LR: 1.00e-05
+-------------------------
+Epoch 59, time usage: 247.276s, average loss: [0.013998 0.013978]/0.013988
+Validation loss: [0.033270 0.031212]/0.032241
+  LR: 1.00e-05
+-------------------------
+Epoch 60, time usage: 248.198s, average loss: [0.013910 0.013962]/0.013936
+Validation loss: [0.032098 0.030972]/0.031535
+  LR: 1.00e-05
+-------------------------
+Epoch 61, time usage: 247.552s, average loss: [0.013895 0.013882]/0.013888
+Validation loss: [0.031547 0.029624]/0.030586
+  LR: 1.00e-05
+-------------------------
+Epoch 62, time usage: 249.746s, average loss: [0.013833 0.013893]/0.013863
+Validation loss: [0.032536 0.030676]/0.031606
+  LR: 1.00e-05
+-------------------------
+Epoch 63, time usage: 246.887s, average loss: [0.013831 0.013837]/0.013834
+Validation loss: [0.032886 0.030510]/0.031698
+  LR: 1.00e-05
+-------------------------
+Epoch 64, time usage: 247.549s, average loss: [0.013855 0.013831]/0.013843
+Validation loss: [0.032037 0.030031]/0.031034
+  LR: 1.00e-05
+-------------------------
+Epoch 65, time usage: 248.412s, average loss: [0.013803 0.013711]/0.013757
+Validation loss: [0.033032 0.031137]/0.032085
+  LR: 1.00e-05
+-------------------------
+Epoch 66, time usage: 248.359s, average loss: [0.013758 0.013734]/0.013746
+Validation loss: [0.032500 0.031418]/0.031959
+  LR: 1.00e-05
+-------------------------
+Epoch 67, time usage: 256.013s, average loss: [0.013663 0.013763]/0.013713
+Validation loss: [0.032424 0.030569]/0.031496
+Epoch 00068: reducing learning rate of group 0 to 1.0000e-06.
+  LR: 1.00e-06
+-------------------------
+Epoch 68, time usage: 249.047s, average loss: [0.013320 0.013296]/0.013308
+Validation loss: [0.031713 0.030178]/0.030945
+  LR: 1.00e-06
+-------------------------
+Epoch 69, time usage: 264.102s, average loss: [0.013253 0.013251]/0.013252
+Validation loss: [0.031564 0.030199]/0.030882
+  LR: 1.00e-06
+-------------------------
+Epoch 70, time usage: 248.161s, average loss: [0.013204 0.013271]/0.013238
+Validation loss: [0.031939 0.030341]/0.031140
+  LR: 1.00e-06
+-------------------------
+Epoch 71, time usage: 248.986s, average loss: [0.013186 0.013290]/0.013238
+Validation loss: [0.031594 0.030490]/0.031042
+  LR: 1.00e-06
+-------------------------
+Epoch 72, time usage: 248.400s, average loss: [0.013267 0.013180]/0.013223
+Validation loss: [0.031923 0.030485]/0.031204
+  LR: 1.00e-06
+-------------------------
+Epoch 73, time usage: 248.797s, average loss: [0.013193 0.013219]/0.013206
+Validation loss: [0.031852 0.030562]/0.031207
+  LR: 1.00e-06
+-------------------------
+Epoch 74, time usage: 248.011s, average loss: [0.013131 0.013259]/0.013195
+Validation loss: [0.032033 0.030280]/0.031156
+  LR: 1.00e-06
+-------------------------
+Epoch 75, time usage: 247.809s, average loss: [0.013146 0.013219]/0.013182
+Validation loss: [0.032364 0.030574]/0.031469
+  LR: 1.00e-06
+-------------------------
+Epoch 76, time usage: 256.226s, average loss: [0.013144 0.013201]/0.013172
+Validation loss: [0.032303 0.030595]/0.031449
+  LR: 1.00e-06
+-------------------------
+Epoch 77, time usage: 251.385s, average loss: [0.013157 0.013196]/0.013176
+Validation loss: [0.031876 0.030556]/0.031216
+  LR: 1.00e-06
+-------------------------
+Epoch 78, time usage: 252.412s, average loss: [0.013155 0.013110]/0.013133
+Validation loss: [0.032466 0.030700]/0.031583
+Epoch 00079: reducing learning rate of group 0 to 1.0000e-07.
+  LR: 1.00e-07
+-------------------------
+Epoch 79, time usage: 248.640s, average loss: [0.013136 0.013088]/0.013112
+Validation loss: [0.032118 0.030541]/0.031329
+  LR: 1.00e-07
+-------------------------
+Epoch 80, time usage: 251.304s, average loss: [0.013125 0.013112]/0.013118
+Validation loss: [0.032410 0.030381]/0.031395
+  LR: 1.00e-07
+-------------------------
+Epoch 81, time usage: 248.996s, average loss: [0.013098 0.013131]/0.013114
+Validation loss: [0.032154 0.030560]/0.031357
+  LR: 1.00e-07
+-------------------------
+Epoch 82, time usage: 247.551s, average loss: [0.013070 0.013166]/0.013118
+Validation loss: [0.031990 0.030497]/0.031244
+  LR: 1.00e-07
+-------------------------
+Epoch 83, time usage: 212.969s, average loss: [0.013081 0.013165]/0.013123
+Validation loss: [0.031793 0.030366]/0.031080
+  LR: 1.00e-07
+-------------------------
+Epoch 84, time usage: 248.540s, average loss: [0.013085 0.013128]/0.013106
+Validation loss: [0.031985 0.030414]/0.031199
+  LR: 1.00e-07
+-------------------------
+Epoch 85, time usage: 246.492s, average loss: [0.013111 0.013113]/0.013112
+Validation loss: [0.032097 0.030490]/0.031294
+  LR: 1.00e-07
+-------------------------
+Epoch 86, time usage: 248.978s, average loss: [0.013084 0.013068]/0.013076
+Validation loss: [0.031986 0.030405]/0.031195
+  LR: 1.00e-07
+-------------------------
+Epoch 87, time usage: 248.241s, average loss: [0.013063 0.013123]/0.013093
+Validation loss: [0.032228 0.030631]/0.031429
+  LR: 1.00e-07
+-------------------------
+Epoch 88, time usage: 248.227s, average loss: [0.013109 0.013114]/0.013112
+Validation loss: [0.032473 0.030649]/0.031561
+  LR: 1.00e-07
+-------------------------
+Epoch 89, time usage: 248.499s, average loss: [0.013166 0.013051]/0.013109
+Validation loss: [0.032185 0.030452]/0.031318
+Epoch 00090: reducing learning rate of group 0 to 1.0000e-08.
+  LR: 1.00e-08
+-------------------------
+Epoch 90, time usage: 247.086s, average loss: [0.013157 0.013071]/0.013114
+Validation loss: [0.032483 0.030384]/0.031434
+  LR: 1.00e-08
+-------------------------
+Epoch 91, time usage: 248.961s, average loss: [0.013031 0.013123]/0.013077
+Validation loss: [0.032142 0.030588]/0.031365
+  LR: 1.00e-08
+-------------------------
+Epoch 92, time usage: 249.118s, average loss: [0.013138 0.013083]/0.013110
+Validation loss: [0.032095 0.030451]/0.031273
+  LR: 1.00e-08
+-------------------------
+Epoch 93, time usage: 248.008s, average loss: [0.013085 0.013114]/0.013100
+Validation loss: [0.032244 0.030341]/0.031292
+  LR: 1.00e-08
+-------------------------
+Epoch 94, time usage: 249.575s, average loss: [0.013053 0.013114]/0.013084
+Validation loss: [0.032322 0.030480]/0.031401
+  LR: 1.00e-08
+-------------------------
+Epoch 95, time usage: 249.368s, average loss: [0.013084 0.013093]/0.013089
+Validation loss: [0.031932 0.030442]/0.031187
+  LR: 1.00e-08
+-------------------------
+Epoch 96, time usage: 249.059s, average loss: [0.013078 0.013142]/0.013110
+Validation loss: [0.032343 0.030572]/0.031458
+  LR: 1.00e-08
+-------------------------
+Epoch 97, time usage: 240.166s, average loss: [0.013099 0.013110]/0.013105
+Validation loss: [0.032323 0.030611]/0.031467
+  LR: 1.00e-08
+-------------------------
+Epoch 98, time usage: 248.232s, average loss: [0.013118 0.013085]/0.013102
+Validation loss: [0.032100 0.030251]/0.031175
+  LR: 1.00e-08
+-------------------------
+Epoch 99, time usage: 248.950s, average loss: [0.013116 0.013072]/0.013094
+Validation loss: [0.031932 0.030326]/0.031129
+  LR: 1.00e-08
+Training complete
+Checkpoint saved to  output/train_yolo26_eff_musgd/checkpoints/checkpoint_latest.pt
+
+=== [2/4] selecting the best-validation checkpoint
+best checkpoint: output/train_yolo26_eff_musgd/checkpoints/checkpoint_56.pt (epoch 56 of 100)
+best val MSE: 0.03048 at epoch 56  (old Adam run: 0.03332 at epoch 59)
+
+=== [3/4] evaluating the backbone (no RF) on seen and unseen subjects
+a001_2: device: asus7, ori_error (game_rv): 8.617
+[YOLO26-1D-Efficient] Plain baseline mode: training from scratch.
+[YOLO26-1D-Efficient] Attention: True (always on), dropout: 0.2
+[YOLO26-1D-Efficient] Note: --use_attention not passed, but EfficientPSA1D is integral to this backbone and is built anyway.
+[yolo26_eff] Parameters: 598,530
+Model output/train_yolo26_eff_musgd/checkpoints/checkpoint_56.pt loaded to device cuda:0.
+a001_2: device: asus7, ori_error (game_rv): 8.617
+Sequence a001_2, loss [0.019149 0.016359] / 0.017754260450601578, ate 5.618405, rte 2.934489, seq_time=1449.24ms, time_per_sample=0.1152ms
+a003_3: device: samsung1, ori_error (game_rv): 1.669
+Sequence a003_3, loss [0.030628 0.027519] / 0.029073357582092285, ate 3.424176, rte 3.270168, seq_time=225.76ms, time_per_sample=0.0232ms
+a004_3: device: asus3, ori_error (game_rv): 14.735
+Sequence a004_3, loss [0.014771 0.013194] / 0.013982342556118965, ate 2.448361, rte 1.887261, seq_time=142.44ms, time_per_sample=0.0279ms
+a005_3: device: samsung1, ori_error (game_rv): 1.271
+Sequence a005_3, loss [0.037458 0.039706] / 0.03858216851949692, ate 7.003950, rte 4.181198, seq_time=262.61ms, time_per_sample=0.0223ms
+a009_1: device: asus4, ori_error (game_rv): 2.222
+Sequence a009_1, loss [0.033792 0.044801] / 0.03929661214351654, ate 3.716111, rte 2.779568, seq_time=193.20ms, time_per_sample=0.0234ms
+a010_2: device: samsung1, ori_error (game_rv): 17.991
+Sequence a010_2, loss [0.014868 0.009550] / 0.01220912765711546, ate 4.508125, rte 2.722266, seq_time=405.78ms, time_per_sample=0.0311ms
+a011_2: device: samsung1, ori_error (game_rv): 30.493
+Sequence a011_2, loss [0.017378 0.018247] / 0.017812475562095642, ate 5.135783, rte 5.243937, seq_time=283.98ms, time_per_sample=0.0208ms
+a012_2: device: samsung1, ori_error (game_rv): 4.979
+Sequence a012_2, loss [0.035603 0.035166] / 0.03538418933749199, ate 7.326608, rte 3.192419, seq_time=258.88ms, time_per_sample=0.0219ms
+a013_2: device: asus4, ori_error (game_rv): 5.244
+Sequence a013_2, loss [0.017675 0.017433] / 0.017553679645061493, ate 7.398762, rte 2.354085, seq_time=274.44ms, time_per_sample=0.0217ms
+a014_2: device: asus4, ori_error (game_rv): 7.929
+Sequence a014_2, loss [0.024822 0.017163] / 0.020992495119571686, ate 4.320762, rte 2.411092, seq_time=255.11ms, time_per_sample=0.0222ms
+a016_1: device: asus4, ori_error (game_rv): 5.513
+Sequence a016_1, loss [0.017796 0.016318] / 0.017056941986083984, ate 4.260262, rte 1.598123, seq_time=217.15ms, time_per_sample=0.0244ms
+a017_2: device: samsung1, ori_error (game_rv): 4.091
+Sequence a017_2, loss [0.020193 0.018708] / 0.019450072199106216, ate 3.093757, rte 1.932331, seq_time=333.50ms, time_per_sample=0.0265ms
+a020_2: device: asus3, ori_error (game_rv): 3.441
+Sequence a020_2, loss [0.030271 0.030218] / 0.03024434857070446, ate 3.365420, rte 3.289574, seq_time=188.49ms, time_per_sample=0.0248ms
+a021_2: device: samsung1, ori_error (game_rv): 6.462
+Sequence a021_2, loss [0.019721 0.020594] / 0.020157644525170326, ate 3.711460, rte 2.453150, seq_time=265.33ms, time_per_sample=0.0232ms
+a022_2: device: asus5, ori_error (game_rv): 3.583
+Sequence a022_2, loss [0.056948 0.053678] / 0.05531284958124161, ate 4.643274, rte 4.302202, seq_time=250.65ms, time_per_sample=0.0226ms
+a023_1: device: asus5, ori_error (game_rv): 7.791
+Sequence a023_1, loss [0.011479 0.011326] / 0.011402560397982597, ate 2.533561, rte 1.878095, seq_time=192.09ms, time_per_sample=0.0244ms
+a025_2: device: samsung1, ori_error (game_rv): 2.222
+Sequence a025_2, loss [0.059405 0.048914] / 0.05415944755077362, ate 3.732971, rte 5.103548, seq_time=288.37ms, time_per_sample=0.0232ms
+a026_2: device: asus4, ori_error (game_rv): 8.912
+Sequence a026_2, loss [0.015628 0.011953] / 0.013790374621748924, ate 3.467811, rte 2.457666, seq_time=259.99ms, time_per_sample=0.0218ms
+a027_2: device: samsung1, ori_error (game_rv): 11.382
+Sequence a027_2, loss [0.013687 0.014696] / 0.014191541820764542, ate 2.222591, rte 1.556016, seq_time=302.83ms, time_per_sample=0.0228ms
+a030_3: device: samsung1, ori_error (game_rv): 5.627
+Sequence a030_3, loss [0.011568 0.018469] / 0.015018516220152378, ate 3.674712, rte 2.148997, seq_time=309.19ms, time_per_sample=0.0207ms
+a031_2: device: samsung1, ori_error (game_rv): 4.495
+Sequence a031_2, loss [0.009421 0.029027] / 0.019223857671022415, ate 2.155848, rte 1.526335, seq_time=278.55ms, time_per_sample=0.0226ms
+a033_2: device: samsung1, ori_error (game_rv): 1.657
+Sequence a033_2, loss [0.013887 0.009709] / 0.01179809495806694, ate 2.789384, rte 1.736016, seq_time=298.50ms, time_per_sample=0.0210ms
+a035_3: device: samsung1, ori_error (game_rv): 8.565
+Sequence a035_3, loss [0.014755 0.012203] / 0.013478875160217285, ate 5.348083, rte 2.467211, seq_time=258.49ms, time_per_sample=0.0221ms
+a036_2: device: asus4, ori_error (game_rv): 16.805
+Sequence a036_2, loss [0.022672 0.013615] / 0.01814320683479309, ate 6.211534, rte 3.879796, seq_time=314.54ms, time_per_sample=0.0218ms
+a037_1: device: asus4, ori_error (game_rv): 4.859
+Sequence a037_1, loss [0.005113 0.005384] / 0.005248843692243099, ate 1.479886, rte 1.025164, seq_time=228.50ms, time_per_sample=0.0231ms
+a038_2: device: samsung1, ori_error (game_rv): 5.030
+Sequence a038_2, loss [0.005366 0.004792] / 0.005079279188066721, ate 1.070498, rte 1.204910, seq_time=226.38ms, time_per_sample=0.0252ms
+a044_2: device: samsung1, ori_error (game_rv): 2.577
+Sequence a044_2, loss [0.022139 0.025014] / 0.02357662469148636, ate 2.841457, rte 2.398262, seq_time=275.90ms, time_per_sample=0.0220ms
+a046_2: device: samsung1, ori_error (game_rv): 12.161
+Sequence a046_2, loss [0.036206 0.112590] / 0.0743982344865799, ate 6.589196, rte 9.174830, seq_time=316.38ms, time_per_sample=0.0210ms
+a047_2: device: asus4, ori_error (game_rv): 16.972
+Sequence a047_2, loss [0.008513 0.009238] / 0.008875440806150436, ate 1.912081, rte 1.731951, seq_time=297.31ms, time_per_sample=0.0222ms
+a000_7: device: asus4, ori_error (game_rv): 8.354
+Sequence a000_7, loss [0.012765 0.012707] / 0.012735716998577118, ate 1.907838, rte 2.717633, seq_time=165.94ms, time_per_sample=0.0283ms
+a000_11: device: asus6, ori_error (game_rv): 16.363
+Sequence a000_11, loss [0.016421 0.009254] / 0.01283780112862587, ate 3.138915, rte 4.002986, seq_time=161.44ms, time_per_sample=0.0289ms
+a059_2: device: asus4, ori_error (game_rv): 7.410
+Sequence a059_2, loss [0.016310 0.026061] / 0.02118501625955105, ate 4.391117, rte 2.360002, seq_time=222.53ms, time_per_sample=0.0260ms
+
+================================================================================
+[TIMING SUMMARY] YOLO26 Baseline Plain
+Mean time per sample: 0.0265 ms
+================================================================================
+
+----------
+Overall loss: [0.021450 0.023550]/0.022500187158584595, avg ATE:3.9200843478940612, avg RTE:2.8725400173792743
+a006_2: device: samsung1, ori_error (game_rv): 3.978
+[YOLO26-1D-Efficient] Plain baseline mode: training from scratch.
+[YOLO26-1D-Efficient] Attention: True (always on), dropout: 0.2
+[YOLO26-1D-Efficient] Note: --use_attention not passed, but EfficientPSA1D is integral to this backbone and is built anyway.
+[yolo26_eff] Parameters: 598,530
+Model output/train_yolo26_eff_musgd/checkpoints/checkpoint_56.pt loaded to device cuda:0.
+a006_2: device: samsung1, ori_error (game_rv): 3.978
+Sequence a006_2, loss [0.017207 0.022373] / 0.01979016326367855, ate 4.018594, rte 3.423122, seq_time=1542.94ms, time_per_sample=0.0922ms
+a019_3: device: samsung1, ori_error (game_rv): 1.323
+Sequence a019_3, loss [0.090148 0.042709] / 0.06642823666334152, ate 6.061300, rte 5.570591, seq_time=205.90ms, time_per_sample=0.0233ms
+a024_1: device: samsung1, ori_error (game_rv): 10.395
+Sequence a024_1, loss [0.085088 0.061640] / 0.07336383312940598, ate 4.374847, rte 2.944284, seq_time=214.22ms, time_per_sample=0.0234ms
+a024_3: device: samsung1, ori_error (game_rv): 3.795
+Sequence a024_3, loss [0.031603 0.026105] / 0.028854206204414368, ate 4.868857, rte 2.706747, seq_time=233.47ms, time_per_sample=0.0225ms
+a029_1: device: samsung1, ori_error (game_rv): 18.731
+Sequence a029_1, loss [0.101864 0.040996] / 0.0714300349354744, ate 5.111283, rte 6.425246, seq_time=200.88ms, time_per_sample=0.0239ms
+a029_2: device: samsung1, ori_error (game_rv): 10.180
+Sequence a029_2, loss [0.019230 0.013994] / 0.016612064093351364, ate 2.619182, rte 2.527915, seq_time=242.14ms, time_per_sample=0.0232ms
+a032_1: device: asus4, ori_error (game_rv): 1.794
+Sequence a032_1, loss [0.033440 0.032856] / 0.033148206770420074, ate 4.127400, rte 5.393034, seq_time=210.28ms, time_per_sample=0.0246ms
+a032_3: device: asus4, ori_error (game_rv): 3.553
+Sequence a032_3, loss [0.134940 0.172864] / 0.15390220284461975, ate 22.604337, rte 10.093374, seq_time=287.99ms, time_per_sample=0.0208ms
+a042_2: device: asus4, ori_error (game_rv): 12.481
+Sequence a042_2, loss [0.045677 0.029610] / 0.03764349967241287, ate 5.864092, rte 4.939390, seq_time=300.03ms, time_per_sample=0.0210ms
+a049_1: device: asus7, ori_error (game_rv): 34.273
+Sequence a049_1, loss [0.035890 0.043734] / 0.03981220722198486, ate 3.284451, rte 4.774063, seq_time=184.49ms, time_per_sample=0.0267ms
+a049_2: device: asus7, ori_error (game_rv): 5.120
+Sequence a049_2, loss [0.017598 0.022169] / 0.0198834091424942, ate 2.694679, rte 2.590517, seq_time=290.81ms, time_per_sample=0.0220ms
+a049_3: device: asus7, ori_error (game_rv): 6.177
+Sequence a049_3, loss [0.025428 0.029282] / 0.027354925870895386, ate 3.279686, rte 3.690740, seq_time=275.10ms, time_per_sample=0.0213ms
+a050_1: device: samsung1, ori_error (game_rv): 7.429
+Sequence a050_1, loss [0.056936 0.060666] / 0.05880136042833328, ate 13.328360, rte 7.783243, seq_time=179.31ms, time_per_sample=0.0252ms
+a050_3: device: samsung1, ori_error (game_rv): 11.619
+Sequence a050_3, loss [0.057694 0.081106] / 0.06940019875764847, ate 12.675293, rte 6.973747, seq_time=297.75ms, time_per_sample=0.0224ms
+a051_1: device: asus4, ori_error (game_rv): 35.594
+Sequence a051_1, loss [0.036614 0.046342] / 0.0414779931306839, ate 5.186102, rte 4.921633, seq_time=362.57ms, time_per_sample=0.0201ms
+a051_2: device: asus4, ori_error (game_rv): 13.092
+Sequence a051_2, loss [0.011330 0.011075] / 0.011202372610569, ate 3.398686, rte 1.667375, seq_time=315.10ms, time_per_sample=0.0219ms
+a051_3: device: asus4, ori_error (game_rv): 0.750
+Sequence a051_3, loss [0.016250 0.012784] / 0.014517327770590782, ate 0.934921, rte 1.218514, seq_time=130.06ms, time_per_sample=0.0173ms
+a052_2: device: samsung1, ori_error (game_rv): 8.257
+Sequence a052_2, loss [0.088468 0.106211] / 0.09733937680721283, ate 7.006941, rte 7.976731, seq_time=185.12ms, time_per_sample=0.0255ms
+a053_1: device: asus4, ori_error (game_rv): 20.488
+Sequence a053_1, loss [0.020926 0.014948] / 0.01793672889471054, ate 2.896266, rte 3.107004, seq_time=220.69ms, time_per_sample=0.0241ms
+a053_2: device: asus4, ori_error (game_rv): 2.682
+Sequence a053_2, loss [0.011921 0.018554] / 0.015237214043736458, ate 4.933203, rte 2.897494, seq_time=277.00ms, time_per_sample=0.0217ms
+a053_3: device: asus4, ori_error (game_rv): 4.051
+Sequence a053_3, loss [0.010431 0.015884] / 0.013157350942492485, ate 3.606112, rte 2.622879, seq_time=273.25ms, time_per_sample=0.0232ms
+a054_1: device: asus4, ori_error (game_rv): 12.810
+Sequence a054_1, loss [0.049086 0.028747] / 0.038916416466236115, ate 5.300326, rte 4.712610, seq_time=181.44ms, time_per_sample=0.0266ms
+a054_2: device: asus4, ori_error (game_rv): 2.087
+Sequence a054_2, loss [0.022370 0.031171] / 0.02677055262029171, ate 3.791142, rte 3.469363, seq_time=274.82ms, time_per_sample=0.0227ms
+a054_3: device: asus4, ori_error (game_rv): 5.550
+Sequence a054_3, loss [0.055505 0.050361] / 0.052933014929294586, ate 9.786768, rte 4.816711, seq_time=303.64ms, time_per_sample=0.0227ms
+a055_2: device: asus3, ori_error (game_rv): 0.887
+Sequence a055_2, loss [0.095663 0.107613] / 0.1016383245587349, ate 11.931633, rte 5.935074, seq_time=307.84ms, time_per_sample=0.0229ms
+a055_3: device: asus3, ori_error (game_rv): 4.760
+Sequence a055_3, loss [0.124945 0.102869] / 0.11390699446201324, ate 9.149950, rte 6.124935, seq_time=412.05ms, time_per_sample=0.0300ms
+a057_1: device: samsung1, ori_error (game_rv): 24.549
+Sequence a057_1, loss [0.111731 0.101623] / 0.10667687654495239, ate 8.421372, rte 9.179444, seq_time=247.32ms, time_per_sample=0.0233ms
+a057_2: device: samsung1, ori_error (game_rv): 1.853
+Sequence a057_2, loss [0.039956 0.035221] / 0.037588536739349365, ate 4.434344, rte 3.226378, seq_time=309.40ms, time_per_sample=0.0229ms
+a057_3: device: samsung1, ori_error (game_rv): 6.956
+Sequence a057_3, loss [0.055068 0.054243] / 0.05465558543801308, ate 14.577686, rte 5.233532, seq_time=277.49ms, time_per_sample=0.0231ms
+a058_1: device: asus4, ori_error (game_rv): 31.679
+Sequence a058_1, loss [0.108892 0.024314] / 0.06660280376672745, ate 4.608356, rte 8.619917, seq_time=201.34ms, time_per_sample=0.0255ms
+a058_2: device: asus4, ori_error (game_rv): 9.231
+Sequence a058_2, loss [0.010029 0.014343] / 0.012186119332909584, ate 3.364501, rte 3.056814, seq_time=397.92ms, time_per_sample=0.0301ms
+a058_3: device: asus4, ori_error (game_rv): 9.122
+Sequence a058_3, loss [0.039118 0.045108] / 0.04211302101612091, ate 3.195578, rte 4.792336, seq_time=289.86ms, time_per_sample=0.0223ms
+
+================================================================================
+[TIMING SUMMARY] YOLO26 Baseline Plain
+Mean time per sample: 0.0264 ms
+================================================================================
+
+----------
+Overall loss: [0.051908 0.046922]/0.04941503703594208, avg ATE:6.294882746069317, avg RTE:4.794211062113025
+
+=== RESULTS: YOLOv26-1D-Eff, MuSGD (best epoch 56)
+  seen    avg ATE:3.9200843478940612, avg RTE:2.8725400173792743
+  unseen  avg ATE:6.294882746069317, avg RTE:4.794211062113025
+  old Adam model (no RF):  seen 4.1649 / 3.1488   unseen 5.8977 / 4.9368
+
+=== [4/4] exporting TFLite -> models_tflite/yolo26_eff_musgd/yolo26_eff.tflite
+Traceback (most recent call last):
+  File "/mnt/data/jaitej/Yolov26_experiments_raspberryPi/ronin_yolov26/tools/convert_yolo26_eff_direct_to_tflite.py", line 25, in <module>
+    import tensorflow as tf
+ModuleNotFoundError: No module named 'tensorflow'
+WARNING: TFLite export failed (training and test results above are still valid).

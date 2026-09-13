@@ -1,0 +1,76 @@
+a006_2: device: samsung1, ori_error (game_rv): 3.978
+[MobileNetV2-1D] Plain baseline mode: training from scratch.
+[mobilenetv2] Parameters: 2,642,562
+Model output/train_mobilenetv2_e100/checkpoints/checkpoint_48.pt loaded to device cuda:0.
+a006_2: device: samsung1, ori_error (game_rv): 3.978
+Sequence a006_2, loss [0.017767 0.023000] / 0.02038322016596794, ate 5.781491, rte 3.604718, seq_time=777.98ms, time_per_sample=0.0465ms
+a019_3: device: samsung1, ori_error (game_rv): 1.323
+Sequence a019_3, loss [0.080789 0.044513] / 0.06265094876289368, ate 5.318864, rte 5.340206, seq_time=299.19ms, time_per_sample=0.0339ms
+a024_1: device: samsung1, ori_error (game_rv): 10.395
+Sequence a024_1, loss [0.065418 0.060765] / 0.06309176981449127, ate 2.394528, rte 2.434515, seq_time=304.54ms, time_per_sample=0.0333ms
+a024_3: device: samsung1, ori_error (game_rv): 3.795
+Sequence a024_3, loss [0.027473 0.021093] / 0.024282805621623993, ate 3.098560, rte 2.395986, seq_time=354.63ms, time_per_sample=0.0342ms
+a029_1: device: samsung1, ori_error (game_rv): 18.731
+Sequence a029_1, loss [0.095756 0.038672] / 0.06721428036689758, ate 4.987537, rte 6.166305, seq_time=999.31ms, time_per_sample=0.1190ms
+a029_2: device: samsung1, ori_error (game_rv): 10.180
+Sequence a029_2, loss [0.020162 0.012512] / 0.01633705198764801, ate 4.224058, rte 2.819524, seq_time=362.39ms, time_per_sample=0.0347ms
+a032_1: device: asus4, ori_error (game_rv): 1.794
+Sequence a032_1, loss [0.037420 0.041365] / 0.039392270147800446, ate 4.596960, rte 6.168798, seq_time=297.51ms, time_per_sample=0.0348ms
+a032_3: device: asus4, ori_error (game_rv): 3.553
+Sequence a032_3, loss [0.113048 0.132244] / 0.12264584004878998, ate 11.307904, rte 8.878246, seq_time=446.28ms, time_per_sample=0.0323ms
+a042_2: device: asus4, ori_error (game_rv): 12.481
+Sequence a042_2, loss [0.042671 0.030119] / 0.036395031958818436, ate 4.077081, rte 4.795466, seq_time=459.96ms, time_per_sample=0.0321ms
+a049_1: device: asus7, ori_error (game_rv): 34.273
+Sequence a049_1, loss [0.035191 0.051808] / 0.043499283492565155, ate 3.981046, rte 5.120085, seq_time=243.80ms, time_per_sample=0.0352ms
+a049_2: device: asus7, ori_error (game_rv): 5.120
+Sequence a049_2, loss [0.016080 0.017795] / 0.016937676817178726, ate 2.337951, rte 2.179920, seq_time=434.46ms, time_per_sample=0.0329ms
+a049_3: device: asus7, ori_error (game_rv): 6.177
+Sequence a049_3, loss [0.022275 0.021815] / 0.022044695913791656, ate 3.504099, rte 3.316832, seq_time=420.50ms, time_per_sample=0.0326ms
+a050_1: device: samsung1, ori_error (game_rv): 7.429
+Sequence a050_1, loss [0.053641 0.059442] / 0.056541379541158676, ate 12.312274, rte 7.683586, seq_time=242.32ms, time_per_sample=0.0340ms
+a050_3: device: samsung1, ori_error (game_rv): 11.619
+Sequence a050_3, loss [0.059895 0.086512] / 0.07320329546928406, ate 13.215845, rte 7.005081, seq_time=429.69ms, time_per_sample=0.0324ms
+a051_1: device: asus4, ori_error (game_rv): 35.594
+Sequence a051_1, loss [0.034500 0.038704] / 0.03660199046134949, ate 5.788183, rte 4.756940, seq_time=571.08ms, time_per_sample=0.0316ms
+a051_2: device: asus4, ori_error (game_rv): 13.092
+Sequence a051_2, loss [0.010240 0.009109] / 0.009674472734332085, ate 3.357248, rte 1.361985, seq_time=485.92ms, time_per_sample=0.0337ms
+a051_3: device: asus4, ori_error (game_rv): 0.750
+Sequence a051_3, loss [0.018723 0.011565] / 0.015143979340791702, ate 1.084322, rte 1.307252, seq_time=224.34ms, time_per_sample=0.0298ms
+a052_2: device: samsung1, ori_error (game_rv): 8.257
+Sequence a052_2, loss [0.080742 0.129053] / 0.1048976331949234, ate 9.106106, rte 7.695126, seq_time=264.05ms, time_per_sample=0.0364ms
+a053_1: device: asus4, ori_error (game_rv): 20.488
+Sequence a053_1, loss [0.021617 0.013589] / 0.017602529376745224, ate 2.607684, rte 3.259450, seq_time=318.44ms, time_per_sample=0.0348ms
+a053_2: device: asus4, ori_error (game_rv): 2.682
+Sequence a053_2, loss [0.011183 0.014601] / 0.012891989201307297, ate 3.567218, rte 2.505337, seq_time=420.03ms, time_per_sample=0.0329ms
+a053_3: device: asus4, ori_error (game_rv): 4.051
+Sequence a053_3, loss [0.009969 0.012641] / 0.011305081658065319, ate 2.285388, rte 2.319250, seq_time=510.53ms, time_per_sample=0.0434ms
+a054_1: device: asus4, ori_error (game_rv): 12.810
+Sequence a054_1, loss [0.045142 0.026591] / 0.035866402089595795, ate 6.377990, rte 4.957448, seq_time=241.97ms, time_per_sample=0.0355ms
+a054_2: device: asus4, ori_error (game_rv): 2.087
+Sequence a054_2, loss [0.018617 0.024373] / 0.021495003253221512, ate 4.723672, rte 3.190720, seq_time=390.30ms, time_per_sample=0.0322ms
+a054_3: device: asus4, ori_error (game_rv): 5.550
+Sequence a054_3, loss [0.036075 0.041905] / 0.03898968920111656, ate 4.776706, rte 4.239091, seq_time=450.37ms, time_per_sample=0.0337ms
+a055_2: device: asus3, ori_error (game_rv): 0.887
+Sequence a055_2, loss [0.085867 0.085984] / 0.08592529594898224, ate 12.616434, rte 5.462939, seq_time=446.93ms, time_per_sample=0.0333ms
+a055_3: device: asus3, ori_error (game_rv): 4.760
+Sequence a055_3, loss [0.101649 0.089148] / 0.09539849311113358, ate 8.501370, rte 5.656454, seq_time=463.92ms, time_per_sample=0.0338ms
+a057_1: device: samsung1, ori_error (game_rv): 24.549
+Sequence a057_1, loss [0.078366 0.075514] / 0.07693960517644882, ate 5.824380, rte 7.482412, seq_time=360.53ms, time_per_sample=0.0340ms
+a057_2: device: samsung1, ori_error (game_rv): 1.853
+Sequence a057_2, loss [0.039760 0.034899] / 0.03732944279909134, ate 4.688651, rte 3.247120, seq_time=444.38ms, time_per_sample=0.0329ms
+a057_3: device: samsung1, ori_error (game_rv): 6.956
+Sequence a057_3, loss [0.043782 0.045472] / 0.04462672024965286, ate 10.524047, rte 4.633920, seq_time=399.66ms, time_per_sample=0.0333ms
+a058_1: device: asus4, ori_error (game_rv): 31.679
+Sequence a058_1, loss [0.095410 0.023509] / 0.059459492564201355, ate 4.662591, rte 7.973211, seq_time=270.61ms, time_per_sample=0.0343ms
+a058_2: device: asus4, ori_error (game_rv): 9.231
+Sequence a058_2, loss [0.010750 0.014704] / 0.012727314606308937, ate 2.135139, rte 3.148989, seq_time=420.39ms, time_per_sample=0.0318ms
+a058_3: device: asus4, ori_error (game_rv): 9.122
+Sequence a058_3, loss [0.037318 0.041908] / 0.03961297869682312, ate 3.112476, rte 4.590012, seq_time=427.89ms, time_per_sample=0.0329ms
+
+================================================================================
+[TIMING SUMMARY] YOLO26 Baseline Plain
+Mean time per sample: 0.0361 ms
+================================================================================
+
+----------
+Overall loss: [0.045853 0.042966]/0.0444096140563488, avg ATE:5.527431256046224, avg RTE:4.553028926663416
