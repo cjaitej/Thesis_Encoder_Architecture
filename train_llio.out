@@ -1,0 +1,5 @@
+nohup: ignoring input
+python: /mnt/data/suryansh/miniconda3/envs/ronin/bin/python
+training root: data/train_dataset | GPU 0 | epochs 100 | out: output/train_llio
+=== [1/3] training LLIO-Net (ResMLP512) for 100 epochs on GPU 0
+Terminated

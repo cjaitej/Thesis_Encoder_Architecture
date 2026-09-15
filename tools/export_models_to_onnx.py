@@ -75,6 +75,16 @@ MODEL_SPECS = {
         "use_attention": False,
         "dropout": 0.2,
     },
+    "llio128": {
+        "script": "ronin_yolo26_baseline_plain",
+        "checkpoints": [
+            "output/train_llio128/checkpoints/checkpoint_99.pt",
+        ],
+        "backbone": "llio",
+        "use_attention": False,
+        "dropout": 0.2,
+        "llio_feature_dim": 128,
+    },
 }
 
 
@@ -94,10 +104,14 @@ def build_model(base_dir, name, spec, window_size):
     if spec["backbone"] is None:
         model = module.get_model("resnet18")
     else:
+        extra_kwargs = {}
+        if "llio_feature_dim" in spec:
+            extra_kwargs["llio_feature_dim"] = spec["llio_feature_dim"]
         model = module.get_model(
             spec["backbone"],
             model_dropout=spec["dropout"],
             use_attention=spec["use_attention"],
+            **extra_kwargs,
         )
 
     checkpoint_path = None

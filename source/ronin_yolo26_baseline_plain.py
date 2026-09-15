@@ -22,19 +22,20 @@ from data_glob_speed import *
 from transformations import *
 from metric import compute_ate_rte
 from model_resnet1d import *
-from model_yolo26_1d import YOLO26_1D_Regressor, YOLO26_1D_Efficient
+from model_yolo26_1d import YOLO26_1D_Regressor, YOLO26_1D_Efficient, MuSGD
 from model_mobilenet1d import MobileNetV2_1D
 from model_shufflenet1d import ShuffleNetV2_1D
 from model_efficientnet_lite1d import EfficientNetLite0_1D
 from model_tinycnn1d import TinyCNN1D
 from model_lighttcn1d import LightTCN1D
+from model_llio1d import LLIO1D
 from rf_utils import apply_rf_correction, build_sequence_features
 
 _input_channel, _output_channel = 6, 2
 _fc_config = {'fc_dim': 512, 'in_dim': 7, 'dropout': 0.2, 'trans_planes': 128}
 
 
-def get_model(backbone, model_dropout=0.2, use_attention=False):
+def get_model(backbone, model_dropout=0.2, use_attention=False, llio_feature_dim=512):
     if backbone == 'yolo26':
         network = YOLO26_1D_Regressor(
             in_channels=6,
@@ -91,12 +92,53 @@ def get_model(backbone, model_dropout=0.2, use_attention=False):
     elif backbone == 'lighttcn':
         network = LightTCN1D(in_channels=6, num_outputs=2, dropout=model_dropout)
         print("[LightTCN-1D] Plain baseline mode: training from scratch.")
+    elif backbone == 'llio':
+        # LLIO-Net architecture (Wang et al., IEEE IoT-J 2022) ported to this
+        # pipeline's 200-sample window and 2D velocity target. See model_llio1d.py
+        # for exactly what was reused and what was adapted: their repo ships the
+        # architecture only, so this is trained under our protocol and does not
+        # reproduce their published numbers.
+        # llio_feature_dim selects the paper's variant: 512 / 256 / 128 are
+        # ResMLP512 / ResMLP256 / ResMLP128, identical apart from this width.
+        # ResMLP128 is their lightweight/fast variant (2.08M FLOPs, up to 12x
+        # faster than ResNet); ResMLP512 is the headline-accuracy one.
+        network = LLIO1D(in_channels=6, num_outputs=2, dropout=model_dropout,
+                         feature_dim=llio_feature_dim)
+        print("[LLIO-1D] Plain baseline mode: training from scratch.")
+        print(f"[LLIO-1D] ResMLP{llio_feature_dim} config: patch_num={network.patch_num}, "
+              f"patch_len={network.patch_len}, feature_dim={llio_feature_dim}, "
+              f"blocks=6, expansion=2")
     else:
         raise ValueError(f"Unknown backbone: {backbone}")
 
     if hasattr(network, 'get_num_params'):
         print(f"[{backbone}] Parameters: {network.get_num_params():,}")
     return network
+
+
+def build_optimizer(args, network):
+    """Construct the optimizer named by --optim.
+
+    Pre-existing bug (present since the repo's initial commit, unrelated to any
+    backbone): this call site used to unconditionally build torch.optim.Adam,
+    completely ignoring --optim. args.optim was parsed, recorded faithfully in
+    every run's config.json, and then never read again -- 'musgd' and 'adamw'
+    runs were silently trained with plain Adam. MuSGD itself was implemented
+    correctly in model_yolo26_1d.py; it was simply never instantiated.
+    """
+    if args.optim == 'musgd':
+        print(f"[Optimizer] MuSGD lr={args.lr:.2e}, momentum={args.momentum}, "
+              f"weight_decay={args.weight_decay:.2e}, ns_steps={args.ns_steps}")
+        return MuSGD(network.parameters(), lr=args.lr, momentum=args.momentum,
+                      weight_decay=args.weight_decay, ns_steps=args.ns_steps)
+    elif args.optim == 'adamw':
+        print(f"[Optimizer] AdamW lr={args.lr:.2e}, weight_decay={args.weight_decay:.2e}")
+        return torch.optim.AdamW(network.parameters(), lr=args.lr, weight_decay=args.weight_decay)
+    elif args.optim == 'adam':
+        print(f"[Optimizer] Adam lr={args.lr:.2e}, weight_decay={args.weight_decay:.2e}")
+        return torch.optim.Adam(network.parameters(), lr=args.lr, weight_decay=args.weight_decay)
+    else:
+        raise ValueError(f"Unknown --optim: {args.optim}")
 
 
 def run_test(network, data_loader, device, eval_mode=True, norm_mean=None, norm_std=None):
@@ -166,11 +208,24 @@ def get_dataset_from_list(root_dir, list_path, args, **kwargs):
     return get_dataset(root_dir, data_list, args, **kwargs)
 
 
+def _loader_kwargs(args):
+    """num_workers=0 (the DataLoader default) keeps every existing invocation's
+    behavior exactly as before; pin_memory/persistent_workers only take effect
+    once num_workers > 0, so this is a no-op unless --num_workers is passed."""
+    nw = getattr(args, 'num_workers', 0)
+    kw = {'num_workers': nw}
+    if nw > 0:
+        kw['persistent_workers'] = True
+        kw['pin_memory'] = torch.cuda.is_available() and not args.cpu
+    return kw
+
+
 def train(args, **kwargs):
     # Loading data
     start_t = time.time()
     train_dataset = get_dataset_from_list(args.root_dir, args.train_list, args, mode='train')
-    train_loader = DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True)
+    train_loader = DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True,
+                               **_loader_kwargs(args))
 
     end_t = time.time()
     print('Training set loaded. Feature size: {}, target size: {}. Time usage: {:.3f}s'.format(
@@ -178,7 +233,7 @@ def train(args, **kwargs):
     val_dataset, val_loader = None, None
     if args.val_list is not None:
         val_dataset = get_dataset_from_list(args.root_dir, args.val_list, args, mode='val')
-        val_loader = DataLoader(val_dataset, batch_size=512, shuffle=True)
+        val_loader = DataLoader(val_dataset, batch_size=512, shuffle=True, **_loader_kwargs(args))
 
     device = torch.device('cuda:0' if torch.cuda.is_available() and not args.cpu else 'cpu')
 
@@ -199,6 +254,7 @@ def train(args, **kwargs):
         args.backbone,
         model_dropout=args.model_dropout,
         use_attention=args.use_attention,
+        llio_feature_dim=args.llio_feature_dim,
     ).to(device)
     print('Number of train samples: {}'.format(len(train_dataset)))
     if val_dataset:
@@ -208,7 +264,7 @@ def train(args, **kwargs):
 
     criterion = torch.nn.MSELoss()
 
-    optimizer = torch.optim.Adam(network.parameters(), lr=args.lr, weight_decay=args.weight_decay)
+    optimizer = build_optimizer(args, network)
     try:
         scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
             optimizer, factor=0.1, patience=10, verbose=True
@@ -217,7 +273,6 @@ def train(args, **kwargs):
         scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
             optimizer, factor=0.1, patience=10
         )
-    print(f"[Optimizer] Adam lr={args.lr:.2e}, weight_decay={args.weight_decay:.2e}")
 
     start_epoch = 0
     if args.continue_from is not None and osp.exists(args.continue_from):
@@ -419,6 +474,7 @@ def test_sequence(args):
         args.backbone,
         model_dropout=args.model_dropout,
         use_attention=args.use_attention,
+        llio_feature_dim=args.llio_feature_dim,
     )
 
     network.load_state_dict(checkpoint['model_state_dict'])
@@ -677,13 +733,22 @@ if __name__ == '__main__':
     parser.add_argument('--momentum', type=float, default=0.9)
     parser.add_argument('--ns_steps', type=int, default=5)
     parser.add_argument('--batch_size', type=int, default=128)
+    parser.add_argument('--num_workers', type=int, default=0,
+                        help="DataLoader worker processes. Default 0 (synchronous, "
+                             "the pre-existing behavior for every backbone) so this "
+                             "is opt-in and does not change any already-reported run.")
     parser.add_argument('--epochs', type=int, default=100)
     parser.add_argument('--arch', type=str, default='resnet18')
     parser.add_argument('--backbone', type=str, default='yolo26',
                         choices=['yolo26', 'yolo26_eff', 'mobilenetv2', 'shufflenetv2',
-                                 'efficientnet_lite0', 'tinycnn', 'lighttcn'],
+                                 'efficientnet_lite0', 'tinycnn', 'lighttcn', 'llio'],
                         help="Stage-1 backbone. 'yolo26' = 1,174,594-param original, "
                              "'yolo26_eff' = 598,530-param Efficient YOLOv26-1D.")
+    parser.add_argument('--llio_feature_dim', type=int, default=512, choices=[512, 256, 128],
+                        help="Only for --backbone llio: the LLIO paper's variant. "
+                             "512/256/128 = ResMLP512 (7,266,402 params) / ResMLP256 "
+                             "(1,863,778) / ResMLP128 (489,570, their lightweight "
+                             "and fastest variant). Default 512 = their headline config.")
     parser.add_argument('--cpu', action='store_true')
     parser.add_argument('--run_ekf', action='store_true')
     parser.add_argument('--fast_test', action='store_true')

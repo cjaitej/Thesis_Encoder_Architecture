@@ -12,7 +12,7 @@
 \usepackage{graphicx}
 \usepackage{textcomp}
 \usepackage{xcolor}
-% Placeholder for values not yet measured -- remove every \TBD before submission
+% Placeholder for values not yet measured; remove every \TBD before submission
 \newcommand{\TBD}[1]{\textcolor{red}{\textbf{[#1]}}}
 % Full-width (figure*) floats default to a 0.7 top-of-page fraction and a
 % cramped float-page fraction, which lets a tall two-column figure (e.g.
@@ -120,7 +120,7 @@
 %  ABSTRACT
 % ============================================================
 \begin{abstract}
-Deep inertial odometry can estimate pedestrian trajectories from commodity IMU streams, but accurate models remain expensive for edge devices because they require millions of parameters and their per-window velocity predictions can accumulate into long-horizon drift. This paper studies inertial odometry as a systems performance problem and quantifies the tradeoff between trajectory quality, model footprint, and inference cost under a fixed edge update budget. We propose a two-stage pipeline that combines YOLOv26-1D-Eff, a lightweight 1D convolutional backbone, with a supervised residual-correction module, \textit{ResidualNav}. The backbone regresses planar velocity from 200~Hz IMU windows using 0.60M parameters, an 87.1\% reduction relative to the 4.63M-parameter RoNIN-ResNet baseline, whereas \textit{ResidualNav} predicts local velocity errors from compact kinematic and inertial features before trajectory integration. Trained from scratch on the same public RoNIN subset and evaluated on both seen and unseen subjects, the resulting hybrid model matches the RoNIN-ResNet baseline in both Absolute and Relative Trajectory Error on seen subjects with $7.7\times$ fewer neural parameters, while trailing it on unseen subjects. On a Raspberry Pi 3 B+, the backbone runs in 25.31~ms per window, within the 50~ms update budget, $3.5\times$ faster than RoNIN-ResNet and with $3.4\times$ less energy per run. These results show that edge inertial odometry benefits from pairing a compact predictor with a low-cost correction stage to improve the accuracy--latency--footprint balance needed for real-time deployment.
+Deep inertial odometry estimates pedestrian trajectories from IMU streams, but accurate models remain expensive for edge devices: they need millions of parameters, and per-window velocity errors accumulate into long-horizon drift. This paper studies inertial odometry as a systems performance problem, quantifying the tradeoff between trajectory quality, model footprint, and inference cost under a fixed edge update budget. We propose a two-stage pipeline that combines ResidualNav-Backbone, a lightweight 1D convolutional backbone, with a supervised residual-correction module, \textit{ResidualNav}. The backbone regresses planar velocity from 200~Hz IMU windows using 0.60M parameters, an 87.1\% reduction relative to the 4.63M-parameter RoNIN-ResNet baseline, whereas \textit{ResidualNav} predicts local velocity errors from compact kinematic and inertial features before trajectory integration. Trained from scratch on the same public RoNIN subset and evaluated on both seen and unseen subjects, the resulting hybrid model matches the RoNIN-ResNet baseline in both Absolute and Relative Trajectory Error on seen subjects with $7.7\times$ fewer neural parameters, while trailing it on unseen subjects. On a Raspberry Pi 3 B+, the backbone runs in 25.31~ms per window, within the 50~ms update budget, $3.5\times$ faster than RoNIN-ResNet and with $3.4\times$ less energy per run. These results show that edge inertial odometry benefits from pairing a compact predictor with a low-cost correction stage to improve the accuracy--latency--footprint balance needed for real-time deployment.
 
 
 
@@ -168,15 +168,21 @@ inference cost can be reduced while preserving trajectory quality
 under a real-time IMU budget. Our approach splits the task into two
 stages: a compact predictor estimates motion, and ResidualNav
 learns recurring residual errors before velocity is integrated into
-position. The goal is to identify a more favorable operating point
-for edge navigation rather than simply optimizing accuracy in
-isolation. The main contributions are:
+position. This design rests on the premise that a compact temporal
+backbone can retain competitive accuracy under a tight parameter
+budget, and that the resulting residual errors are structured enough,
+locally and in part across architectures, for a causal corrector to
+exploit. Together with the budget formalized in
+Section~\ref{sec:sysmodel}, this frames the paper's central question:
+whether correction moves the accuracy--latency--footprint Pareto
+frontier for edge inertial odometry, rather than simply optimizing
+accuracy in isolation. The main contributions are:
 \begin{itemize}
   \item We frame edge inertial odometry as a systems tradeoff problem and quantify the balance among trajectory quality, model footprint, and inference cost under a fixed IMU update budget.
-  \item We design YOLOv26-1D-Eff, a lightweight YOLOv26-inspired 1D convolutional backbone for IMU-to-velocity regression whose attention and fusion modules are sized to the short token sequence it processes, reducing the neural parameter count from 4.63M to 0.60M while retaining competitive trajectory accuracy after correction.
-  \item We introduce \textit{ResidualNav}, a supervised residual-correction layer implemented as a multi-output Random Forest regressor that reduces short-horizon velocity error before trajectory integration.
+  \item We design ResidualNav-Backbone, a lightweight YOLOv26-inspired 1D convolutional backbone for IMU-to-velocity regression whose attention and fusion modules are sized to the short token sequence it processes, reducing the neural parameter count from 4.63M to 0.60M while retaining competitive trajectory accuracy after correction.
+  \item We introduce \textit{ResidualNav}, a causal Random Forest corrector that tests this residual-predictability hypothesis, reducing short-horizon velocity error before trajectory integration.
   \item We evaluate the end-to-end pipeline using trajectory accuracy, model footprint, output rate, and inference latency to characterize edge deployability.
-  \item We profile the latency, power and energy of multiple lightweight backbones on a Raspberry Pi and show that the same residual-correction idea transfers across models, indicating that the approach generalizes beyond a single architecture.
+  \item We profile the latency, power and energy of multiple lightweight backbones on a Raspberry Pi and test whether the same residual corrector, fit once on ResidualNav-Backbone, transfers without refitting, finding transfer for most but not all backbones.
 \end{itemize}
 
 % The rest of the paper is organized as follows. Section~\ref{sec:rw}
@@ -207,9 +213,8 @@ methods tightened the coupling between learned motion and filtering
 (TLIO \cite{tlio2020}), introduced attention-based backbones (CTIN
 \cite{ctin2022}), and incorporated learned uncertainty propagation
 into IMU preintegration for tighter sensor-fusion coupling (AirIMU
-\cite{airimu2023}). These methods improved accuracy but also
-highlighted a practical deployment issue: better performance often
-comes with larger models and higher inference cost.
+\cite{airimu2023}). These methods improved accuracy, but often at the
+cost of larger models and higher inference latency.
 
 \subsection{Postprocessing and Drift Correction in INS}
 Several strategies reduce the drift that inevitably builds up in
@@ -217,21 +222,20 @@ trajectory estimates. Classical filter-based corrections, such as the
 extended Kalman filter, rely on linearized motion models that break
 down under aggressive or unconstrained motion \cite{kalman1960}, while
 hybrid approaches combining neural predictions with optimization-based
-trajectory smoothing can improve consistency \cite{ronin2019} at the
-cost of added system complexity. Residual correction offers a simpler
-alternative, learning structured errors left by a primary predictor,
-which is the idea behind our lightweight Random Forest postprocessor
-for short-horizon velocity error before trajectory integration
+trajectory smoothing improve consistency \cite{ronin2019} at the cost
+of added complexity. Residual correction is a simpler alternative
+that learns structured errors left by a primary predictor, the idea
+behind our lightweight Random Forest postprocessor for short-horizon
+velocity error before trajectory integration
 \cite{solin2018,breiman2001,rf_imu_2023}.
 
 
 \subsection{Lightweight Neural Architectures for Edge Deployment}
 
-Running deep neural networks on edge devices requires either post-hoc
-compression or efficient-by-design architectures. Knowledge
-distillation, pruning and quantization are common post-training
-strategies but can be sensitive to calibration data and teacher-model
-quality. Architecturally efficient designs such as MobileNetV2
+Running deep neural networks on edge devices requires post-hoc
+compression (knowledge distillation, pruning, quantization, all
+sensitive to calibration data and teacher-model quality) or
+efficient-by-design architectures. Architecturally efficient designs such as MobileNetV2
 \cite{mobilenet2017}, ShuffleNet \cite{shufflenet2018} and the YOLO
 family achieve parameter efficiency through depthwise separable
 convolutions, channel shuffling, cross-stage partial connections and
@@ -304,7 +308,7 @@ To address this setting, we study a two-stage design. The first stage is a compa
 $\boldsymbol{\longrightarrow}$
 \end{minipage}\hfill
 \begin{minipage}[c]{0.15\textwidth}\centering
-{\fboxrule=1pt\fcolorbox{blue!60}{blue!15}{\parbox[c][1.3cm][c]{0.92\linewidth}{\centering\scriptsize\bfseries YOLOv26-1D-Eff Backbone}}}\\[2pt]
+{\fboxrule=1pt\fcolorbox{blue!60}{blue!15}{\parbox[c][1.3cm][c]{0.92\linewidth}{\centering\scriptsize\bfseries ResidualNav-Backbone}}}\\[2pt]
 {\scriptsize\itshape 0.60M params}
 \end{minipage}\hfill
 \begin{minipage}[c]{0.075\textwidth}\centering
@@ -339,7 +343,7 @@ corrector, alongside the backbone's velocity prediction.}
 
 \caption{Proposed hybrid inertial odometry pipeline. Raw IMU signals
 (accelerometer and gyroscope) are windowed and fed into the lightweight
-YOLOv26-1D-Eff backbone to produce raw planar velocity predictions
+ResidualNav-Backbone to produce raw planar velocity predictions
 $\hat{\mathbf{v}}_t \in \mathbb{R}^2$. A supervised Random Forest
 corrector predicts the residual $\hat{\mathbf{r}}_t$ using local
 kinematic and inertial features, which is applied as a correction
@@ -364,7 +368,7 @@ Figure~\ref{fig:pipeline} shows the proposed two-stage odometry pipeline. IMU me
 % The purpose of this second stage is not to replace the backbone, but to recover short-horizon errors that would otherwise accumulate into long-term drift.
 
 
-\subsection{Backbone Architecture: YOLOv26-1D-Eff}
+\subsection{Backbone Architecture: ResidualNav-Backbone}
 
 YOLOv26 is a lightweight single-stage convolutional architecture that
 maps its input directly to predictions without heavy multi-stage
@@ -372,11 +376,10 @@ decoding. It uses efficient CSP/C3-style blocks and compact feature
 fusion, keeping computation dense but parameter-efficient
 \cite{yolo26_2025}, which makes it suitable for real-time inertial
 odometry under tight memory and latency constraints. We adapt it as
-YOLOv26-1D-Eff: the spatial detection operations are replaced by 1D
+ResidualNav-Backbone: the spatial detection operations are replaced by 1D
 temporal convolutions over IMU windows, the detection head is replaced
 by a two-output velocity regression head, and the attention and fusion
-modules are narrowed to match the short temporal sequence they process,
-which the ``Eff'' designation denotes.
+modules are narrowed to match the short temporal sequence they process.
 
 Concretely, for each inference window, the backbone receives an IMU
 tensor of shape $[200 \times 6]$ (200 frames at 200~Hz $=$ 1 second
@@ -384,7 +387,7 @@ of gyroscope and accelerometer readings, each in the heading-agnostic
 coordinate frame as defined in \cite{ronin2019}) and regresses a 2D
 planar velocity vector $\hat{\mathbf{v}}_t \in \mathbb{R}^2$. At test
 time, predictions are made every ten frames and integrated to build
-the full trajectory. YOLOv26-1D-Eff achieves this with only 598,530
+the full trajectory. ResidualNav-Backbone achieves this with only 598,530
 parameters, compared to 4,634,882 for the ResNet-18 1D baseline, a
 $\mathbf{87.1\%}$ reduction, and requires 4.66M multiply--accumulate
 operations per window, counting convolution, dense and attention
@@ -440,7 +443,7 @@ $2\times10^{-6}$ and is used unchanged for the Raspberry Pi
 measurements of Section~\ref{sec:results}.
 
 \begin{table}[htbp]
-\caption{Layer stack of YOLOv26-1D-Eff for a $6\times200$ input.}
+\caption{Layer stack of ResidualNav-Backbone for a $6\times200$ input.}
 \label{tab:yolo_arch}
 \centering
 \scriptsize
@@ -495,11 +498,10 @@ full trajectory horizon $T$:
 \end{align}
 Even if the instantaneous error at any single step is small, long-horizon
 drift grows without bound. The postprocessor acts as a short-term local
-corrector: it predicts and removes local residual patterns in
-$\hat{\mathbf{v}}_t$, reducing step-wise bias and variance,
-which in turn reduces the accumulated drift reflected in trajectory
-error over long paths. Improving short-term velocity predictions is therefore a
-principled mechanism for controlling long-term drift growth.
+corrector, predicting and removing local residual patterns in
+$\hat{\mathbf{v}}_t$ to reduce step-wise bias and variance, and with
+them the accumulated drift reflected in trajectory error over long
+paths.
 
 \subsubsection{Feature Design for Residual Learning}
 
@@ -536,19 +538,18 @@ corrections.
 
 The corrector is a multi-output Random Forest regressor trained to
 minimize $\min_\phi \sum_t \left\| \mathbf{r}_t - g_\phi(\mathbf{x}_t) \right\|_2^2$.
-Random Forests \cite{breiman2001} are chosen for four complementary reasons: (i) they
-handle nonlinear feature--residual relationships without requiring
-careful architecture search; (ii) they are highly robust on
-structured tabular data with mixed feature scales; (iii) they offer
-fast deterministic inference per sample once trained; and (iv) they
-natively support multi-output regression for joint $(x, y)$
-velocity residual prediction.
+Random Forests \cite{breiman2001} are chosen for four reasons: (i) they
+handle nonlinear feature--residual relationships without careful
+architecture search; (ii) they are robust on structured tabular data
+with mixed feature scales; (iii) they offer fast deterministic
+inference once trained; and (iv) they natively support multi-output
+regression for joint $(x, y)$ velocity residual prediction.
 
 \subsubsection{End-to-End Pipeline}
 
 The full inference pipeline proceeds as:
 \begin{enumerate}
-  \item Run the YOLOv26-1D-Eff backbone to obtain $\hat{\mathbf{v}}_t$
+  \item Run ResidualNav-Backbone to obtain $\hat{\mathbf{v}}_t$
         for all timesteps.
   \item Construct the RF training dataset from the \emph{Train} split
         only, with inputs $\mathbf{x}_t$ and labels
@@ -669,7 +670,14 @@ Board supply voltage and current are sampled before and after each
 run with an Adafruit INA219 sensor wired in-line on the supply rail
 and read over I2C via the CircuitPython INA219 driver; the two
 readings are averaged to give board power, which is then multiplied
-by the run's elapsed wall-clock time to give energy. Latency, power and energy are
+by the run's elapsed wall-clock time to give energy: $\mathrm{Energy/run} =
+\mathrm{board\ power} \times \mathrm{total\ wall\text{-}clock\ time\ to\ process\ one\ complete\ sequence}$.
+Latency is reported per window (total wall-clock time divided by the
+sequence's window count) to compare against the 50~ms budget, so it is a
+much smaller quantity than the per-run energy and power, which are
+inherently per-sequence: multiplying the reported latency by the reported
+power does not reproduce the reported energy, since a run integrates
+power over several thousand windows, not one. Latency, power and energy are
 averaged over the 50 runs; profiling covers the base TFLite backbones
 only (the RF corrector is excluded), capturing low-power ARM latency
 and energy directly rather than workstation-side timing.
@@ -725,26 +733,30 @@ budget: $T_{\mathrm{inf}} + T_{\mathrm{RF}} \leq T_{\mathrm{upd}}$.
 
 \subsection{Baseline and Ablation Models}
 
-Alongside the RoNIN-ResNet baseline and proposed YOLOv26-1D-Eff
-pipeline, we evaluate four competing lightweight 1D backbones to test
+Alongside the RoNIN-ResNet baseline and proposed ResidualNav-Backbone
+pipeline, we evaluate five competing lightweight 1D backbones to test
 whether residual correction remains effective across architectures:
 \begin{enumerate}
   \item \textbf{RoNIN ResNet (Baseline):} ResNet-18 1D with a
         512-unit FC head, trained with the strided velocity loss.
-  \item \textbf{YOLOv26-1D-Eff (No RF):} The 0.60M-parameter backbone
+  \item \textbf{ResidualNav-Backbone (No RF):} The 0.60M-parameter backbone
         of Section~\ref{sec:method}, trained identically and evaluated
         without postprocessing.
-  \item \textbf{YOLOv26-1D-Eff + RF (Proposed):} YOLOv26-1D-Eff
+  \item \textbf{ResidualNav-Backbone + RF (Proposed):} ResidualNav-Backbone
         predictions corrected by the supervised residual RF
         postprocessor.
   \item \textbf{Competing lightweight backbones:} TinyCNN-1D,
         LightTCN-1D, ShuffleNetV2-1D and MobileNetV2-1D, trained under
         the same protocol and evaluated with and without RF correction.
         The corrector is not refitted for these backbones: the same
-        Random Forest fitted to YOLOv26-1D-Eff's residuals
+        Random Forest fitted to ResidualNav-Backbone's residuals
         (Section~\ref{sec:method}) is applied unchanged, so their
         corrected results measure how well ResidualNav transfers
         across backbones.
+  \item \textbf{LLIO-Net (ResMLP128):} our reimplementation of
+        LLIO's~\cite{llio2022} lightweight variant, trained and RF-transferred
+        the same way, since the official repository ships only the
+        architecture.
 \end{enumerate}
 
 \subsection{Training Details}
@@ -760,13 +772,13 @@ ground-truth trajectories randomly on the horizontal plane per step
 during training for augmentation.
 
 The optimizer and regularization are set per architecture.
-YOLOv26-1D-Eff uses Adam, no weight decay and head dropout 0.5 for up
+ResidualNav-Backbone uses Adam, no weight decay and head dropout 0.5 for up
 to 100 epochs. RoNIN-ResNet and the competing backbones use MuSGD, a
 momentum-SGD variant with Newton--Schulz-orthogonalized updates,
 momentum 0.9, weight decay $10^{-4}$ and head dropout 0.2, for up to
-100 epochs (RoNIN-ResNet, ShuffleNetV2-1D, MobileNetV2-1D) or 200
-(TinyCNN-1D, LightTCN-1D); every model plateaued well before its
-budget. Although RoNIN trained its ResNet with Adam, our MuSGD
+100 epochs (RoNIN-ResNet, ShuffleNetV2-1D, MobileNetV2-1D, LLIO-Net)
+or 200 (TinyCNN-1D, LightTCN-1D); every model plateaued well before
+its budget. Although RoNIN trained its ResNet with Adam, our MuSGD
 retrain reproduces its published unseen-subject accuracy
 (5.14/4.38 versus 5.14/4.37~m), so the baseline is not disadvantaged
 by the optimizer.
@@ -774,7 +786,7 @@ by the optimizer.
 The Random Forest postprocessor uses 400 estimators with a maximum
 tree depth of 12, minimum samples per leaf of 1 and \texttt{sqrt}
 feature sampling per split, selected via grid search on the
-validation set. For YOLOv26-1D-Eff, the residual correction uses
+validation set. For ResidualNav-Backbone, the residual correction uses
 gain $\alpha = 1.25$ and clip bound $c = 0.25$, also tuned on the
 validation set.
 % ============================================================
@@ -783,9 +795,11 @@ validation set.
 \section{Results and Discussion}
 \label{sec:results}
 
+The next three subsections evaluate whether the compact backbone retains competitive accuracy under its parameter budget.
+
 \subsection{Parameter Efficiency}
 
-Table~\ref{tab:model_footprint} separates neural backbone footprint from residual-correction complexity. YOLOv26-1D-Eff contains 0.60M trainable parameters, an 87.1\% reduction relative to RoNIN-ResNet. ResidualNav employs a 400-tree Random Forest over 17 input features; as a non-neural component, its storage cost is reported separately and is not included in the neural parameter count or FP32 weight size.
+Table~\ref{tab:model_footprint} separates neural backbone footprint from residual-correction complexity. ResidualNav-Backbone contains 0.60M trainable parameters, an 87.1\% reduction relative to RoNIN-ResNet. ResidualNav employs a 400-tree Random Forest over 17 input features; as a non-neural component, its storage cost is reported separately and is not included in the neural parameter count or FP32 weight size.
 
 \begin{table}[htbp]
 \caption{Model Footprint and Parameter Summary}
@@ -796,8 +810,8 @@ Table~\ref{tab:model_footprint} separates neural backbone footprint from residua
 \hline
 \textbf{Model} & \textbf{Neural Params} & \textbf{FP32 Size} \\
 \hline
-YOLOv26-1D-Eff & 598,530 & 2.28 MiB \\
-\textbf{YOLOv26-1D-Eff + RF} & \textbf{598,530} &
+ResidualNav-Backbone & 598,530 & 2.28 MiB \\
+\textbf{ResidualNav-Backbone + RF} & \textbf{598,530} &
 \textbf{2.28 MiB} \\
 RoNIN ResNet & 4,634,882 & 17.68 MiB \\
 \hline
@@ -817,11 +831,11 @@ Table~\ref{tab:model_footprint} summarizes the static model footprint. All model
 % timing. For hybrid models, reported latency includes TFLite backbone inference
 % followed by RF residual correction.
 
-Table~\ref{tab:pi_tflite_latency} reports the per-window latency, average board power and measured energy per run of the TFLite backbones on the Raspberry Pi 3 B+. YOLOv26-1D-Eff runs in 25.31~ms per window, within the 50~ms update budget with 24.7~ms of headroom, and is $3.5\times$ faster than RoNIN-ResNet (89.42~ms) and $3.2\times$ faster than MobileNetV2-1D (80.08~ms), both of which exceed the budget. Average board power varies from 3.24~W (LightTCN-1D) to 4.34~W (TinyCNN-1D), only a $1.34\times$ spread against an $8.1\times$ spread in latency, so energy is governed mainly by latency rather than power: YOLOv26-1D-Eff consumes 671.78~J per run against 2269.86~J for RoNIN-ResNet, a $3.4\times$ reduction. This latency dominance produces a \emph{race-to-sleep} effect~\cite{albers2010energy}: TinyCNN-1D draws the highest average power of any model (4.34~W) yet has the lowest energy per run (359.75~J), because its 11.09~ms latency lets the board return to a lower-power idle state sooner than the lower-power but slower alternatives. Since energy is the time integral of power, finishing a window faster at a higher draw can still cost less total energy than running longer at a lower one. TinyCNN-1D and ShuffleNetV2-1D also meet the budget, while LightTCN-1D narrowly misses it at 50.11~ms; after correction, TinyCNN-1D is less accurate on both metrics and ShuffleNetV2-1D has a higher ATE (Table~\ref{tab:seen}).
+Table~\ref{tab:pi_tflite_latency} reports the per-window latency, average board power and measured energy per run of the TFLite backbones on the Raspberry Pi 3 B+, where a \emph{run} is one full seen-subject sequence (Section~\ref{sec:exp}), not one inference window: for ResidualNav-Backbone, the 50 profiled runs average 187.9~s of wall-clock time and 7,415 windows per sequence, so $\mathrm{Energy/run} = \mathrm{power} \times \mathrm{total\ sequence\ time} \approx 3.55~\mathrm{W} \times 187.9~\mathrm{s} \approx 671.78~\mathrm{J}$; multiplying 25.31~ms by 3.55~W instead gives only $\approx$0.09~J, a single window's energy, not a run's. ResidualNav-Backbone runs in 25.31~ms per window, within the 50~ms update budget with 24.7~ms of headroom, and is $3.5\times$ faster than RoNIN-ResNet (89.42~ms) and $3.2\times$ faster than MobileNetV2-1D (80.08~ms), both of which exceed the budget. Average board power varies from 3.25~W (LightTCN-1D) to 4.34~W (TinyCNN-1D), only a $1.34\times$ spread against an $8.1\times$ spread in latency, so energy is governed mainly by latency rather than power: ResidualNav-Backbone consumes 671.78~J per run against 2269.86~J for RoNIN-ResNet, a $3.4\times$ reduction. This latency dominance produces a \emph{race-to-sleep} effect~\cite{albers2010energy}: TinyCNN-1D draws the highest average power of any model (4.34~W) yet has the lowest energy per run (359.75~J), because its 11.09~ms latency lets the board return to a lower-power idle state sooner than the slower alternatives. TinyCNN-1D and ShuffleNetV2-1D also meet the budget, while LightTCN-1D narrowly misses it at 50.11~ms; after correction, TinyCNN-1D is less accurate on both metrics and ShuffleNetV2-1D has a higher ATE (Table~\ref{tab:seen}). Table~\ref{tab:pi_tflite_latency} also reports ResidualNav-Backbone+RF: latency rises only 0.30~ms (25.31 to 25.61~ms, still 24.4~ms under budget) and power/energy increase modestly (3.55 to 3.77~W; 671.78 to 744.81~J) with overlapping standard deviations, so correction does not meaningfully change the deployed cost of the pipeline.
 
 
 \begin{table}[htbp]
-\caption{Raspberry Pi 3 B+ Profiling of the Base TFLite Backbones (Mean over 50 Runs)}
+\caption{Raspberry Pi 3 B+ Profiling of the Base TFLite Backbones (Mean $\pm$ Std over 50 Runs)}
 \label{tab:pi_tflite_latency}
 \centering
 \scriptsize
@@ -831,12 +845,13 @@ Table~\ref{tab:pi_tflite_latency} reports the per-window latency, average board 
 \textbf{Model} & \textbf{Neural} & \textbf{Latency} & \textbf{Power} & \textbf{Energy} \\
  & \textbf{Params} & \textbf{(ms/window)} & \textbf{(W)} & \textbf{(J/run)} \\
 \hline
-LightTCN-1D & 79,628 & 50.11 & 3.24 & 1208.28 \\
-TinyCNN-1D & 116,146 & 11.09 & 4.34 & 359.75 \\
-\textbf{YOLOv26-1D-Eff (Ours)} & \textbf{598,530} & \textbf{25.31} & \textbf{3.54} & \textbf{671.78} \\
-ShuffleNetV2-1D & 854,618 & 33.36 & 3.39 & 844.22 \\
-MobileNetV2-1D & 2,642,562 & 80.08 & 3.46 & 2067.97 \\
-RoNIN ResNet (Baseline) & 4,634,882 & 89.42 & 3.39 & 2269.86 \\
+LightTCN-1D & 79,628 & 50.11 $\pm$ 0.11 & 3.25 $\pm$ 0.29 & 1208.28 $\pm$ 266.71 \\
+TinyCNN-1D & 116,146 & 11.10 $\pm$ 0.05 & 4.34 $\pm$ 0.21 & 359.75 $\pm$ 73.23 \\
+\textbf{ResidualNav-Backbone (Ours)} & \textbf{598,530} & \textbf{25.31 $\pm$ 0.72} & \textbf{3.55 $\pm$ 0.45} & \textbf{671.78 $\pm$ 187.41} \\
+ResidualNav-Backbone + RF & 598,530 & 25.61 $\pm$ 0.67 & 3.77 $\pm$ 0.48 & 744.81 $\pm$ 181.95 \\
+ShuffleNetV2-1D & 854,618 & 33.36 $\pm$ 0.53 & 3.39 $\pm$ 0.31 & 844.23 $\pm$ 208.12 \\
+MobileNetV2-1D & 2,642,562 & 80.08 $\pm$ 1.78 & 3.46 $\pm$ 0.37 & 2067.97 $\pm$ 527.64 \\
+RoNIN ResNet (Baseline) & 4,634,882 & 89.42 $\pm$ 6.46 & 3.39 $\pm$ 0.27 & 2269.86 $\pm$ 656.61 \\
 \hline
 \end{tabular}
 }
@@ -850,10 +865,10 @@ RoNIN ResNet (Baseline) & 4,634,882 & 89.42 & 3.39 & 2269.86 \\
 % competing backbones show that RF correction is not specific to
 % YOLOv26-1D. For the proposed YOLOv26-1D model, RF correction improves YOLOv26-1D from ATE/RTE 3.9573/3.0700 to 3.7359/2.5979, surpassing the RoNIN-ResNet RTE.% of 2.7201~m.
 
-Table~\ref{tab:seen} reports ATE and RTE on seen subjects, with models ordered by increasing neural parameter count. RF correction generally improves trajectory accuracy across lightweight backbones, although the gains vary by architecture. For YOLOv26-1D-Eff, RF correction reduces ATE/RTE from 4.1649/3.1488 to 3.5848/2.6081, a 17.2\% RTE reduction, and brings it level with the RoNIN-ResNet baseline (3.7114/2.7614) at $7.7\times$ fewer neural parameters. Among the backbones that meet the 50~ms budget on the Raspberry Pi (Table~\ref{tab:pi_tflite_latency}), YOLOv26-1D-Eff+RF attains the lowest ATE, while ShuffleNetV2-1D+RF attains a slightly lower RTE (2.4248 versus 2.6081~m). Fig.~\ref{fig:trajectories} shows representative predicted trajectories for four of these seen-subject sequences.
+Table~\ref{tab:seen} reports ATE and RTE on seen subjects, with models ordered by increasing neural parameter count. RF correction generally improves trajectory accuracy across lightweight backbones, although the gains vary by architecture. LLIO-Net (ResMLP128)~\cite{llio2022} trails ResidualNav-Backbone by a wide margin despite 18\% fewer parameters (5.3483/3.9878 vs.\ 4.1649/3.1488 ATE/RTE). For ResidualNav-Backbone, RF correction reduces ATE/RTE from 4.1649/3.1488 to 3.5848/2.6081, a 17.2\% RTE reduction, and brings it level with the RoNIN-ResNet baseline (3.7114/2.7614) at $7.7\times$ fewer neural parameters. Among the backbones that meet the 50~ms budget on the Raspberry Pi (Table~\ref{tab:pi_tflite_latency}), ResidualNav-Backbone+RF attains the lowest ATE, while ShuffleNetV2-1D+RF attains a slightly lower RTE (2.4248 versus 2.6081~m). Fig.~\ref{fig:trajectories} shows representative predicted trajectories for four of these seen-subject sequences.
 
 \begin{table}[htbp]
-\caption{Seen Test Set Results (Public RoNIN Subset)}
+\caption{Seen Test Set Results (Public RoNIN Subset, Mean $\pm$ Std over 32 Sequences)}
 \label{tab:seen}
 \centering
 \scriptsize
@@ -863,12 +878,13 @@ Table~\ref{tab:seen} reports ATE and RTE on seen subjects, with models ordered b
 \textbf{Model} & \textbf{ATE} & \textbf{RTE} &
 \textbf{ATE (+RF)} & \textbf{RTE (+RF)} \\
 \hline
-LightTCN-1D & 5.6082 & 3.3909 & 5.7823 & 3.4441 \\
-TinyCNN-1D & 4.7783 & 3.1978 & 4.7689 & 2.7939 \\
-YOLOv26-1D-Eff (Ours) & 4.1649 & 3.1488 & \textbf{3.5848} & \textbf{2.6081} \\
-ShuffleNetV2-1D & 3.9425 & 2.8061 & 3.9048 & 2.4248 \\
-MobileNetV2-1D & 3.9705 & 2.7708 & 3.8009 & 2.4261 \\
-RoNIN ResNet (Baseline) & 3.7114 & 2.7614 & -- & -- \\
+LightTCN-1D & 5.6082 $\pm$ 2.94 & 3.3909 $\pm$ 1.70 & 5.7823 $\pm$ 2.83 & 3.4441 $\pm$ 1.47 \\
+TinyCNN-1D & 4.7783 $\pm$ 2.17 & 3.1978 $\pm$ 1.62 & 4.7689 $\pm$ 1.94 & 2.7939 $\pm$ 1.41 \\
+LLIO-Net (ResMLP128)~\cite{llio2022} & 5.3483 $\pm$ 2.33 & 3.9878 $\pm$ 1.89 & 5.1635 $\pm$ 2.45 & 3.6210 $\pm$ 1.76 \\
+ResidualNav-Backbone (Ours) & 4.1649 $\pm$ 1.63 & 3.1488 $\pm$ 1.47 & \textbf{3.5848 $\pm$ 1.34} & \textbf{2.6081 $\pm$ 1.22} \\
+ShuffleNetV2-1D & 3.9425 $\pm$ 1.57 & 2.8061 $\pm$ 1.54 & 3.9048 $\pm$ 1.46 & 2.4248 $\pm$ 1.31 \\
+MobileNetV2-1D & 3.9705 $\pm$ 1.64 & 2.7708 $\pm$ 1.60 & 3.8009 $\pm$ 1.55 & 2.4261 $\pm$ 1.39 \\
+RoNIN ResNet (Baseline) & 3.7114 $\pm$ 1.63 & 2.7614 $\pm$ 1.58 & -- & -- \\
 \hline
 \end{tabular}
 }
@@ -877,7 +893,7 @@ RoNIN ResNet (Baseline) & 3.7114 & 2.7614 & -- & -- \\
 \begin{figure*}[t]
 \centering
 
-% Single row of four panels -- far shorter vertically than a 2x2 grid.
+% Single row of four panels; far shorter vertically than a 2x2 grid.
 \begin{minipage}[t]{0.235\textwidth}
   \centering
   \includegraphics[width=0.98\linewidth]{traj1_large_text.png}
@@ -900,7 +916,7 @@ RoNIN ResNet (Baseline) & 3.7114 & 2.7614 & -- & -- \\
 \end{minipage}
 
 \caption{Trajectory comparisons between ground truth (blue, solid), the
-RoNIN-ResNet baseline (green, dashed) and the proposed YOLOv26-1D-Eff + RF
+RoNIN-ResNet baseline (green, dashed) and the proposed ResidualNav-Backbone + RF
 hybrid (orange, solid) on four selected seen-subject sequences. On each
 sequence the proposed model attains lower ATE and RTE than RoNIN-ResNet
 while using $7.7\times$ fewer neural parameters; this holds for 12 of the
@@ -918,10 +934,10 @@ denotes RTE (m).}}
 % improves most RTE values. YOLOv26-1D + RF reaches ATE/RTE
 % 5.5368/4.2805, again improving on the RoNIN-ResNet RTE of 4.4999~m. The RoNIN-ResNet baseline retrained on the same subset achieves performance close to the original RoNIN results, supporting the validity of our comparative evaluation protocol.
 
-Table~\ref{tab:unseen} reports generalization to unseen subjects. RF correction yields smaller gains here, reducing YOLOv26-1D-Eff RTE from 4.9368 to 4.7313 while leaving ATE essentially unchanged (5.8977 to 5.9046). The retrained RoNIN-ResNet baseline (5.1400/4.3770) is stronger on unseen subjects, so the lightweight backbones trade some cross-subject generalization for their reduced footprint. For reference, the original RoNIN study~\cite{ronin2019} reported ResNet ATE/RTE of 3.54/2.67 on seen subjects and 5.14/4.37 on unseen subjects using the full training dataset; our retrained values (3.7114/2.7614 seen, 5.1400/4.3770 unseen) are close to these published numbers, supporting the validity of the evaluation protocol despite using only the publicly accessible subset (Table~\ref{tab:dataset_splits}). MobileNetV2-1D+RF attains the lowest error among the lightweight models, but its backbone alone needs 80.08~ms per window on the Raspberry Pi, exceeding the 50~ms budget, whereas the YOLOv26-1D-Eff backbone needs 25.31~ms.
+Table~\ref{tab:unseen} reports generalization to unseen subjects. RF correction yields smaller gains here, reducing ResidualNav-Backbone RTE from 4.9368 to 4.7313 while leaving ATE essentially unchanged (5.8977 to 5.9046). The retrained RoNIN-ResNet baseline (5.1400/4.3770) is stronger on unseen subjects, so the lightweight backbones trade some cross-subject generalization for their reduced footprint, and LLIO-Net degrades further still (7.0285/5.6777). For reference, the original RoNIN study~\cite{ronin2019} reported ResNet ATE/RTE of 3.54/2.67 on seen subjects and 5.14/4.37 on unseen subjects using the full training dataset; our retrained values (3.7114/2.7614 seen, 5.1400/4.3770 unseen) are close to these published numbers, supporting the validity of the evaluation protocol despite using only the publicly accessible subset (Table~\ref{tab:dataset_splits}). MobileNetV2-1D+RF attains the lowest error among the lightweight models, but its backbone alone needs 80.08~ms per window on the Raspberry Pi, exceeding the 50~ms budget, whereas ResidualNav-Backbone needs 25.31~ms. Accuracy therefore matches the full-size baseline on seen subjects ($7.7\times$ fewer parameters) but only partially on unseen ones.
 
 \begin{table}[htbp]
-\caption{Unseen Test Set Results (Generalization)}
+\caption{Unseen Test Set Results (Generalization, Mean $\pm$ Std over 32 Sequences)}
 \label{tab:unseen}
 \centering
 \scriptsize
@@ -931,12 +947,13 @@ Table~\ref{tab:unseen} reports generalization to unseen subjects. RF correction 
 \textbf{Model} & \textbf{ATE} & \textbf{RTE} &
 \textbf{ATE (+RF)} & \textbf{RTE (+RF)} \\
 \hline
-LightTCN-1D & 8.6503 & 4.9925 & 8.6435 & 4.7760 \\
-TinyCNN-1D & 6.5321 & 5.0162 & 6.4391 & 4.5282 \\
-YOLOv26-1D-Eff (Ours) & 5.8977 & 4.9368 & \textbf{5.9046} & \textbf{4.7313} \\
-ShuffleNetV2-1D & 5.7805 & 4.6046 & 5.9522 & 4.1057 \\
-MobileNetV2-1D & 5.5274 & 4.5530 & 5.2699 & 4.0811 \\
-RoNIN ResNet (Baseline) & 5.1400 & 4.3770 & -- & -- \\
+LightTCN-1D & 8.6503 $\pm$ 6.67 & 4.9925 $\pm$ 2.59 & 8.6435 $\pm$ 6.30 & 4.7760 $\pm$ 2.38 \\
+TinyCNN-1D & 6.5321 $\pm$ 3.88 & 5.0162 $\pm$ 2.41 & 6.4391 $\pm$ 3.46 & 4.5282 $\pm$ 2.20 \\
+LLIO-Net (ResMLP128)~\cite{llio2022} & 7.0285 $\pm$ 4.23 & 5.6777 $\pm$ 2.90 & 6.5397 $\pm$ 3.83 & 5.2421 $\pm$ 2.63 \\
+ResidualNav-Backbone (Ours) & 5.8977 $\pm$ 3.22 & 4.9368 $\pm$ 2.08 & \textbf{5.9046 $\pm$ 3.52} & \textbf{4.7313 $\pm$ 1.97} \\
+ShuffleNetV2-1D & 5.7805 $\pm$ 2.88 & 4.6046 $\pm$ 2.01 & 5.9522 $\pm$ 3.27 & 4.1057 $\pm$ 1.82 \\
+MobileNetV2-1D & 5.5274 $\pm$ 3.32 & 4.5530 $\pm$ 2.05 & 5.2699 $\pm$ 3.25 & 4.0811 $\pm$ 1.83 \\
+RoNIN ResNet (Baseline) & 5.1400 $\pm$ 3.26 & 4.3770 $\pm$ 2.07 & -- & -- \\
 \hline
 \end{tabular}
 }
@@ -953,25 +970,29 @@ RoNIN ResNet (Baseline) & 5.1400 & 4.3770 & -- & -- \\
 % stronger in RTE than ATE: RTE directly measures local drift, which is
 % the error type targeted by ResidualNav.
 
-RF correction consistently yields larger improvements in RTE than ATE across most backbones. Since the corrector operates on short-horizon velocity residuals prior to trajectory integration, it primarily reduces local drift rather than global trajectory error. The results suggest that lightweight backbones exhibit systematic short-term prediction errors that can be mitigated using compact kinematic features and rolling inertial statistics. Consequently, the benefits of residual correction are most evident in RTE, which directly captures local trajectory consistency.
+RF correction consistently yields larger improvements in RTE than ATE across most backbones, since the corrector operates on short-horizon velocity residuals before trajectory integration and mainly reduces local drift rather than global error. This suggests lightweight backbones share systematic short-term prediction errors that compact kinematic and rolling inertial features can mitigate.
+
+These results test whether lightweight backbones share a common
+residual structure; transfer proves real but not universal: it
+improves seen-subject ATE and RTE for TinyCNN-1D, ShuffleNetV2-1D and
+MobileNetV2-1D, but worsens both for LightTCN-1D (5.6082/3.3909 to
+5.7823/3.4441~m, Table~\ref{tab:seen}). On unseen subjects RTE gains
+persist for most backbones while ATE is flat or occasionally worse
+(e.g., ShuffleNetV2-1D, 5.7805 to 5.9522~m, Table~\ref{tab:unseen}).
 
 \subsection{Stage-2 Corrector Comparison}
 
 Table~\ref{tab:corrector_variants} compares four residual correctors on
-the YOLOv26-1D-Eff backbone: (A) the Random Forest used in ResidualNav,
-(B) an exponential moving average, (C) a small MLP, and (D) a temporal
-convolutional network. On seen subjects the Random Forest gives the
-largest reduction in both ATE (4.1649 to 3.5848) and RTE (3.1488 to
-2.6081), with the MLP second. On unseen subjects the differences
-between correctors are small: the MLP attains a marginally lower ATE
-(5.8741 versus 5.9046), while the Random Forest attains the lowest
-RTE (4.7313). The nonlinear Random Forest therefore provides the
-strongest overall correction, particularly where residual structure is
-shared with the training subjects, which motivates its use in
-ResidualNav.
+ResidualNav-Backbone: (A) the Random Forest used in ResidualNav,
+(B) an exponential moving average, (C) a small MLP, and (D) a TCN. On
+seen subjects Random Forest gives the largest ATE (4.1649 to 3.5848)
+and RTE (3.1488 to 2.6081) reduction, with the MLP second. On unseen
+subjects differences are small: the MLP attains a marginally lower ATE
+(5.8741 vs.\ 5.9046), while Random Forest attains the lowest RTE
+(4.7313), motivating its use in ResidualNav.
 
 \begin{table}[htbp]
-\caption{Stage-2 Residual Corrector Comparison on YOLOv26-1D-Eff (ATE / RTE, m). Best value per column in bold.}
+\caption{Stage-2 Residual Corrector Comparison on ResidualNav-Backbone (ATE / RTE, m, Mean $\pm$ Std over 32 Sequences). Best value per column in bold.}
 \label{tab:corrector_variants}
 \centering
 \scriptsize
@@ -981,11 +1002,11 @@ ResidualNav.
 \textbf{Corrector} & \textbf{Seen ATE} & \textbf{Seen RTE} &
 \textbf{Unseen ATE} & \textbf{Unseen RTE} \\
 \hline
-None (base)      & 4.1649 & 3.1488 & 5.8977 & 4.9368 \\
-A: Random Forest & \textbf{3.5848} & \textbf{2.6081} & 5.9046 & \textbf{4.7313} \\
-B: EMA           & 4.1575 & 3.1220 & 5.8889 & 4.9136 \\
-C: MLP           & 3.7298 & 2.8269 & \textbf{5.8741} & 4.8625 \\
-D: TCN           & 4.8027 & 2.8996 & 6.7961 & 4.8896 \\
+None (base)      & 4.1649 $\pm$ 1.63 & 3.1488 $\pm$ 1.47 & 5.8977 $\pm$ 3.22 & 4.9368 $\pm$ 2.08 \\
+A: Random Forest & \textbf{3.5848 $\pm$ 1.34} & \textbf{2.6081 $\pm$ 1.22} & 5.9046 $\pm$ 3.52 & \textbf{4.7313 $\pm$ 1.97} \\
+B: EMA           & 4.1575 $\pm$ 1.63 & 3.1220 $\pm$ 1.48 & 5.8889 $\pm$ 3.22 & 4.9136 $\pm$ 2.08 \\
+C: MLP           & 3.7298 $\pm$ 1.52 & 2.8269 $\pm$ 1.25 & \textbf{5.8741 $\pm$ 3.28} & 4.8625 $\pm$ 1.98 \\
+D: TCN           & 4.8027 $\pm$ 2.29 & 2.8996 $\pm$ 1.57 & 6.7961 $\pm$ 3.68 & 4.8896 $\pm$ 1.90 \\
 \hline
 \end{tabular}%
 }
@@ -1146,7 +1167,7 @@ RIDI + RF & \textbf{2.0892} & \textbf{3.3580} & -- & -- \\
 }
 \end{table}
 
-Table~\ref{tab:crossmodel_rf_result} shows that ResidualNav improves all NeurIT metrics, reducing ATE and RTE from 1.3578/0.6958 to 1.2618/0.6791 while also lowering PDE and AYE, and similarly improves RIDI, reducing ATE/RTE from 2.1924/3.6724 to 2.0892/3.3580. The larger RTE reductions observed in both systems are consistent with the role of residual correction in mitigating short-term drift before trajectory integration.
+Table~\ref{tab:crossmodel_rf_result} shows ResidualNav improves all NeurIT metrics (ATE/RTE 1.3578/0.6958 to 1.2618/0.6791, plus lower PDE/AYE) and RIDI (2.1924/3.6724 to 2.0892/3.3580), with larger RTE gains in both, consistent with mitigating short-term drift.
 
 \begin{table}[htbp]
 \caption{Inference-Time Summary for NeurIT and RIDI}
@@ -1171,7 +1192,7 @@ RIDI RF only           & 0.390 s  & 0.023 ms \\
 }
 \end{table}
 
-Table~\ref{tab:crossmodel_inference_time} summarizes the deployment overhead: ResidualNav adds 1.628~ms per processed output for NeurIT and only 0.023~ms for RIDI (feature construction, RF inference, and correction included). This reflects their different output granularities: NeurIT produces fewer, richer outputs, while RIDI streams many lightweight predictions. Because accuracy gains hold and overhead stays bounded on both the neural and classical system, ResidualNav can be integrated as a lightweight postprocessing stage across inertial-navigation pipelines, datasets, and sensing configurations.
+Table~\ref{tab:crossmodel_inference_time} summarizes the deployment overhead: ResidualNav adds 1.628~ms per processed output for NeurIT and only 0.023~ms for RIDI, reflecting their different output granularities: NeurIT produces fewer, richer outputs, while RIDI streams many lightweight predictions. Because accuracy gains hold and overhead stays bounded on both systems, ResidualNav can be integrated as a lightweight postprocessing stage across inertial-navigation pipelines.
 
 % ============================================================
 %  VI. CONCLUSION
@@ -1195,7 +1216,7 @@ Table~\ref{tab:crossmodel_inference_time} summarizes the deployment overhead: Re
 % a full system, where trajectory quality, runtime, model footprint and
 % correction overhead are considered jointly.
 
-We presented a performance-aware inertial odometry framework balancing trajectory quality, model footprint, and inference cost for edge deployment: a two-stage pipeline combining YOLOv26-1D-Eff, a lightweight 1D backbone with attention and fusion sized to its short token sequence, with ResidualNav, a supervised Random Forest corrector reducing local velocity error before trajectory integration. On RoNIN, this design lowers RTE over the uncorrected backbone on seen and unseen subjects, matches RoNIN-ResNet on seen subjects with 87.1\% fewer neural parameters, and transfers to NeurIT and RIDI, exploiting predictable local residuals across pipelines. On a Raspberry Pi 3 B+, the backbone runs in 25.31~ms per window, within the 50~ms budget, $3.5\times$ faster and $3.4\times$ more energy-efficient than RoNIN-ResNet. Two lightweight alternatives edge out YOLOv26-1D-Eff+RF on seen-subject RTE: MobileNetV2-1D+RF needs $4.4\times$ more parameters and 80.08~ms latency, exceeding the budget outright; ShuffleNetV2-1D+RF meets the budget (33.36~ms) but trades a worse ATE (3.9048 vs.\ 3.5848~m) and $1.43\times$ the parameters for that edge. These results argue for evaluating edge inertial odometry as a complete system, weighing model size, runtime, and correction overhead alongside trajectory error, not trajectory error alone.
+We presented a performance-aware inertial odometry framework: a two-stage pipeline combining ResidualNav-Backbone, a lightweight 1D backbone, with ResidualNav, a supervised Random Forest corrector reducing local velocity error before trajectory integration. On RoNIN, this design lowers RTE over the uncorrected backbone on seen and unseen subjects, matches RoNIN-ResNet on seen subjects with 87.1\% fewer neural parameters, and transfers to NeurIT and RIDI. On a Raspberry Pi 3 B+, the backbone runs in 25.31~ms per window, within the 50~ms budget, $3.5\times$ faster and $3.4\times$ more energy-efficient than RoNIN-ResNet. Two lightweight alternatives edge out ResidualNav-Backbone+RF on seen-subject RTE: MobileNetV2-1D+RF needs $4.4\times$ more parameters and exceeds the budget outright at 80.08~ms; ShuffleNetV2-1D+RF meets the budget (33.36~ms) but trades a worse ATE (3.9048 vs.\ 3.5848~m) and $1.43\times$ the parameters. These results argue for evaluating edge inertial odometry as a complete system.
 
 % ============================================================
 %  ACKNOWLEDGMENT

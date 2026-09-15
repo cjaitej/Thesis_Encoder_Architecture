@@ -1,0 +1,70 @@
+{
+  "name": "llio128",
+  "backbone": "llio",
+  "script": "ronin_yolo26_baseline_plain",
+  "checkpoint": {
+    "path": "/mnt/data/jaitej/Yolov26_experiments_raspberryPi/ronin_yolov26/output/train_llio128/checkpoints/checkpoint_99.pt",
+    "size_bytes": 3977331,
+    "size_mb": 3.7930784225463867
+  },
+  "onnx": {
+    "path": "/mnt/data/jaitej/Yolov26_experiments_raspberryPi/ronin_yolov26/models_onnx/llio128.onnx",
+    "size_bytes": 363279,
+    "size_mb": 0.3464498519897461
+  },
+  "export": {
+    "opset": 13,
+    "window_size": 200,
+    "input_shape_used_for_export": [
+      1,
+      6,
+      200
+    ],
+    "torch_output_shape": [
+      1,
+      2
+    ],
+    "fixed_shape_export": true,
+    "notes": "No export-only model wrapper was required."
+  },
+  "pytorch_model": {
+    "total_parameters": 489570,
+    "trainable_parameters": 489570,
+    "buffer_values": 0,
+    "fp32_parameter_size_bytes": 1958280,
+    "fp32_parameter_size_mb": 1.8675613403320312
+  },
+  "onnx_model": {
+    "opset_imports": [
+      {
+        "domain": "ai.onnx",
+        "version": 18
+      }
+    ],
+    "graph_name": "main_graph",
+    "inputs": [
+      {
+        "name": "input",
+        "shape": [
+          1,
+          6,
+          200
+        ]
+      }
+    ],
+    "outputs": [
+      {
+        "name": "output",
+        "shape": [
+          1,
+          2
+        ]
+      }
+    ],
+    "initializer_tensors": 96,
+    "initializer_values": 489581,
+    "fp32_initializer_size_bytes": 1958324,
+    "fp32_initializer_size_mb": 1.8676033020019531,
+    "node_count": 147
+  }
+}

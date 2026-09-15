@@ -1,0 +1,597 @@
+#!/usr/bin/env python3
+"""
+Run RoNIN TFLite inference benchmarks on Raspberry Pi without importing torch.
+
+Expected Pi layout:
+
+    ~/sohel/
+      models_tflite/
+        resnet.tflite
+        yolo26.tflite
+        mobilenet.tflite
+        shufflenet.tflite
+        tinycnn.tflite
+        lighttcn.tflite
+        llio128.tflite
+      rf_yolo26/rf_corrector.joblib
+      seen_subjects_test_set/a001_2/
+      tools/run_tflite_benchmark.py
+"""
+import argparse
+import csv
+import json
+import time
+import random
+from pathlib import Path
+
+import h5py
+import numpy as np
+import quaternion
+
+try:
+    from tflite_runtime.interpreter import Interpreter
+except ImportError:
+    from tensorflow.lite.python.interpreter import Interpreter
+
+
+# Fallback for *_rf targets that do not pin their own "rf_path" (the pre-existing
+# backbones, whose correctors all live here).
+DEFAULT_RF_MODEL_PATH = "rf_yolo26/rf_corrector.joblib"
+
+def init_ina219():
+    import board
+    import busio
+    from adafruit_ina219 import INA219
+
+    i2c = busio.I2C(board.SCL, board.SDA)
+    ina = INA219(i2c)
+    return ina
+
+
+def read_ina219(ina):
+    voltage_v = float(ina.bus_voltage)
+    current_ma = float(ina.current)
+    power_w = voltage_v * current_ma / 1000.0
+    return voltage_v, current_ma, power_w
+
+
+MODELS = {
+    "resnet": {"path": "models_tflite/resnet.tflite", "rf": False},
+    "yolo26": {"path": "models_tflite/yolo26.tflite", "rf": False},
+    "yolo26_eff": {"path": "models_tflite/yolo26_eff.tflite", "rf": False},
+    "mobilenet": {"path": "models_tflite/mobilenet.tflite", "rf": False},
+    "shufflenet": {"path": "models_tflite/shufflenet.tflite", "rf": False},
+    "tinycnn": {"path": "models_tflite/tinycnn.tflite", "rf": False},
+    "lighttcn": {"path": "models_tflite/lighttcn.tflite", "rf": False},
+    # LLIO-Net ResMLP128 (reimplementation of Wang et al., IEEE IoT-J 2022).
+    # Input is NWC (1, 200, 6) after onnx2tf's channel-last conversion, not this
+    # script's native NCW (1, 6, 200); run_tflite()'s prepare_batch() already
+    # auto-transposes on a shape mismatch, so no extra handling is needed here.
+    "llio128": {"path": "models_tflite/llio128.tflite", "rf": False},
+    # "rf_path" pins the monolithic Random Forest corrector to the backbone it was
+    # fitted on. Without it every *_rf target would share one --rf_model_path and
+    # silently run yolo26's corrector on another backbone's predictions.
+    "yolo26_rf": {"path": "models_tflite/yolo26.tflite", "rf": True,
+                  "rf_path": "rf_yolo26/rf_corrector.joblib"},
+    "yolo26_eff_rf": {"path": "models_tflite/yolo26_eff.tflite", "rf": True,
+                      "rf_path": "rf_yolo26_eff/rf_corrector.joblib"},
+    "mobilenet_rf": {"path": "models_tflite/mobilenet.tflite", "rf": True},
+    "shufflenet_rf": {"path": "models_tflite/shufflenet.tflite", "rf": True},
+    "tinycnn_rf": {"path": "models_tflite/tinycnn.tflite", "rf": True},
+    "lighttcn_rf": {"path": "models_tflite/lighttcn.tflite", "rf": True},
+    # Same shared, un-refitted corrector as the other *_rf transfers above (no
+    # "rf_path" pinned, so it falls back to DEFAULT_RF_MODEL_PATH).
+    "llio128_rf": {"path": "models_tflite/llio128.tflite", "rf": True},
+
+    # Stage-2 variants from source/stage2_variants.py. "stage2" names the .npz
+    # written by its --out_dir; alpha/clip travel inside that file. Override the
+    # directory with --stage2_dir. Only A_rf needs sklearn; the rest are numpy.
+    "yolo26_A_rf": {"path": "models_tflite/yolo26.tflite", "rf": False,
+                    "stage2": "A_rf_corrector.npz"},
+    "yolo26_B_ridge": {"path": "models_tflite/yolo26.tflite", "rf": False,
+                       "stage2": "B_ridge_corrector.npz"},
+    "yolo26_C_ema": {"path": "models_tflite/yolo26.tflite", "rf": False,
+                     "stage2": "C_ema_corrector.npz"},
+    "yolo26_D_mlp": {"path": "models_tflite/yolo26.tflite", "rf": False,
+                     "stage2": "D_mlp_corrector.npz"},
+    "yolo26_E_tcn": {"path": "models_tflite/yolo26.tflite", "rf": False,
+                     "stage2": "E_tcn_corrector.npz"},
+
+    # Same stage-2 correctors on the Efficient backbone. Point --stage2_dir at
+    # the correctors fitted on THIS backbone's residuals, not yolo26's.
+    "yolo26_eff_A_rf": {"path": "models_tflite/yolo26_eff.tflite", "rf": False,
+                        "stage2": "A_rf_corrector.npz"},
+    "yolo26_eff_B_ridge": {"path": "models_tflite/yolo26_eff.tflite", "rf": False,
+                           "stage2": "B_ridge_corrector.npz"},
+    "yolo26_eff_C_ema": {"path": "models_tflite/yolo26_eff.tflite", "rf": False,
+                         "stage2": "C_ema_corrector.npz"},
+    "yolo26_eff_D_mlp": {"path": "models_tflite/yolo26_eff.tflite", "rf": False,
+                         "stage2": "D_mlp_corrector.npz"},
+    "yolo26_eff_E_tcn": {"path": "models_tflite/yolo26_eff.tflite", "rf": False,
+                         "stage2": "E_tcn_corrector.npz"},
+}
+
+
+def select_game_rv(data_path):
+    with h5py.File(data_path / "data.hdf5") as f:
+        return np.copy(f["synced/game_rv"])
+
+
+def load_ronin_sequence(data_path, interval=200):
+    with (data_path / "info.json").open() as f:
+        info = json.load(f)
+
+    ori = select_game_rv(data_path)
+
+    with h5py.File(data_path / "data.hdf5") as f:
+        gyro_uncalib = np.copy(f["synced/gyro_uncalib"])
+        acce_uncalib = np.copy(f["synced/acce"])
+        gyro = gyro_uncalib - np.array(info["imu_init_gyro_bias"])
+        acce = np.array(info["imu_acce_scale"]) * (acce_uncalib - np.array(info["imu_acce_bias"]))
+        ts = np.copy(f["synced/time"])
+        tango_pos = np.copy(f["pose/tango_pos"])
+        init_tango_ori = quaternion.quaternion(*f["pose/tango_ori"][0])
+
+    ori_q = quaternion.from_float_array(ori)
+    rot_imu_to_tango = quaternion.quaternion(*info["start_calibration"])
+    init_rotor = init_tango_ori * rot_imu_to_tango * ori_q[0].conj()
+    ori_q = init_rotor * ori_q
+
+    dt = (ts[interval:] - ts[:-interval])[:, None]
+    glob_v = (tango_pos[interval:] - tango_pos[:-interval]) / dt
+
+    gyro_q = quaternion.from_float_array(np.concatenate([np.zeros([gyro.shape[0], 1]), gyro], axis=1))
+    acce_q = quaternion.from_float_array(np.concatenate([np.zeros([acce.shape[0], 1]), acce], axis=1))
+    glob_gyro = quaternion.as_float_array(ori_q * gyro_q * ori_q.conj())[:, 1:]
+    glob_acce = quaternion.as_float_array(ori_q * acce_q * ori_q.conj())[:, 1:]
+
+    start_frame = info.get("start_frame", 0)
+    features = np.concatenate([glob_gyro, glob_acce], axis=1)[start_frame:].astype(np.float32)
+    targets = glob_v[start_frame:, :2].astype(np.float32)
+    ts = ts[start_frame:].astype(np.float64)
+    gt_pos = tango_pos[start_frame:].astype(np.float32)
+    return features, targets, ts, gt_pos
+
+
+def make_windows(features, targets, window_size, step_size):
+    indices = np.arange(0, targets.shape[0], step_size, dtype=np.int64)
+    windows = np.stack([features[i:i + window_size].T for i in indices], axis=0).astype(np.float32)
+    return windows, targets[indices], indices
+
+
+def run_tflite(model_path, windows, batch_size):
+    interpreter = Interpreter(model_path=str(model_path))
+    interpreter.allocate_tensors()
+
+    def refresh_details():
+        input_details = interpreter.get_input_details()[0]
+        output_details = interpreter.get_output_details()[0]
+        return input_details, output_details
+
+    input_details, output_details = refresh_details()
+    native_input_shape = tuple(int(x) for x in input_details["shape"])
+
+    def prepare_batch(batch):
+        if tuple(batch.shape) == native_input_shape:
+            return batch
+        if batch.ndim == 3 and len(native_input_shape) == 3:
+            if tuple(batch.transpose(0, 2, 1).shape) == native_input_shape:
+                return batch.transpose(0, 2, 1)
+        return batch
+
+    def invoke_allocated(batch):
+        batch = prepare_batch(batch)
+        input_details, output_details = refresh_details()
+        interpreter.set_tensor(input_details["index"], batch.astype(input_details["dtype"]))
+        interpreter.invoke()
+        return interpreter.get_tensor(output_details["index"])
+
+    def invoke_batch(batch):
+        batch = prepare_batch(batch)
+        if tuple(batch.shape) == native_input_shape:
+            return invoke_allocated(batch)
+
+        input_details, _ = refresh_details()
+        interpreter.resize_tensor_input(input_details["index"], batch.shape, strict=False)
+        interpreter.allocate_tensors()
+        return invoke_allocated(batch)
+
+    preds = []
+    start = time.perf_counter()
+    for start_idx in range(0, windows.shape[0], batch_size):
+        batch = windows[start_idx:start_idx + batch_size]
+        try:
+            preds.append(invoke_batch(batch))
+        except Exception:
+            interpreter = Interpreter(model_path=str(model_path))
+            interpreter.allocate_tensors()
+            for sample in batch:
+                preds.append(invoke_allocated(sample[None, ...])[0])
+
+    elapsed_ms = (time.perf_counter() - start) * 1000.0
+    return np.concatenate(preds, axis=0).astype(np.float32), elapsed_ms
+
+
+def causal_mean_std_1d(values, window):
+    values = values.astype(np.float64)
+    n = values.shape[0]
+    mean = np.zeros(n, dtype=np.float64)
+    std = np.zeros(n, dtype=np.float64)
+    csum = np.cumsum(values)
+    csum2 = np.cumsum(values * values)
+    for i in range(n):
+        left = max(0, i - window + 1)
+        count = i - left + 1
+        s = csum[i] - (csum[left - 1] if left > 0 else 0.0)
+        s2 = csum2[i] - (csum2[left - 1] if left > 0 else 0.0)
+        m = s / count
+        mean[i] = m
+        std[i] = np.sqrt(max(0.0, s2 / count - m * m))
+    return mean.astype(np.float32), std.astype(np.float32)
+
+
+def build_sequence_features(preds, feat_sparse, ts, hist_window):
+    gyro = feat_sparse[:, :3]
+    acce = feat_sparse[:, 3:6]
+    pred_speed = np.linalg.norm(preds, axis=1)
+    gyro_norm = np.linalg.norm(gyro, axis=1)
+    acce_norm = np.linalg.norm(acce, axis=1)
+    gyro_m, gyro_s = causal_mean_std_1d(gyro_norm, hist_window)
+    acce_m, acce_s = causal_mean_std_1d(acce_norm, hist_window)
+    d_pred = np.zeros_like(preds)
+    d_pred[1:] = preds[1:] - preds[:-1]
+    t0 = ts[0]
+    t1 = ts[-1] if ts[-1] > t0 else t0 + 1.0
+    t_norm = ((ts - t0) / (t1 - t0)).astype(np.float32)
+    return np.stack(
+        [
+            preds[:, 0], preds[:, 1], pred_speed,
+            gyro[:, 0], gyro[:, 1], gyro[:, 2],
+            acce[:, 0], acce[:, 1], acce[:, 2],
+            gyro_norm, acce_norm, gyro_m, gyro_s, acce_m, acce_s,
+            d_pred[:, 0], d_pred[:, 1], t_norm,
+        ],
+        axis=1,
+    ).astype(np.float32)
+
+
+def apply_rf(preds, rf_model_path, feat_sparse, ts_sparse, hist_window, alpha, clip):
+    import joblib
+    rf_model = joblib.load(rf_model_path)
+    start = time.perf_counter()
+    rf_x = build_sequence_features(preds, feat_sparse, ts_sparse, hist_window)
+    residual_hat = rf_model.predict(rf_x).astype(np.float32)
+    rf_elapsed_ms = (time.perf_counter() - start) * 1000.0
+    corrected = preds + alpha * residual_hat
+    if clip is not None and clip > 0:
+        corrected = preds + np.clip(corrected - preds, -clip, clip)
+    return corrected.astype(np.float32), rf_elapsed_ms
+
+
+# --------------------------------------------------------------------------- #
+# Stage-2 correctors exported by source/stage2_variants.py.
+#
+# These run on numpy alone: the .npz holds raw weights, so the Pi does not need
+# torch, sklearn or source/ on sys.path. The one exception is the Random Forest,
+# whose npz is a descriptor naming a bare sklearn estimator beside it.
+# --------------------------------------------------------------------------- #
+
+def ema_stream(pred, alpha):
+    """Causal exponential moving average over one trajectory."""
+    out = np.empty_like(pred)
+    acc = pred[0].copy()
+    for i in range(pred.shape[0]):
+        acc = alpha * pred[i] + (1.0 - alpha) * acc
+        out[i] = acc
+    return out
+
+
+def causal_conv1d(x, w, b, dilation):
+    """x (C_in, T) -> (C_out, T), left-padded so output t sees only t and earlier."""
+    c_out, c_in, k = w.shape
+    pad = (k - 1) * dilation
+    xp = np.concatenate([np.zeros((c_in, pad), dtype=x.dtype), x], axis=1)
+    idx = np.arange(x.shape[1])[:, None] + np.arange(k)[None, :] * dilation
+    xg = xp[:, idx]                                   # (C_in, T, k)
+    return np.einsum("cij,ocj->oi", xg, w) + b[:, None]
+
+
+def channel_layernorm(x, g, b, eps):
+    """Normalise across channels at each timestep independently. x (C, T)."""
+    mu = x.mean(axis=0, keepdims=True)
+    var = x.var(axis=0, keepdims=True)
+    return (x - mu) / np.sqrt(var + eps) * g[:, None] + b[:, None]
+
+
+def silu(x):
+    return x / (1.0 + np.exp(-x))
+
+
+def run_stage2_numpy(art, X, preds):
+    """Predicted residual from a numpy-exported corrector."""
+    kind = str(art["kind"])
+
+    if kind == "ema":
+        return (ema_stream(preds, float(art["ema_alpha"])) - preds).astype(np.float32)
+
+    Xs = (X - art["scaler_mean"]) / art["scaler_std"]
+
+    if kind == "ridge":
+        return (Xs @ art["coef"].T + art["intercept"]).astype(np.float32)
+
+    if kind == "mlp":
+        h = Xs
+        n = int(art["n_layers"])
+        for i in range(n):
+            h = h @ art["W%d" % i].T + art["b%d" % i]
+            if i < n - 1:
+                h = np.maximum(h, 0.0)
+        return h.astype(np.float32)
+
+    if kind == "tcn":
+        h = Xs.T.astype(np.float32)                   # (F, T)
+        dil = art["dilations"]
+        for i in range(int(art["n_blocks"])):
+            h = causal_conv1d(h, art["conv%d_w" % i], art["conv%d_b" % i], int(dil[i]))
+            h = channel_layernorm(h, art["ln%d_g" % i], art["ln%d_b" % i],
+                                  float(art["ln%d_eps" % i]))
+            h = silu(h)
+        return causal_conv1d(h, art["head_w"], art["head_b"], 1).T.astype(np.float32)
+
+    raise ValueError("unknown stage-2 kind: %r" % kind)
+
+
+def apply_stage2(preds, artifact_path, feat_sparse, ts_sparse, hist_window):
+    """Correct predictions with a stage-2 variant.
+
+    The correction gain and clip bound travel inside the artifact (tuned on the
+    validation split at fit time), so they are not taken from the CLI.
+    """
+    art = np.load(artifact_path)
+    kind = str(art["kind"])
+    alpha = float(art["alpha"])
+    clip_raw = float(art["clip"])
+    clip = None if not np.isfinite(clip_raw) else clip_raw
+
+    rf_model = None
+    if kind == "rf":
+        import joblib
+        rf_model = joblib.load(Path(artifact_path).parent / str(art["sklearn_file"]))
+
+    start = time.perf_counter()
+    x = build_sequence_features(preds, feat_sparse, ts_sparse, hist_window)
+    if rf_model is not None:
+        residual_hat = rf_model.predict(x).astype(np.float32)
+    else:
+        residual_hat = run_stage2_numpy(art, x, preds)
+    elapsed_ms = (time.perf_counter() - start) * 1000.0
+
+    corrected = preds + alpha * residual_hat
+    if clip is not None and clip > 0:
+        corrected = preds + np.clip(corrected - preds, -clip, clip)
+    return corrected.astype(np.float32), elapsed_ms
+
+
+def write_csv(path, rows):
+    with path.open("w", newline="") as f:
+        writer = csv.DictWriter(
+            f,
+            fieldnames=[
+                "model", "run", "sequence", "sample_time_ms", "seq_time_ms",
+                "neural_ms", "rf_ms", "total_ms",
+                "voltage_v", "current_ma", "power_w", "energy_j",
+                "mse_x", "mse_y", "returncode",
+            ],
+        )
+        writer.writeheader()
+        for row in rows:
+            writer.writerow(row)
+
+
+def summarize(rows):
+    ok = [row for row in rows if row["returncode"] == 0]
+    if not ok:
+        return None
+    sample = [row["sample_time_ms"] for row in ok]
+    return {
+        "count": len(sample),
+        "mean_sample_time_ms": float(np.mean(sample)),
+        "median_sample_time_ms": float(np.median(sample)),
+        "std_sample_time_ms": float(np.std(sample, ddof=1)) if len(sample) > 1 else 0.0,
+    }
+
+
+def write_model_summary(path, name, summary):
+    with path.open("w") as f:
+        f.write(f"== {name} ==\n")
+        f.write(str(summary) + "\n")
+
+
+def benchmark_model(name, spec, args, sequence_schedule):
+    model_path = args.base_dir / spec["path"]
+    if not model_path.exists():
+        raise FileNotFoundError(model_path)
+
+    rows = []
+    ina = init_ina219()
+    for run_idx in range(1, args.runs + 1):
+        seq_path = sequence_schedule[run_idx - 1]
+        print(f"\nRun {run_idx}/{args.runs} | Sequence: {seq_path.name}")
+
+        features, targets_all, ts, _ = load_ronin_sequence(
+            seq_path, interval=args.window_size
+        )
+        windows, targets, indices = make_windows(
+            features, targets_all, args.window_size, args.step_size
+        )
+
+        voltage_start, current_start, power_start = read_ina219(ina)
+        energy_start = time.perf_counter()
+
+        preds, neural_ms = run_tflite(model_path, windows, args.batch_size)
+
+        rf_ms = 0.0
+        total_ms = neural_ms
+
+        if spec.get("stage2"):
+            preds, rf_ms = apply_stage2(
+                preds,
+                args.base_dir / args.stage2_dir / spec["stage2"],
+                features[indices],
+                ts[indices],
+                args.rf_hist_window,
+            )
+            total_ms = neural_ms + rf_ms
+
+        elif spec["rf"]:
+            rf_rel = args.rf_model_path or spec.get("rf_path") or DEFAULT_RF_MODEL_PATH
+
+            preds, rf_ms = apply_rf(
+                preds,
+                args.base_dir / rf_rel,
+                features[indices],
+                ts[indices],
+                args.rf_hist_window,
+                args.rf_alpha,
+                args.rf_clip,
+            )
+            total_ms = neural_ms + rf_ms
+
+        energy_end = time.perf_counter()
+        voltage_end, current_end, power_end = read_ina219(ina)
+
+        elapsed_s = energy_end - energy_start
+        avg_power_w = (power_start + power_end) / 2.0
+        energy_j = avg_power_w * elapsed_s
+
+        mse = np.mean((targets - preds) ** 2, axis=0)
+        sample_time_ms = total_ms / max(1, windows.shape[0])
+        row = {
+            "model": name,
+            "run": run_idx,
+            "sequence": seq_path.name,
+            "sample_time_ms": sample_time_ms,
+            "seq_time_ms": total_ms,
+            "neural_ms": neural_ms,
+            "rf_ms": rf_ms,
+            "total_ms": total_ms,
+            "voltage_v": (voltage_start + voltage_end) / 2.0,
+            "current_ma": (current_start + current_end) / 2.0,
+            "power_w": avg_power_w,
+            "energy_j": energy_j,
+            "mse_x": float(mse[0]),
+            "mse_y": float(mse[1]),
+            "returncode": 0,
+        }
+        rows.append(row)
+        print(
+            f"Run {run_idx}/{args.runs}: "
+            f"time_per_sample={sample_time_ms:.4f}ms, "
+            f"neural={neural_ms:.2f}ms, rf={rf_ms:.2f}ms, total={total_ms:.2f}ms, "
+            f"power={avg_power_w:.3f}W, energy={energy_j:.6f}J"
+        )
+        if args.delay and run_idx < args.runs:
+            time.sleep(args.delay)
+    return rows
+
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--base_dir", type=Path, default=Path("."))
+    parser.add_argument("--which", default="all", help="all or one model name")
+    parser.add_argument("--runs", type=int, default=50)
+    parser.add_argument("--delay", type=float, default=0.5)
+    parser.add_argument("--sequence", default="a000_11")
+    parser.add_argument("--random_sequences", action="store_true",
+                        help="randomly schedule valid sequences across runs")
+    parser.add_argument("--seed", type=int, default=42,
+                        help="random seed for sequence scheduling")
+    parser.add_argument("--root_dir", default="seen_subjects_test_set")
+    parser.add_argument("--window_size", type=int, default=200)
+    parser.add_argument("--step_size", type=int, default=10)
+    parser.add_argument("--batch_size", type=int, default=1)
+    parser.add_argument("--rf_model_path", default=None,
+                        help="override the corrector for *_rf targets; defaults to the "
+                             "model's own 'rf_path', else " + DEFAULT_RF_MODEL_PATH)
+    parser.add_argument("--stage2_dir", default="stage2_models",
+                        help="directory holding the *_corrector.npz stage-2 exports")
+    parser.add_argument("--rf_alpha", type=float, default=1.0)
+    parser.add_argument("--rf_clip", type=float, default=0.75)
+    parser.add_argument("--rf_hist_window", type=int, default=50)
+    parser.add_argument("--out_dir", default="bench_results_tflite")
+    args = parser.parse_args()
+
+    args.base_dir = args.base_dir.expanduser().resolve()
+    out_dir = args.base_dir / args.out_dir
+    out_dir.mkdir(parents=True, exist_ok=True)
+
+    selected = list(MODELS) if args.which == "all" else [args.which]
+    unknown = [name for name in selected if name not in MODELS]
+    if unknown:
+        raise SystemExit(f"Unknown model(s): {', '.join(unknown)}")
+
+    sequence_root = args.base_dir / args.root_dir
+
+    if args.random_sequences:
+        if not sequence_root.exists():
+            raise FileNotFoundError(sequence_root)
+
+        sequence_dirs = sorted(
+            p for p in sequence_root.iterdir()
+            if p.is_dir()
+            and (p / "data.hdf5").exists()
+            and (p / "info.json").exists()
+        )
+
+        # a001_2 is known to be truncated/corrupt on the current dataset.
+        sequence_dirs = [p for p in sequence_dirs if p.name != "a001_2"]
+
+        if not sequence_dirs:
+            raise RuntimeError(f"No valid RoNIN sequences found under {sequence_root}")
+
+        rng = random.Random(args.seed)
+        rng.shuffle(sequence_dirs)
+        sequence_schedule = [
+            sequence_dirs[i % len(sequence_dirs)]
+            for i in range(args.runs)
+        ]
+
+        print(f"Random sequence mode enabled | seed={args.seed}")
+        print(f"Available sequences: {len(sequence_dirs)}")
+        print("Sequence schedule:")
+        for i, seq_path in enumerate(sequence_schedule, start=1):
+            print(f"  Run {i}: {seq_path.name}")
+    else:
+        seq_path = sequence_root / args.sequence
+        if not seq_path.exists():
+            raise FileNotFoundError(seq_path)
+        if not (seq_path / "data.hdf5").exists():
+            raise FileNotFoundError(seq_path / "data.hdf5")
+        if not (seq_path / "info.json").exists():
+            raise FileNotFoundError(seq_path / "info.json")
+        sequence_schedule = [seq_path] * args.runs
+
+    summary_lines = []
+    for name in selected:
+        print(f"\n=== Running TFLite benchmark for: {name} ===")
+        rows = benchmark_model(name, MODELS[name], args, sequence_schedule)
+        csv_path = out_dir / f"{name}_benchmark_results.csv"
+        write_csv(csv_path, rows)
+        summary = summarize(rows)
+        summary_lines.append((name, summary))
+        model_summary_path = out_dir / f"{name}_benchmark_summary.txt"
+        write_model_summary(model_summary_path, name, summary)
+        print(f"Wrote {csv_path}")
+        print(f"Wrote {model_summary_path}")
+        print("Summary:", summary)
+
+    summary_path = out_dir / "benchmark_summary.txt"
+    with summary_path.open("w") as f:
+        for name, summary in summary_lines:
+            f.write(f"== {name} ==\n")
+            f.write(str(summary) + "\n")
+    print(f"\nWrote {summary_path}")
+
+
+if __name__ == "__main__":
+    main()

@@ -1,0 +1,107 @@
+{
+  "name": "llio128",
+  "onnx": {
+    "path": "/mnt/data/jaitej/Yolov26_experiments_raspberryPi/ronin_yolov26/models_onnx/llio128.onnx",
+    "size_bytes": 1976396,
+    "size_mb": 1.8848381042480469
+  },
+  "tflite": {
+    "path": "/mnt/data/jaitej/Yolov26_experiments_raspberryPi/ronin_yolov26/models_tflite/llio128.tflite",
+    "size_bytes": 2017180,
+    "size_mb": 1.9237327575683594
+  },
+  "converter": {
+    "tool": "onnx2tf",
+    "work_dir": "/mnt/data/jaitej/Yolov26_experiments_raspberryPi/ronin_yolov26/models_tflite_work/llio128",
+    "tf_use_legacy_keras_unset_for_subprocess": true,
+    "extra_args": [
+      "-rtpo",
+      "Erf"
+    ],
+    "notes": "LLIO-Net uses GELU (ONNX Erf op) throughout the ResMLP blocks and regression head. onnx2tf's default conversion lowers Erf to TensorFlow's tf.math.erf, which TFLite has no native builtin kernel for, so the resulting .tflite requires the Flex/SELECT_TF_OPS delegate (RuntimeError: FlexErf failed to prepare) -- not available in the standard tflite-runtime typically deployed on a Raspberry Pi. -rtpo Erf replaces the Erf op with a builtin-op pseudo-approximation before conversion, producing a plain-builtin-ops .tflite. Verified output parity against the PyTorch model: max abs diff 2.5e-7 over 10 random windows (see tools/verify_llio128_tflite.py)."
+  },
+  "onnx_export_metadata": {
+    "name": "llio128",
+    "backbone": "llio",
+    "script": "ronin_yolo26_baseline_plain",
+    "checkpoint": {
+      "path": "/mnt/data/jaitej/Yolov26_experiments_raspberryPi/ronin_yolov26/output/train_llio128/checkpoints/checkpoint_99.pt",
+      "size_bytes": 3977331,
+      "size_mb": 3.7930784225463867
+    },
+    "onnx": {
+      "path": "/mnt/data/jaitej/Yolov26_experiments_raspberryPi/ronin_yolov26/models_onnx/llio128.onnx",
+      "size_bytes": 363279,
+      "size_mb": 0.3464498519897461
+    },
+    "export": {
+      "opset": 13,
+      "window_size": 200,
+      "input_shape_used_for_export": [
+        1,
+        6,
+        200
+      ],
+      "torch_output_shape": [
+        1,
+        2
+      ],
+      "fixed_shape_export": true,
+      "notes": "No export-only model wrapper was required."
+    },
+    "pytorch_model": {
+      "total_parameters": 489570,
+      "trainable_parameters": 489570,
+      "buffer_values": 0,
+      "fp32_parameter_size_bytes": 1958280,
+      "fp32_parameter_size_mb": 1.8675613403320312
+    },
+    "onnx_model": {
+      "opset_imports": [
+        {
+          "domain": "ai.onnx",
+          "version": 18
+        }
+      ],
+      "graph_name": "main_graph",
+      "inputs": [
+        {
+          "name": "input",
+          "shape": [
+            1,
+            6,
+            200
+          ]
+        }
+      ],
+      "outputs": [
+        {
+          "name": "output",
+          "shape": [
+            1,
+            2
+          ]
+        }
+      ],
+      "initializer_tensors": 96,
+      "initializer_values": 489581,
+      "fp32_initializer_size_bytes": 1958324,
+      "fp32_initializer_size_mb": 1.8676033020019531,
+      "node_count": 147
+    }
+  },
+  "input_shape": [
+    1,
+    200,
+    6
+  ],
+  "input_layout_note": "NWC (onnx2tf's default channel-last transpose of the NCW ONNX input); transpose (1,6,200) samples to (1,200,6) before feeding the interpreter.",
+  "output_shape": [
+    1,
+    2
+  ],
+  "validation": {
+    "method": "torch_vs_tflite_float32_interpreter, 10 random N(0,1) windows, seed=7",
+    "max_abs_diff": 2.5331974e-07
+  }
+}

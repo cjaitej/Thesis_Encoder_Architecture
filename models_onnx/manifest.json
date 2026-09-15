@@ -1,17 +1,17 @@
 [
   {
-    "name": "shufflenet",
-    "backbone": "shufflenetv2",
+    "name": "llio128",
+    "backbone": "llio",
     "script": "ronin_yolo26_baseline_plain",
     "checkpoint": {
-      "path": "D:\\MTech CS IITK\\Thesis\\Mascots\\Yolov26_experiments\\ronin_yolov26\\output\\train_shufflenetv2\\checkpoints\\shufflenet_checkpoint_63.pt",
-      "size_bytes": 10574634,
-      "size_mb": 10.084756851196289
+      "path": "/mnt/data/jaitej/Yolov26_experiments_raspberryPi/ronin_yolov26/output/train_llio128/checkpoints/checkpoint_99.pt",
+      "size_bytes": 3977331,
+      "size_mb": 3.7930784225463867
     },
     "onnx": {
-      "path": "D:\\MTech CS IITK\\Thesis\\Mascots\\Yolov26_experiments\\ronin_yolov26\\models_onnx\\shufflenet.onnx",
-      "size_bytes": 3438737,
-      "size_mb": 3.279435157775879
+      "path": "/mnt/data/jaitej/Yolov26_experiments_raspberryPi/ronin_yolov26/models_onnx/llio128.onnx",
+      "size_bytes": 363279,
+      "size_mb": 0.3464498519897461
     },
     "export": {
       "opset": 13,
@@ -29,17 +29,17 @@
       "notes": "No export-only model wrapper was required."
     },
     "pytorch_model": {
-      "total_parameters": 854618,
-      "trainable_parameters": 854618,
-      "buffer_values": 12792,
-      "fp32_parameter_size_bytes": 3418472,
-      "fp32_parameter_size_mb": 3.2601089477539062
+      "total_parameters": 489570,
+      "trainable_parameters": 489570,
+      "buffer_values": 0,
+      "fp32_parameter_size_bytes": 1958280,
+      "fp32_parameter_size_mb": 1.8675613403320312
     },
     "onnx_model": {
       "opset_imports": [
         {
           "domain": "ai.onnx",
-          "version": 13
+          "version": 18
         }
       ],
       "graph_name": "main_graph",
@@ -62,11 +62,11 @@
           ]
         }
       ],
-      "initializer_tensors": 116,
-      "initializer_values": 848250,
-      "fp32_initializer_size_bytes": 3393000,
-      "fp32_initializer_size_mb": 3.2358169555664062,
-      "node_count": 376
+      "initializer_tensors": 96,
+      "initializer_values": 489581,
+      "fp32_initializer_size_bytes": 1958324,
+      "fp32_initializer_size_mb": 1.8676033020019531,
+      "node_count": 147
     }
   }
 ]

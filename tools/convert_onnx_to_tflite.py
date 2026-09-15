@@ -66,6 +66,19 @@ def write_tflite_metadata(onnx_path, final_path, out_dir, converter_work_dir):
     print(f"Wrote metadata: {metadata_path}")
 
 
+def has_erf_node(onnx_path):
+    """True if the ONNX graph contains an Erf op (e.g. exact-GELU backbones like LLIO).
+
+    onnx2tf's default lowering sends Erf to TensorFlow's tf.math.erf, which TFLite
+    has no native builtin kernel for: the resulting .tflite needs the Flex/
+    SELECT_TF_OPS delegate (RuntimeError: FlexErf failed to prepare), which is not
+    present in the standard tflite-runtime typically deployed on a Raspberry Pi.
+    """
+    import onnx
+    model = onnx.load(str(onnx_path))
+    return any(node.op_type == "Erf" for node in model.graph.node)
+
+
 def convert_one(onnx_path, work_dir, out_dir):
     name = onnx_path.stem
     model_work_dir = work_dir / name
@@ -82,6 +95,13 @@ def convert_one(onnx_path, work_dir, out_dir):
         ["-k", "input"],
         ["-ois", "input", "1,6,200"],
     ]
+    if has_erf_node(onnx_path):
+        # -rtpo Erf replaces Erf with a builtin-op pseudo-approximation before
+        # conversion, so the .tflite runs on the plain interpreter. Tried first:
+        # the plain attempt above "succeeds" (onnx2tf does not error) but silently
+        # produces a Flex-dependent file, so ordering it after [] would never be
+        # reached by the existing success/failure control flow.
+        attempts = [["-rtpo", "Erf"]] + attempts
     last_error = None
     for extra_args in attempts:
         if model_work_dir.exists():
